@@ -132,7 +132,9 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0054** | **ALLOCATED** | **Slice-1 Phase-2A Formal Closure Recording authorization** → ER-0055 (2026-08-14) |
 | **PBA-0055** | **ALLOCATED** | **Slice-1 Phase-2B Gating Decisions authorization** → ER-0056 (2026-08-14) |
 | **PBA-0056** | **ALLOCATED** | **Slice-1 Distinguished Opaque-Domain Member Binding Decision authorization** → ER-0057 (2026-08-14) |
-| PBA-0057 and above | AVAILABLE-FUTURE | — |
+| **PBA-0057** | **ALLOCATED** | **Canonical Distinguished-Member Binding Normative Revision authorization** → ER-0058 (2026-08-14) |
+| **PBA-0058** | **ALLOCATED** | **Normative Engineering Contract Revision Convention Determination authorization** → PBD-0006 / ER-0059 (2026-08-14) |
+| PBA-0059 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -146,7 +148,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0057`.**
+**Next allocatable PBA: `PBA-0059`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -252,9 +254,11 @@ consumes an ARR number.
 | **ER-0055** | **ALLOCATED** | **Slice-1 Phase-2A Formal Closure Report** (authority PBA-0054; 2026-08-14; records PHASE 2A CLOSED on the basis of ARR-0018) |
 | **ER-0056** | **ALLOCATED** | **Slice-1 Phase-2B Gating Decisions (F-3 STOP)** (authority PBA-0055; 2026-08-14; read-only — F-1/B-4/B-5 determined, F-3 blocked; no repository write) |
 | **ER-0057** | **ALLOCATED** | **Slice-1 Distinguished Opaque-Domain Member Binding Decision Report** (authority PBA-0056; 2026-08-14; records F-1/B-4/B-5; F-3 ruling PROPOSED, not normative — Phase 2B remains blocked) |
-| ER-0058 and above | AVAILABLE-FUTURE | — |
+| **ER-0058** | **ALLOCATED** | **Distinguished-Member Binding Normative Revision (Governance STOP)** (authority PBA-0057; 2026-08-14; read-only — no revision convention existed, so no artifact could be authored; no repository write) |
+| **ER-0059** | **ALLOCATED** | **Normative Engineering Contract Revision Convention Determination Report** (authority PBA-0058; 2026-08-14; establishes PBD-0006) |
+| ER-0060 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0058`.**
+**Next allocatable ER: `ER-0060`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -265,7 +269,8 @@ consumes an ARR number.
 | PBD-0003 | ALLOCATED | Trader Readiness sourcing (adopts WN-0009) |
 | PBD-0004 | ALLOCATED | System Context dispositions (adopts SCW-01 Findings 1–7) |
 | **PBD-0005** | **ALLOCATED** | **Governance Identifier Ledger Establishment and Collision Resolution** |
-| PBD-0006 and above | AVAILABLE-FUTURE | — |
+| **PBD-0006** | **ALLOCATED** | **Normative Engineering Contract Revision Convention** (authority PBA-0058; 2026-08-14). Establishes the successor convention for an accepted normative engineering contract that is neither an ADR nor an RFC and carries no version lifecycle. Recorded in `docs/engineering/workflow.md`. |
+| PBD-0007 and above | AVAILABLE-FUTURE | — |
 
 Other historical families, recorded for reference only and not allocated by this
 ledger: **POR-0001** (Product Owner Ratification, Constitution v1.0);
@@ -273,7 +278,7 @@ ledger: **POR-0001** (Product Owner Ratification, Constitution v1.0);
 **WN-0001/0002/0003/0006/0009** (workshop notes); **WR-0001/0003/0004** (working
 records); **SCW-01** (System Context workshop).
 
-**Next allocatable PBD: `PBD-0006`.**
+**Next allocatable PBD: `PBD-0007`.**
 
 ## 10. Reserved and Unknown-Historical Identifiers
 
@@ -294,11 +299,11 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0056 | **PBA-0057** |
+| PBA | PBA-0058 | **PBA-0059** |
 | PBR | PBR-0013 | **PBR-0014** |
 | ARR | ARR-0018 | **ARR-0019** |
-| ER | ER-0057 | **ER-0058** |
-| PBD | PBD-0005 | **PBD-0006** |
+| ER | ER-0059 | **ER-0060** |
+| PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
 is recorded as an ordinary allocation in §5–§9. No identifier that has been issued
@@ -347,6 +352,8 @@ identifiers were allocated in the same period:
 | **Phase 2A formal closure** | **PBA-0054** | **ER-0055** | Record PBA-0053 / ARR-0018 and this cycle's own identifiers; record **Phase 2A CLOSED** in the Slice-1 implementation plan. Governance-only write — no source, test, dependency or toolchain change. Terminates under §12(7). |
 | Phase 2B gating analysis | PBA-0055 | ER-0056 | Read-only; STOPPED on F-3 before any write (no ledger write; recorded by the cycle below, per §12(6)) |
 | Phase 2B gating decisions | PBA-0056 | ER-0057 | Record PBA-0055 / ER-0056 and this cycle's own identifiers; record F-1 / B-4 / B-5 and the blocked status of F-3 in the Slice-1 implementation plan. Governance-only write. Terminates under §12(7). |
+| Contract revision authoring | PBA-0057 | ER-0058 | Read-only; STOPPED before authoring — no revision convention existed (no ledger write; recorded by the cycle below, per §12(6)) |
+| Revision convention determination | PBA-0058 | ER-0059 | Record PBA-0057 / ER-0058 and this cycle's own identifiers; issue **PBD-0006** establishing the normative engineering contract successor convention in `docs/engineering/workflow.md`. Governance-only write. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their
