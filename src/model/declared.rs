@@ -149,22 +149,21 @@ impl<T> DeclaredCategory<T> {
             rest,
         }
     }
-
-    /// The number of declarations this state records.
-    ///
-    /// `OutOfDomain` counts as one: something was declared, and it was not a
-    /// member of the category. Phase 1 reports the shape only — what any count
-    /// *means* belongs to checks 3, 6 and 10 in Phase 5.
-    #[must_use]
-    pub fn declared_count(&self) -> usize {
-        match self {
-            // No catch-all `_` arm (ADR-0005 §7.4).
-            Self::Absent => 0,
-            Self::One(_) | Self::OutOfDomain => 1,
-            Self::Multiple { rest, .. } => 2 + rest.len(),
-        }
-    }
 }
+
+// No summarizing accessor is offered, and that is deliberate (ARR-0015 M-1).
+//
+// A count, a validity predicate, or any similar convenience necessarily maps
+// two of the four states onto one answer — `One` and `OutOfDomain` both being
+// "one declaration" is the paradigm case. That collapse is exactly the failure
+// ARR-0014 MAJOR-1 was raised about, reintroduced one layer up: a later gate
+// written as "exactly one declaration, therefore well-formed" would silently
+// admit the out-of-domain state that checks 3, 6 and 10 exist to report.
+//
+// Consumers match the four variants exhaustively instead. That is more verbose
+// at each site and it is meant to be: this model's discipline is to make the
+// wrong thing unrepresentable rather than to rely on a rule a reader has to
+// remember.
 
 #[cfg(test)]
 mod tests {
@@ -200,6 +199,21 @@ mod tests {
         assert_eq!(described, "present");
     }
 
+    /// A distinct label for each of the four authoritative states.
+    ///
+    /// Total and **injective**: no two variants share a label, so unlike a
+    /// count this cannot be used to conflate `One` with `OutOfDomain`. It is
+    /// test-local and is not part of the public API.
+    fn describe(value: &DeclaredCategory<Category>) -> &'static str {
+        match value {
+            // No catch-all `_` arm (ADR-0005 §7.4).
+            DeclaredCategory::Absent => "absent",
+            DeclaredCategory::One(_) => "one",
+            DeclaredCategory::Multiple { .. } => "multiple",
+            DeclaredCategory::OutOfDomain => "out-of-domain",
+        }
+    }
+
     #[test]
     fn all_four_category_declaration_states_are_distinct() {
         let absent: DeclaredCategory<Category> = DeclaredCategory::Absent;
@@ -207,10 +221,12 @@ mod tests {
         let multiple = DeclaredCategory::multiple(Category::A, Category::B, vec![]);
         let out_of_domain: DeclaredCategory<Category> = DeclaredCategory::OutOfDomain;
 
-        assert_eq!(absent.declared_count(), 0);
-        assert_eq!(one.declared_count(), 1);
-        assert_eq!(multiple.declared_count(), 2);
-        assert_eq!(out_of_domain.declared_count(), 1);
+        // Each value lands on its own arm — the distinction is structural, and
+        // in particular `One` and `OutOfDomain` do not answer alike.
+        assert_eq!(describe(&absent), "absent");
+        assert_eq!(describe(&one), "one");
+        assert_eq!(describe(&multiple), "multiple");
+        assert_eq!(describe(&out_of_domain), "out-of-domain");
 
         // The point of the type: no two of these collapse into one another.
         assert_ne!(absent, one);
@@ -223,12 +239,40 @@ mod tests {
     #[test]
     fn multiple_cannot_encode_fewer_than_two_declarations() {
         // `Multiple` holds its first two members structurally, so the smallest
-        // representable "multiple" is genuinely two.
+        // representable "multiple" is genuinely two. Reading the members back
+        // is what proves the arity — a count would only have asserted it.
         let smallest = DeclaredCategory::multiple(Category::A, Category::B, vec![]);
         let larger = DeclaredCategory::multiple(Category::A, Category::B, vec![Category::A]);
 
-        assert_eq!(smallest.declared_count(), 2);
-        assert_eq!(larger.declared_count(), 3);
+        match smallest {
+            DeclaredCategory::Multiple {
+                first,
+                second,
+                rest,
+            } => {
+                assert_eq!(first, Category::A);
+                assert_eq!(second, Category::B);
+                assert!(rest.is_empty());
+            }
+            DeclaredCategory::Absent | DeclaredCategory::One(_) | DeclaredCategory::OutOfDomain => {
+                panic!("constructed a multiple declaration")
+            }
+        }
+
+        match larger {
+            DeclaredCategory::Multiple {
+                first,
+                second,
+                rest,
+            } => {
+                assert_eq!(first, Category::A);
+                assert_eq!(second, Category::B);
+                assert_eq!(rest, vec![Category::A]);
+            }
+            DeclaredCategory::Absent | DeclaredCategory::One(_) | DeclaredCategory::OutOfDomain => {
+                panic!("constructed a multiple declaration")
+            }
+        }
     }
 
     #[test]

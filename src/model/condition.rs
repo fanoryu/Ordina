@@ -137,12 +137,39 @@ mod tests {
             guard: Declared::Present(Guard::always_applicable()),
         };
 
-        assert_eq!(zero.classification.declared_count(), 0);
-        assert_eq!(multiple.classification.declared_count(), 2);
-        assert_eq!(
-            out_of_domain.classification,
-            DeclaredCategory::<ConditionClassification>::OutOfDomain
-        );
+        // Each fault is read back through an exhaustive match, so the three
+        // remain distinct from one another and from the well-formed `One`
+        // state. No catch-all `_` arm (ADR-0005 §7.4).
+        match zero.classification {
+            DeclaredCategory::Absent => {}
+            DeclaredCategory::One(_)
+            | DeclaredCategory::Multiple { .. }
+            | DeclaredCategory::OutOfDomain => panic!("constructed an absent classification"),
+        }
+
+        match multiple.classification {
+            DeclaredCategory::Multiple {
+                first,
+                second,
+                rest,
+            } => {
+                assert_eq!(first, ConditionClassification::Blocking);
+                assert_eq!(second, ConditionClassification::Temporary);
+                assert!(rest.is_empty());
+            }
+            DeclaredCategory::Absent | DeclaredCategory::One(_) | DeclaredCategory::OutOfDomain => {
+                panic!("constructed multiple classifications")
+            }
+        }
+
+        match out_of_domain.classification {
+            DeclaredCategory::OutOfDomain => {}
+            DeclaredCategory::Absent
+            | DeclaredCategory::One(_)
+            | DeclaredCategory::Multiple { .. } => {
+                panic!("constructed an out-of-domain classification")
+            }
+        }
     }
 
     #[test]

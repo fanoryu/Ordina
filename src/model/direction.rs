@@ -138,12 +138,37 @@ mod tests {
             outcome: DeclaredCategory::OutOfDomain,
         };
 
-        assert_eq!(zero.outcome.declared_count(), 0);
-        assert_eq!(multiple.outcome.declared_count(), 2);
-        assert_eq!(
-            out_of_domain.outcome,
-            DeclaredCategory::<Direction>::OutOfDomain
-        );
+        // Each fault is read back through an exhaustive match, so the three
+        // remain distinct from one another and from the well-formed `One`
+        // state. No catch-all `_` arm (ADR-0005 §7.4).
+        match zero.outcome {
+            DeclaredCategory::Absent => {}
+            DeclaredCategory::One(_)
+            | DeclaredCategory::Multiple { .. }
+            | DeclaredCategory::OutOfDomain => panic!("constructed an absent outcome"),
+        }
+
+        match multiple.outcome {
+            DeclaredCategory::Multiple {
+                first,
+                second,
+                rest,
+            } => {
+                assert_eq!(first, Direction::Buy);
+                assert_eq!(second, Direction::Sell);
+                assert!(rest.is_empty());
+            }
+            DeclaredCategory::Absent | DeclaredCategory::One(_) | DeclaredCategory::OutOfDomain => {
+                panic!("constructed multiple outcomes")
+            }
+        }
+
+        match out_of_domain.outcome {
+            DeclaredCategory::OutOfDomain => {}
+            DeclaredCategory::Absent
+            | DeclaredCategory::One(_)
+            | DeclaredCategory::Multiple { .. } => panic!("constructed an out-of-domain outcome"),
+        }
     }
 
     #[test]

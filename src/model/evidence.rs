@@ -202,7 +202,17 @@ mod tests {
         };
 
         assert!(declaration.lineage.is_absent());
-        assert_eq!(declaration.declared_type.declared_count(), 0);
+
+        // An **absent** declared type is check 1's; an out-of-domain one is
+        // check 6's (§5.1.1 row 1). The match keeps the two apart rather than
+        // letting a summary conflate them. No catch-all `_` arm (ADR-0005
+        // §7.4).
+        match declaration.declared_type {
+            DeclaredCategory::Absent => {}
+            DeclaredCategory::One(_)
+            | DeclaredCategory::Multiple { .. }
+            | DeclaredCategory::OutOfDomain => panic!("constructed an absent declared type"),
+        }
     }
 
     #[test]
