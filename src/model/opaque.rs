@@ -1,0 +1,207 @@
+//! The five opaque semantic domains — Slice Contract §3.3, §3.3.1.
+//!
+//! Lineage identities, dimension symbols, `ENUM` categorical values, version
+//! tokens and precedence ordinals are **opaque**: the contract selects no
+//! encoding, format or representation for them, and the checker must never take
+//! authoritative meaning from whatever representation it happens to use.
+//!
+//! Each domain is its own newtype, so a dimension symbol cannot be compared
+//! against a lineage identity by accident — that is a compile error, not a bug
+//! to be found later.
+
+use core::cmp::Ordering;
+
+/// A caller-supplied opaque handle for a value in one of the opaque domains.
+///
+/// Slice Contract §3.3.1 requires that **both** the values of an opaque domain
+/// **and** a deterministic total order over them arrive as part of the
+/// already-canonical input (§2). The checker never generates, infers or chooses
+/// an order.
+///
+/// The caller therefore assigns handles consistent with the domain's supplied
+/// total order. Comparing handles compares *the order the caller supplied*, not
+/// an encoding this implementation picked. Nothing else about the integer
+/// carries meaning.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct OpaqueValue(u64);
+
+impl OpaqueValue {
+    /// Wraps a caller-supplied handle.
+    #[must_use]
+    pub const fn new(handle: u64) -> Self {
+        Self(handle)
+    }
+
+    /// The supplied order position. Used only by the hand-written `Ord`
+    /// implementations below, never to infer anything else.
+    #[must_use]
+    const fn supplied_order(self) -> u64 {
+        self.0
+    }
+}
+
+/// Stable rule/node lineage identity — ADR-0003 §9, Slice Contract §3.3.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct LineageId(OpaqueValue);
+
+/// A dimension symbol, compared by exact equality only — Slice Contract §4.6.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct DimensionSymbol(OpaqueValue);
+
+/// A categorical value of an `ENUM` evidence domain — Slice Contract §3.5.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct EnumValue(OpaqueValue);
+
+/// A semantic-model / checker-semantics version token — Slice Contract §3.4.1,
+/// §6.2. Equality only: the contract supplies **no** order over version tokens,
+/// so this type deliberately has no `Ord` implementation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct VersionToken(OpaqueValue);
+
+/// A Direction-rule precedence ordinal — Slice Contract §3.7.
+///
+/// Unlike the domains above, this order is **semantically operative**: it
+/// decides which Direction rule resolves (§4.9). It is still supplied with the
+/// input and never invented here.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct PrecedenceOrdinal(OpaqueValue);
+
+impl LineageId {
+    #[must_use]
+    pub const fn new(value: OpaqueValue) -> Self {
+        Self(value)
+    }
+}
+
+impl DimensionSymbol {
+    #[must_use]
+    pub const fn new(value: OpaqueValue) -> Self {
+        Self(value)
+    }
+}
+
+impl EnumValue {
+    #[must_use]
+    pub const fn new(value: OpaqueValue) -> Self {
+        Self(value)
+    }
+}
+
+impl VersionToken {
+    #[must_use]
+    pub const fn new(value: OpaqueValue) -> Self {
+        Self(value)
+    }
+}
+
+impl PrecedenceOrdinal {
+    #[must_use]
+    pub const fn new(value: OpaqueValue) -> Self {
+        Self(value)
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Ordering.
+//
+// ADR-0005 §7.5 prohibits `#[derive(Ord)]` on an opaque-domain newtype: a
+// derived implementation takes its order from whatever the newtype happens to
+// wrap, which is incidental representation, not the order the contract
+// supplies. Each implementation below is written by hand and delegates
+// explicitly to the caller-supplied order, which is what §7.5 permits and
+// expects.
+//
+// `VersionToken` is absent by design — the contract supplies no order for it.
+// ---------------------------------------------------------------------------
+
+impl Ord for LineageId {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0.supplied_order().cmp(&other.0.supplied_order())
+    }
+}
+
+impl PartialOrd for LineageId {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for DimensionSymbol {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0.supplied_order().cmp(&other.0.supplied_order())
+    }
+}
+
+impl PartialOrd for DimensionSymbol {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for EnumValue {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0.supplied_order().cmp(&other.0.supplied_order())
+    }
+}
+
+impl PartialOrd for EnumValue {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for PrecedenceOrdinal {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0.supplied_order().cmp(&other.0.supplied_order())
+    }
+}
+
+impl PartialOrd for PrecedenceOrdinal {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn lineage(handle: u64) -> LineageId {
+        LineageId::new(OpaqueValue::new(handle))
+    }
+
+    #[test]
+    fn ordering_follows_the_supplied_order() {
+        assert!(lineage(1) < lineage(2));
+        assert!(lineage(9) > lineage(3));
+        assert_eq!(lineage(4), lineage(4));
+    }
+
+    #[test]
+    fn ordering_is_a_total_order() {
+        let mut sorted = vec![lineage(3), lineage(1), lineage(2)];
+        sorted.sort();
+
+        assert_eq!(sorted, vec![lineage(1), lineage(2), lineage(3)]);
+    }
+
+    #[test]
+    fn domains_are_distinct_types() {
+        // Cross-domain comparison is a *compile* error, so it cannot be
+        // asserted at runtime. Equality within each domain is what remains
+        // testable, and each domain keeps its own identity.
+        let dimension = DimensionSymbol::new(OpaqueValue::new(1));
+        let enum_value = EnumValue::new(OpaqueValue::new(1));
+
+        assert_eq!(dimension, DimensionSymbol::new(OpaqueValue::new(1)));
+        assert_eq!(enum_value, EnumValue::new(OpaqueValue::new(1)));
+    }
+
+    #[test]
+    fn version_tokens_compare_by_equality_only() {
+        let a = VersionToken::new(OpaqueValue::new(1));
+
+        assert_eq!(a, VersionToken::new(OpaqueValue::new(1)));
+        assert_ne!(a, VersionToken::new(OpaqueValue::new(2)));
+    }
+}

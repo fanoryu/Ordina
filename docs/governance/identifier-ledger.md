@@ -223,9 +223,10 @@ consumes an ARR number.
 | **ER-0045** | **ALLOCATED** | **Slice-1 Rust Bootstrap and Implementation Plan Report** (authority PBA-0040; 2026-08-13; halted at preflight — missing MSVC linker; no repository change) |
 | **ER-0046** | **ALLOCATED** | **Windows MSVC Prerequisite Remediation and Slice-1 Bootstrap Report** (authority PBA-0041; 2026-08-13) |
 | **ER-0047** | **ALLOCATED** | **Slice-1 Phase 1 Authorization Preparation Report** (authority PBA-0042; 2026-08-13) |
-| ER-0048 and above | AVAILABLE-FUTURE | — |
+| **ER-0048** | **ALLOCATED** | **Slice-1 Phase 1 Execution Report** — core model and opaque domains (authority PBA-0042; 2026-08-13) |
+| ER-0049 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0048`.**
+**Next allocatable ER: `ER-0049`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -268,7 +269,7 @@ never vacated.
 | PBA | PBA-0042 | **PBA-0043** |
 | PBR | PBR-0013 | **PBR-0014** |
 | ARR | ARR-0013 | **ARR-0014** |
-| ER | ER-0047 | **ER-0048** |
+| ER | ER-0048 | **ER-0049** |
 | PBD | PBD-0005 | **PBD-0006** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -303,6 +304,7 @@ identifiers were allocated in the same period:
 | Slice-1 bootstrap (halted) | PBA-0040 | ER-0045 | Halted at preflight — no MSVC linker; no ledger write, recorded by the cycle below |
 | Slice-1 bootstrap (retry) | PBA-0041 | ER-0046 | Record PBA-0040 / ER-0045 and this cycle's own identifiers; MSVC prerequisite + Slice-1 bootstrap |
 | Phase 1 authorization | PBA-0042 | ER-0047 | Prepare the Slice-1 Phase 1 implementation authorization; record this cycle's own identifiers |
+| Phase 1 execution | PBA-0042 | ER-0048 | Execute Phase 1 — core model and opaque domains |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their
