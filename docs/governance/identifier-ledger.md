@@ -126,7 +126,9 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0048** | **ALLOCATED** | **Phase-1 Formal Closure authorization** → ER-0051 (2026-08-13) |
 | **PBA-0049** | **ALLOCATED** | **Phase-2 Scope and Implementation-Plan Review authorization** → ER-0052 (2026-08-13) |
 | **PBA-0050** | **ALLOCATED** | **Slice-1 Phase-2A Exact Numeric Value Layer Implementation authorization** → ER-0053 (2026-08-13) |
-| PBA-0051 and above | AVAILABLE-FUTURE | — |
+| **PBA-0051** | **ALLOCATED** | **Slice-1 Phase-2A Independent Implementation Review authorization** → ARR-0017 (2026-08-14) |
+| **PBA-0052** | **ALLOCATED** | **Slice-1 Phase-2A M-1 Structural Regression-Evidence Remediation authorization** → ER-0054 (2026-08-14) |
+| PBA-0053 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -140,7 +142,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0051`.**
+**Next allocatable PBA: `PBA-0053`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -190,14 +192,15 @@ engineering substance untouched. Only the governance identifier is corrected.
 | **ARR-0014** | **ALLOCATED** | **Slice-1 Phase 1 Independent Architecture Review** (authority PBA-0043; 2026-08-13; findings MAJOR-1, MINOR-1, MINOR-2, MINOR-3, OBSERVATION-1 — remediated under PBA-0044 / ER-0049) |
 | **ARR-0015** | **ALLOCATED** | **Phase-1 Representability Remediation Independent Re-Review** (authority PBA-0045; 2026-08-13; verdict PASS WITH MINOR REMEDIATION REQUIRED — finding M-1, observations O-1/O-2/O-3) |
 | **ARR-0016** | **ALLOCATED** | **Phase-1 Final Closure Verification** (authority PBA-0047; 2026-08-13; verdict PASS — PHASE 1 READY FOR PRODUCT BOARD CLOSURE; observations O-1/O-2/O-3 carried) |
-| ARR-0017 and above | AVAILABLE-FUTURE | — |
+| **ARR-0017** | **ALLOCATED** | **Slice-1 Phase-2A Independent Implementation Review** (authority PBA-0051; 2026-08-14; verdict PASS WITH MINOR REMEDIATION REQUIRED — finding M-1, observations B-4/B-5/B-6) |
+| ARR-0018 and above | AVAILABLE-FUTURE | — |
 
 Two review reports were issued under **temporary, deliberately unnumbered**
 identifiers by Board instruction: the *Pre-Git Governance & Repository Integrity
 Audit* and the *Governance Identifier Collision Reconciliation Report*. Neither
 consumes an ARR number.
 
-**Next allocatable ARR: `ARR-0017`.**
+**Next allocatable ARR: `ARR-0018`.**
 
 ## 8. ER — Execution Reports
 
@@ -240,9 +243,10 @@ consumes an ARR number.
 | **ER-0051** | **ALLOCATED** | **Phase-1 Formal Closure Report** (authority PBA-0048; 2026-08-13; records PHASE 1 CLOSED on the basis of ARR-0016) |
 | **ER-0052** | **ALLOCATED** | **Phase-2 Scope and Implementation-Plan Review** (authority PBA-0049; 2026-08-13; verdict PASS WITH MINOR CONDITIONS — findings F-1…F-4, observations B-1…B-3) |
 | **ER-0053** | **ALLOCATED** | **Slice-1 Phase-2A Exact Numeric Value Layer Implementation Report** (authority PBA-0050; 2026-08-13; closes ER-0052 F-2 and F-4; F-1 and F-3 remain open for Phase 2B) |
-| ER-0054 and above | AVAILABLE-FUTURE | — |
+| **ER-0054** | **ALLOCATED** | **Slice-1 Phase-2A M-1 Structural Regression-Evidence Remediation Report** (authority PBA-0052; 2026-08-14; closes ARR-0017 M-1) |
+| ER-0055 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0054`.**
+**Next allocatable ER: `ER-0055`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -282,10 +286,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0050 | **PBA-0051** |
+| PBA | PBA-0052 | **PBA-0053** |
 | PBR | PBR-0013 | **PBR-0014** |
-| ARR | ARR-0016 | **ARR-0017** |
-| ER | ER-0053 | **ER-0054** |
+| ARR | ARR-0017 | **ARR-0018** |
+| ER | ER-0054 | **ER-0055** |
 | PBD | PBD-0005 | **PBD-0006** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -329,6 +333,8 @@ identifiers were allocated in the same period:
 | **Phase 1 formal closure** | **PBA-0048** | **ER-0051** | Record PBA-0047 / ARR-0016 and this cycle's own identifiers; record **Phase 1 CLOSED** in the Slice-1 implementation plan. Governance-only write — no source, test, dependency or toolchain change. Terminates under §12(7). |
 | Phase 2 scope review | PBA-0049 | ER-0052 | Read-only Phase-2 scope and implementation-plan review (no ledger write; recorded by the cycle below, per §12(6)) |
 | Phase 2A implementation | PBA-0050 | ER-0053 | Record PBA-0049 / ER-0052 and this cycle's own identifiers; implement the Phase-2A exact numeric value layer |
+| Phase 2A review | PBA-0051 | ARR-0017 | Read-only independent implementation review (no ledger write; recorded by the cycle below, per §12(6)) |
+| Phase 2A M-1 remediation | PBA-0052 | ER-0054 | Record PBA-0051 / ARR-0017 and this cycle's own identifiers; add compile-fail regression evidence for the Phase-2A structural boundaries |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their

@@ -126,6 +126,66 @@ impl Digit {
 /// compare, which is exactly why it is not expressed here. A caller needing
 /// §4.3 or §4.4 semantics must wait for Phase 2B; this type answers only the
 /// dimension-free question.
+///
+/// # Three structural boundaries, preserved as compile-fail evidence
+///
+/// The guarantees this type rests on are **impossibilities**, and an
+/// impossibility no test can observe is one a later change can remove while the
+/// whole suite stays green. Each of the three below is therefore held open by a
+/// `compile_fail` doctest — the same dependency-free idiom the model layer uses
+/// for its grammar-level restrictions.
+///
+/// Each fails because the API shape makes the code unwritable, not because of
+/// any particular compiler wording; nothing here matches diagnostic text.
+///
+/// **Arbitrary-ratio construction is unavailable.** This is what keeps the
+/// admitted domain decimal (§4.2, ADR-0005 §7.3): no public entry point accepts
+/// a denominator, so a non-decimal rational such as `1/3` cannot be built.
+///
+/// ```compile_fail
+/// use ordina::numeric::ExactNumber;
+///
+/// let _ = ExactNumber::from_ratio(1, 3);
+/// ```
+///
+/// **The internal representation is inaccessible.** This is what keeps the
+/// ADR-0005 §6.3 isolation boundary intact: a caller cannot reach the
+/// `BigRational` and so cannot bypass the decimal-domain constructors or bind
+/// checker logic to a third-party numeric API.
+///
+/// ```compile_fail
+/// use ordina::numeric::ExactNumber;
+///
+/// let n = ExactNumber::from_integer(1);
+/// let _ = n.0;
+/// ```
+///
+/// **Division is unavailable.** §3.8 excludes division from the admitted
+/// grammar, and its absence is also what keeps the decimal domain **closed**
+/// under the arithmetic offered here — `+`, `−` and `×` cannot leave the domain,
+/// whereas division would.
+///
+/// ```compile_fail
+/// use ordina::numeric::ExactNumber;
+///
+/// let a = ExactNumber::from_integer(1);
+/// let b = ExactNumber::from_integer(2);
+///
+/// let _ = a.divide(&b);
+/// ```
+///
+/// The admitted operations, by contrast, compile:
+///
+/// ```
+/// use ordina::numeric::ExactNumber;
+///
+/// let a = ExactNumber::from_integer(1);
+/// let b = ExactNumber::from_integer(2);
+///
+/// assert_eq!(a.add(&b), ExactNumber::from_integer(3));
+/// assert_eq!(a.subtract(&b), ExactNumber::from_integer(-1));
+/// assert_eq!(a.multiply(&b), ExactNumber::from_integer(2));
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExactNumber(BigRational);
 
