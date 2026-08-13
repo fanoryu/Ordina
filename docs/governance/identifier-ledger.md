@@ -105,7 +105,8 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0027** | **ALLOCATED** | **Identifier Ledger Baseline Freeze Synchronization authorization** → ER-0035 (2026-08-13). Baseline-freeze administrative allocation — see §11.1. |
 | **PBA-0028** | **ALLOCATED** | **Git Baseline & Private GitHub Repository Authorization Readiness** → ER-0036 (2026-08-13) |
 | **PBA-0029** | **ALLOCATED** | **Git Baseline & Private GitHub Repository Execution Authorization** → ER-0037 (2026-08-13) |
-| PBA-0030 and above | AVAILABLE-FUTURE | — |
+| **PBA-0030** | **ALLOCATED** | **Post-Baseline Repository Hygiene authorization** → ER-0038 (2026-08-13) |
+| PBA-0031 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -119,7 +120,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0030`.**
+**Next allocatable PBA: `PBA-0031`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -195,9 +196,10 @@ consumes an ARR number.
 | **ER-0035** | **ALLOCATED** | **Identifier Ledger Baseline Freeze Synchronization Report** (authority PBA-0027; 2026-08-13). Baseline-freeze administrative allocation — see §11.1. |
 | **ER-0036** | **ALLOCATED** | **Git Baseline & Private GitHub Repository Readiness Report** (authority PBA-0028; 2026-08-13; verdict PASS — PRIVATE GITHUB BASELINE CREATION MAY BE AUTHORIZED) |
 | **ER-0037** | **ALLOCATED** | **Ordina Git & Private GitHub Baseline Establishment Report** (authority PBA-0029; 2026-08-13) |
-| ER-0038 and above | AVAILABLE-FUTURE | — |
+| **ER-0038** | **ALLOCATED** | **Post-Baseline Repository Hygiene Report** (authority PBA-0030; 2026-08-13) |
+| ER-0039 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0038`.**
+**Next allocatable ER: `ER-0039`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -237,10 +239,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0029 | **PBA-0030** |
+| PBA | PBA-0030 | **PBA-0031** |
 | PBR | PBR-0011 | **PBR-0012** |
 | ARR | ARR-0010 | **ARR-0011** |
-| ER | ER-0037 | **ER-0038** |
+| ER | ER-0038 | **ER-0039** |
 | PBD | PBD-0005 | **PBD-0006** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -250,8 +252,11 @@ ledger-only task.
 
 ### 11.1 Baseline Freeze Record
 
-The pre-baseline synchronization terminates here. Two clerical cycles were run
-immediately before the first Git baseline purely to bring this ledger current:
+The pre-baseline synchronization terminates here. Four cycles ran immediately
+before and around the first Git baseline. Two were clerical cycles whose sole
+purpose was bringing this ledger current; the other two were the pre-Git readiness
+review and the baseline establishment itself, recorded here because their
+identifiers were allocated in the same period:
 
 | Cycle | Authorization | Report | Purpose |
 |---|---|---|---|
@@ -259,11 +264,12 @@ immediately before the first Git baseline purely to bring this ledger current:
 | **Baseline freeze** | **PBA-0027** | **ER-0035** | Record PBA-0026 / ER-0034, record this cycle's own identifiers, and terminate the synchronization procedure |
 | Git baseline readiness | PBA-0028 | ER-0036 | Read-only pre-Git readiness review (no ledger write; recorded by the cycle below, per §12(6)) |
 | **Git baseline establishment** | **PBA-0029** | **ER-0037** | Record PBA-0028 / ER-0036 and this cycle's own identifiers; establish the Git and private GitHub baseline |
+| Post-baseline hygiene | PBA-0030 | ER-0038 | Correct §11.1 narrative drift; establish the repository line-ending policy |
 
-**Both cycles' identifiers are recorded as ordinary ALLOCATED entries in §5 and
-§8**, including this cycle's own. They are additionally listed here so their
-**administrative, ledger-only character** is explicit and so a later reader does not
-mistake them for product, architecture, or engineering authorizations.
+**Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
+§5 and §8**, including each cycle's own. They are additionally listed here so their
+**administrative character** is explicit and so a later reader does not mistake
+them for product, architecture, or engineering authorizations.
 
 **Termination.** Recording a synchronization cycle's own identifiers **does not
 create an obligation to run another synchronization cycle.** That is the whole
