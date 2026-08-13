@@ -1,12 +1,17 @@
 # ADR-0005: Slice-1 Implementation Language and Toolchain
 
-- **Status:** PROPOSED — ARCHITECTURE REVIEW REQUIRED
+- **Status:** ACCEPTED
 - **Date:** 2026-08-13
-- **Deciders:** Principal Engineer; acceptance pending Product Board
+- **Accepted by:** Product Board, PBR-0013
+- **Decision date:** 2026-08-13
+- **Deciders:** Principal Engineer; accepted by Product Board
 - **Related:** RFC-0002 (ACCEPTED via PBR-0012), First Runnable Slice Contract
   (ACCEPTED via PBR-0011), ADR-0002 (ACCEPTED, immutable), ADR-0003 (ACCEPTED,
   immutable), ADR-0004 (ACCEPTED, immutable), RFC-0001 (ACCEPTED), ER-0039
-  (analysis), ARR-0011 (RFC-0002 review), PBA-0035 (authorization)
+  (analysis), ARR-0011 (RFC-0002 review), PBA-0035 (authoring), PBA-0039
+  (acceptance)
+- **Review lineage:** RFC-0002 → ARR-0011 → RFC-0002 acceptance → ADR-0005 →
+  ARR-0012 → ER-0043 → ARR-0013 → PBR-0013
 - **Governed by:** Product Constitution v1.0 — ACTIVE — RATIFIED
 
 > This ADR decides **how Slice 1 is built**, not what it means. The **First
@@ -496,14 +501,48 @@ serialization format and introduce a parser into a slice defined as having none.
 
 ## 18. Review / Acceptance Record
 
-*Placeholder — to be completed by the Product Board.*
+**ADR-0005 is ACCEPTED by the Product Board via PBR-0013**, decision date
+**2026-08-13**.
 
-- **Architecture review:** *pending*
-- **Accepted by:** *pending*
-- **Decision date:** *pending*
+**Review lineage:** RFC-0002 → ARR-0011 → RFC-0002 acceptance (PBR-0012) →
+ADR-0005 → ARR-0012 → ER-0043 → ARR-0013 → PBR-0013.
+
+**ARR-0012** (independent architecture review) returned PASS with two MINOR
+findings and two observations. **ER-0043** closed all four under PBA-0037: the
+`proptest`/randomness boundary (§8.1), structural float exclusion (§7.2), the
+unconditional catch-all prohibition (§7.4), and the `#[derive(Ord)]` clarification
+(§7.5). **ARR-0013** (final remediation verification) returned
+**`PASS — READY FOR PRODUCT BOARD ACCEPTANCE`** with no BLOCKER, MAJOR, or MINOR
+finding.
+
+Acceptance records the decision only and changed no substantive reviewed text.
+
+1. **The accepted substantive decision is now an immutable historical
+   architecture record.** §§1–17 as reviewed are settled.
+2. **A future material architecture change requires a separately authorized
+   successor or superseding ADR — never a silent rewrite.** ADRs are immutable
+   once accepted; supersede, never edit.
+3. **Acceptance does not amend the accepted First Runnable Slice Contract**, nor
+   any other accepted document. This ADR supersedes nothing.
+4. **The First Runnable Slice Contract remains authoritative for Slice-1
+   behaviour.** Where this ADR and the contract could ever be read as differing,
+   the contract governs (§7, §16).
+5. **Acceptance authorizes no implementation by itself.** Project bootstrap —
+   `Cargo.toml`, `Cargo.lock`, `rust-toolchain.toml`, `src/`, `tests/`, dependency
+   installation, or any Rust source — requires a **separate implementation
+   authorization** (§17).
+
+**Preserved boundaries.** Rust is selected **for Slice 1 only** (§4) and is not the
+implementation language of the Ordina product. **Q-06 remains OPEN**, and **N-22,
+N-24, N-25, Q-08, and F-8 remain unresolved/deferred** (§9, §15). No framework, UI
+technology, persistence, database, serialization format, parser, schema language,
+deployment target, provider, broker or market-data integration, evaluator
+implementation, evaluator-semantics version scheme, hash algorithm, CI/CD platform,
+or release packaging model is selected by this acceptance.
 
 ---
 
-> **Status:** PROPOSED — ARCHITECTURE REVIEW REQUIRED. This ADR is not accepted and
-> is not yet an architecture decision of record. ADRs are immutable once accepted —
-> supersede, never edit.
+> This ADR is now **ACCEPTED**. Its decision text is an immutable historical
+> architecture record. ADRs are immutable once accepted — **supersede, never
+> edit**. Any future material architecture change must be recorded through a new
+> ADR that explicitly supersedes this one.
