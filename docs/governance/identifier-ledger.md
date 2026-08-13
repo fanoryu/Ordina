@@ -110,7 +110,8 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0032** | **ALLOCATED** | **RFC-0002 Slice-1 Implementation Stack Authoring authorization** → ER-0040 (2026-08-13) |
 | **PBA-0033** | **ALLOCATED** | **RFC-0002 Product Board Review authorization** → ARR-0011 (2026-08-13) |
 | **PBA-0034** | **ALLOCATED** | **RFC-0002 Acceptance authorization** → ER-0041 (2026-08-13) |
-| PBA-0035 and above | AVAILABLE-FUTURE | — |
+| **PBA-0035** | **ALLOCATED** | **ADR-0005 Authoring authorization** → ER-0042 (2026-08-13) |
+| PBA-0036 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -124,7 +125,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0035`.**
+**Next allocatable PBA: `PBA-0036`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -206,9 +207,10 @@ consumes an ARR number.
 | **ER-0039** | **ALLOCATED** | **Slice-1 Implementation Stack Recommendation** (authority PBA-0031; 2026-08-13; read-only analysis, no repository change) |
 | **ER-0040** | **ALLOCATED** | **RFC-0002 Slice-1 Implementation Stack Authoring Report** (authority PBA-0032; 2026-08-13) |
 | **ER-0041** | **ALLOCATED** | **RFC-0002 Acceptance Report** (authority PBA-0034; 2026-08-13) |
-| ER-0042 and above | AVAILABLE-FUTURE | — |
+| **ER-0042** | **ALLOCATED** | **ADR-0005 Authoring Report** (authority PBA-0035; 2026-08-13) |
+| ER-0043 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0042`.**
+**Next allocatable ER: `ER-0043`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -248,10 +250,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0034 | **PBA-0035** |
+| PBA | PBA-0035 | **PBA-0036** |
 | PBR | PBR-0012 | **PBR-0013** |
 | ARR | ARR-0011 | **ARR-0012** |
-| ER | ER-0041 | **ER-0042** |
+| ER | ER-0042 | **ER-0043** |
 | PBD | PBD-0005 | **PBD-0006** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -278,6 +280,7 @@ identifiers were allocated in the same period:
 | RFC-0002 authoring | PBA-0032 | ER-0040 | Record PBA-0031 / ER-0039 and this cycle's own identifiers; author RFC-0002 |
 | RFC-0002 review | PBA-0033 | ARR-0011 | Read-only Board review (no ledger write; recorded by the cycle below, per §12(6)) |
 | RFC-0002 acceptance | PBA-0034 | ER-0041 | Record PBA-0033 / ARR-0011, PBR-0012, and this cycle's own identifiers; accept RFC-0002 |
+| ADR-0005 authoring | PBA-0035 | ER-0042 | Author ADR-0005 (PROPOSED); record this cycle's own identifiers |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their
