@@ -118,7 +118,9 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0040** | **ALLOCATED** | **Slice-1 Rust Bootstrap and Implementation-Plan authorization** → ER-0045 (2026-08-13) |
 | **PBA-0041** | **ALLOCATED** | **Windows MSVC Prerequisite Remediation and Slice-1 Bootstrap Retry authorization** → ER-0046 (2026-08-13) |
 | **PBA-0042** | **ALLOCATED** | **Slice-1 Implementation Phase 1 authorization** (core model and opaque domains) → ER-0047 (2026-08-13) |
-| PBA-0043 and above | AVAILABLE-FUTURE | — |
+| **PBA-0043** | **ALLOCATED** | **Slice-1 Phase 1 Independent Architecture Review authorization** → ARR-0014 (2026-08-13) |
+| **PBA-0044** | **ALLOCATED** | **Phase-1 Representability Remediation authorization** → ER-0049 (2026-08-13) |
+| PBA-0045 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -132,7 +134,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0043`.**
+**Next allocatable PBA: `PBA-0045`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -179,14 +181,15 @@ engineering substance untouched. Only the governance identifier is corrected.
 | **ARR-0011** | **ALLOCATED** | **RFC-0002 Product Board Review** (authority PBA-0033; 2026-08-13; verdict PASS — READY FOR PRODUCT BOARD ACCEPTANCE) |
 | **ARR-0012** | **ALLOCATED** | **ADR-0005 Independent Architecture Review** (authority PBA-0036; 2026-08-13; verdict PASS — READY FOR PRODUCT BOARD ACCEPTANCE) |
 | **ARR-0013** | **ALLOCATED** | **ADR-0005 Final Remediation Verification** (authority PBA-0038; 2026-08-13; verdict PASS — READY FOR PRODUCT BOARD ACCEPTANCE) |
-| ARR-0014 and above | AVAILABLE-FUTURE | — |
+| **ARR-0014** | **ALLOCATED** | **Slice-1 Phase 1 Independent Architecture Review** (authority PBA-0043; 2026-08-13; findings MAJOR-1, MINOR-1, MINOR-2, MINOR-3, OBSERVATION-1 — remediated under PBA-0044 / ER-0049) |
+| ARR-0015 and above | AVAILABLE-FUTURE | — |
 
 Two review reports were issued under **temporary, deliberately unnumbered**
 identifiers by Board instruction: the *Pre-Git Governance & Repository Integrity
 Audit* and the *Governance Identifier Collision Reconciliation Report*. Neither
 consumes an ARR number.
 
-**Next allocatable ARR: `ARR-0014`.**
+**Next allocatable ARR: `ARR-0015`.**
 
 ## 8. ER — Execution Reports
 
@@ -224,9 +227,10 @@ consumes an ARR number.
 | **ER-0046** | **ALLOCATED** | **Windows MSVC Prerequisite Remediation and Slice-1 Bootstrap Report** (authority PBA-0041; 2026-08-13) |
 | **ER-0047** | **ALLOCATED** | **Slice-1 Phase 1 Authorization Preparation Report** (authority PBA-0042; 2026-08-13) |
 | **ER-0048** | **ALLOCATED** | **Slice-1 Phase 1 Execution Report** — core model and opaque domains (authority PBA-0042; 2026-08-13) |
-| ER-0049 and above | AVAILABLE-FUTURE | — |
+| **ER-0049** | **ALLOCATED** | **Phase-1 Representability Remediation Execution Report** (authority PBA-0044; 2026-08-13; closes ARR-0014 MAJOR-1, MINOR-1, MINOR-3 and OBSERVATION-1; MINOR-2 dispositioned to the external boundary) |
+| ER-0050 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0049`.**
+**Next allocatable ER: `ER-0050`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -266,10 +270,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0042 | **PBA-0043** |
+| PBA | PBA-0044 | **PBA-0045** |
 | PBR | PBR-0013 | **PBR-0014** |
-| ARR | ARR-0013 | **ARR-0014** |
-| ER | ER-0048 | **ER-0049** |
+| ARR | ARR-0014 | **ARR-0015** |
+| ER | ER-0049 | **ER-0050** |
 | PBD | PBD-0005 | **PBD-0006** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -305,6 +309,8 @@ identifiers were allocated in the same period:
 | Slice-1 bootstrap (retry) | PBA-0041 | ER-0046 | Record PBA-0040 / ER-0045 and this cycle's own identifiers; MSVC prerequisite + Slice-1 bootstrap |
 | Phase 1 authorization | PBA-0042 | ER-0047 | Prepare the Slice-1 Phase 1 implementation authorization; record this cycle's own identifiers |
 | Phase 1 execution | PBA-0042 | ER-0048 | Execute Phase 1 — core model and opaque domains |
+| Phase 1 review | PBA-0043 | ARR-0014 | Read-only independent architecture review of Phase 1 (no ledger write; recorded by the cycle below, per §12(6)) |
+| Phase 1 representability remediation | PBA-0044 | ER-0049 | Record PBA-0043 / ARR-0014 and this cycle's own identifiers; make contract-defined malformed instances representable |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their

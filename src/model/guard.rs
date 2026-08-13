@@ -41,6 +41,41 @@ pub enum ComparisonOperator {
 }
 
 /// A single guard atom — Slice Contract §3.6.
+///
+/// The atom is a **grammar-level fragment**, not an admitted construct with
+/// declared properties of its own: §3 gives it no property table, and no
+/// mandatory check owns a missing operand. Its operands are therefore bare
+/// values rather than declaration states, and an incomplete atom is
+/// unrepresentable rather than defective.
+///
+/// # Evidence-vs-evidence comparison is a compile error
+///
+/// §3.6 requires the right operand to be a typed literal and lists
+/// "evidence-vs-evidence comparison" among its prohibited forms — a scope
+/// boundary that keeps guards inside the per-reference fragment, with no check
+/// assigned to it. A second reference has no type to inhabit here:
+///
+/// ```compile_fail
+/// use ordina::model::guard::{Atom, ComparisonOperator};
+/// use ordina::model::opaque::{LineageId, OpaqueValue};
+///
+/// let left = LineageId::new(OpaqueValue::new(1));
+/// let right = LineageId::new(OpaqueValue::new(2));
+///
+/// // The third argument is a `Literal`; a second evidence reference is rejected.
+/// let _ = Atom::new(left, ComparisonOperator::Greater, right);
+/// ```
+///
+/// The admitted shape — a reference compared against a typed literal — compiles:
+///
+/// ```
+/// use ordina::model::guard::{Atom, ComparisonOperator};
+/// use ordina::model::literal::Literal;
+/// use ordina::model::opaque::{LineageId, OpaqueValue};
+///
+/// let left = LineageId::new(OpaqueValue::new(1));
+/// let _ = Atom::new(left, ComparisonOperator::Greater, Literal::Boolean(true));
+/// ```
 #[derive(Debug, Clone)]
 pub struct Atom {
     /// Lineage identity of the declared evidence item this atom constrains.

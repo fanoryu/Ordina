@@ -22,6 +22,29 @@ use core::cmp::Ordering;
 /// total order. Comparing handles compares *the order the caller supplied*, not
 /// an encoding this implementation picked. Nothing else about the integer
 /// carries meaning.
+///
+/// # The integer is the representation of a supplied order, not an order this
+/// implementation chose
+///
+/// Stated explicitly, because the two are easy to confuse and only one of them
+/// is permitted: §3.3.1 requires the total order to **arrive with the input**,
+/// and ADR-0005 §7.5 prohibits deriving authoritative order from incidental
+/// representation. This type does neither of the prohibited things. The integer
+/// handle is the **caller's encoding of the contract-supplied order**, chosen by
+/// whoever produced the already-canonical input (§2), and the comparisons below
+/// read that encoding back. No ordering is invented, inferred, defaulted, or
+/// selected here.
+///
+/// Two consequences follow, and both are the contract's, not this module's.
+/// Callers supplying handles inconsistent with the supplied total order get
+/// comparisons that disagree with the contract — the input was not canonical, and
+/// no implementation could detect that, because the order is not otherwise
+/// available to compare against. And two conforming checkers agree because they
+/// receive the same order, never because they agree on a representation.
+///
+/// A different encoding of the same supplied order would be an equally
+/// conforming implementation choice. Nothing in the checker may read the integer
+/// for any purpose other than the comparisons below.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct OpaqueValue(u64);
 
@@ -41,6 +64,53 @@ impl OpaqueValue {
 }
 
 /// Stable rule/node lineage identity — ADR-0003 §9, Slice Contract §3.3.
+///
+/// # Cross-domain comparison is a compile error
+///
+/// ADR-0005 §7.5 requires the five opaque domains to be distinct newtypes "so
+/// values from unrelated domains cannot be compared or substituted
+/// accidentally". Each domain implements `PartialEq` and `Ord` against **itself
+/// only**, so mixing two domains has no implementation to select. Equality:
+///
+/// ```compile_fail
+/// use ordina::model::opaque::{DimensionSymbol, LineageId, OpaqueValue};
+///
+/// let lineage = LineageId::new(OpaqueValue::new(1));
+/// let dimension = DimensionSymbol::new(OpaqueValue::new(1));
+///
+/// let _ = lineage == dimension;
+/// ```
+///
+/// Ordering, which matters because §6.4 sorts by these domains:
+///
+/// ```compile_fail
+/// use ordina::model::opaque::{LineageId, OpaqueValue, PrecedenceOrdinal};
+///
+/// let lineage = LineageId::new(OpaqueValue::new(1));
+/// let precedence = PrecedenceOrdinal::new(OpaqueValue::new(2));
+///
+/// let _ = lineage < precedence;
+/// ```
+///
+/// And substitution, which is the same guarantee seen from the other side — a
+/// dimension symbol cannot be passed where a lineage identity is required:
+///
+/// ```compile_fail
+/// use ordina::model::opaque::{DimensionSymbol, LineageId, OpaqueValue};
+///
+/// fn takes_lineage(_: LineageId) {}
+///
+/// takes_lineage(DimensionSymbol::new(OpaqueValue::new(1)));
+/// ```
+///
+/// Comparison **within** one domain is exactly what is permitted, and it reads
+/// the contract-supplied order:
+///
+/// ```
+/// use ordina::model::opaque::{LineageId, OpaqueValue};
+///
+/// assert!(LineageId::new(OpaqueValue::new(1)) < LineageId::new(OpaqueValue::new(2)));
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct LineageId(OpaqueValue);
 
@@ -188,8 +258,9 @@ mod tests {
     #[test]
     fn domains_are_distinct_types() {
         // Cross-domain comparison is a *compile* error, so it cannot be
-        // asserted at runtime. Equality within each domain is what remains
-        // testable, and each domain keeps its own identity.
+        // asserted at runtime — the `compile_fail` doctests on `LineageId`
+        // cover it instead. Equality within each domain is what remains
+        // testable here, and each domain keeps its own identity.
         let dimension = DimensionSymbol::new(OpaqueValue::new(1));
         let enum_value = EnumValue::new(OpaqueValue::new(1));
 
