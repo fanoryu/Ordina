@@ -1,9 +1,12 @@
 # RFC-0002: Slice-1 Implementation Language, Toolchain, and Test Tooling
 
-- **Status:** PROPOSED — PRODUCT BOARD REVIEW REQUIRED
+- **Status:** ACCEPTED
 - **Created:** 2026-08-13
-- **Authorizing artifact:** PBA-0032
+- **Decision date:** 2026-08-13
+- **Accepted by:** Product Board, PBR-0012
+- **Authorizing artifact:** PBA-0032 (authoring); PBA-0034 (acceptance)
 - **Analysis basis:** ER-0039 (Slice-1 Implementation Stack Recommendation)
+- **Review:** ARR-0011 (PASS — READY FOR PRODUCT BOARD ACCEPTANCE)
 - **Governed by:** Product Constitution v1.0 — ACTIVE — RATIFIED
 - **Conforms to:** RFC-0001 (ACCEPTED), ADR-0002 (ACCEPTED), ADR-0003 (ACCEPTED),
   ADR-0004 (ACCEPTED), First Runnable Slice Contract (ACCEPTED)
@@ -456,6 +459,73 @@ immutable** — the ADR realizes that contract, it does not modify it.
 
 ---
 
-> **Status:** PROPOSED — PRODUCT BOARD REVIEW REQUIRED. This document is not
-> normative until the Product Board accepts it, and even then the architecture
-> decision is recorded by ADR-0005, not here.
+## 16. Product Board Acceptance Record
+
+Accepted by the Product Board via **PBR-0012**, decision date **2026-08-13**,
+following ARR-0011 (PASS — READY FOR PRODUCT BOARD ACCEPTANCE). Acceptance
+records the decision only and changed no substantive proposal text.
+
+**What acceptance means.** The Board approves this proposal as the basis for
+proceeding to an architecture decision on the Slice-1 implementation stack:
+Rust; official stable toolchain; exact pin **1.97.1**; Edition 2024; `cargo test`;
+`num-bigint` and `num-rational` as the only production dependencies; `proptest`
+optional and dev-only; `Cargo.lock` committed; Slice 1 a pure, I/O-free library.
+
+**What acceptance does not mean.** This is **not** the final architecture
+decision. **ADR-0005 — Slice-1 Implementation Language and Toolchain** remains the
+decision vehicle. Acceptance authorizes **no** project bootstrap, `Cargo.toml`,
+`Cargo.lock`, `rust-toolchain.toml`, dependency installation, `src/` or `tests/`
+directory, test, or line of Rust. Those remain gated on ADR-0005 acceptance and a
+subsequent implementation authorization.
+
+### 16.1 Mandatory ADR-0005 inputs carried forward from ARR-0011
+
+These are recorded here as **binding inputs to ADR-0005**, not as amendments to the
+proposal above:
+
+1. **Dependency feature policy (ARR-0011 MINOR-1).** ADR-0005 must explicitly
+   prohibit enabling the **`serde`**, **`rand`**, **`rand_core`**, **`quickcheck`**,
+   and **`arbitrary`** features of the Slice-1 numeric dependencies unless
+   separately authorized by a future decision. None is enabled by default today;
+   the prohibition must rest on a stated rule rather than on upstream defaults
+   remaining unchanged. The purpose is to prevent **deferred serialization** and
+   **prohibited randomness** from entering Slice 1 through optional features.
+2. **Float-ban enforcement (ARR-0011 MINOR-2).** ADR-0005 must distinguish policy
+   from enforcement: authoritative Slice-1 semantic logic must not use `f32` or
+   `f64`; `clippy::float_arithmetic` is **lint** enforcement, not Rust type-system
+   enforcement; the implementation verification routine **must include
+   `cargo clippy`**; and **`cargo test` alone is not sufficient** to enforce this
+   policy.
+3. **Representation width (ARR-0011 OBSERVATION-1).** `BigRational` is an
+   implementation representation **wider than the accepted literal domain**. Its use
+   must not make arbitrary non-decimal rational literals admissible. The **accepted
+   First Runnable Slice Contract remains authoritative**.
+
+### 16.2 Team-fluency disposition
+
+The Board records that the primary implementer is willing to learn Rust during
+implementation, and accepts the learning curve as an implementation cost for
+Slice 1. This **waives no correctness requirement** and does not weaken the accepted
+conformance contract. Implementation is to remain **incremental and test-led**, and
+**no `unsafe` Rust is authorized or required** for Slice 1.
+
+### 16.3 Preserved boundaries
+
+Acceptance **does not resolve Q-06**, which **remains OPEN**, and selects no
+platform, framework, UI technology, persistence, database, serialization format,
+parser, schema language, deployment target or provider, broker or market-data
+integration, evaluator implementation, hash or digest algorithm, CI/CD platform, or
+release packaging model. **Q-08, N-22, N-24, N-25, and F-8 also remain
+OPEN/deferred.** Rust is **not** established as the language for future Ordina
+components.
+
+Acceptance amends nothing: the Product Constitution, RFC-0001, ADR-0001 through
+ADR-0004, the First Runnable Slice Contract, and the canonical product registers are
+unchanged. **The Slice Contract remains authoritative for behaviour**; this RFC
+provides the accepted proposal and rationale.
+
+---
+
+> This RFC is now **ACCEPTED**. Its substantive proposal text is a settled record —
+> future material change requires a superseding artifact, never a silent rewrite.
+> The architecture decision itself is recorded by **ADR-0005**, not here.
