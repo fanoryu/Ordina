@@ -1,9 +1,10 @@
 # Slice-1 Implementation Plan
 
 - **Tier:** 3 (engineering)
-- **Status:** ACTIVE — Phase 0 complete, **Phase 1 CLOSED**, Phases 2–8 not
-  started and **not authorized**
-- **Authority:** PBA-0040 / PBA-0041; Phase-1 closure under PBA-0048
+- **Status:** ACTIVE — Phase 0 complete, **Phase 1 CLOSED**, **Phase 2A CLOSED**;
+  Phase 2B and Phases 3–8 not started and **not authorized**
+- **Authority:** PBA-0040 / PBA-0041; Phase-1 closure under PBA-0048; Phase-2A
+  closure under PBA-0054
 - **Realizes:** First Runnable Slice Contract (ACCEPTED, PBR-0011) under ADR-0005
   (ACCEPTED, PBR-0013)
 - **Created:** 2026-08-13
@@ -134,7 +135,7 @@ ARR-0016 (PBA-0047) → closure ER-0051 (PBA-0048).
 | **O-2** | Check 13A's prohibited-operator defect population is structurally constrained as reviewed; its non-`NUMERIC`-leaf population remains representable, so the check is not vacuous. | **BOARD-NOTED — non-blocking.** Check 13A is not implemented. |
 | **O-3** | Check 5's structural guarantee is narrower than some source prose implies; a real representable population remains through lineage resolution. | **BOARD-NOTED — non-blocking.** The accepted Slice Contract is not amended. |
 
-## Phase 2 — Exact numeric representation
+## Phase 2 — Exact numeric representation (2A ✅ CLOSED · 2B not authorized)
 
 | | |
 |---|---|
@@ -148,6 +149,79 @@ ARR-0016 (PBA-0047) → closure ER-0051 (PBA-0048).
 **§7.3** — `BigRational` is wider than the contract's admissible literal domain.
 Representation capability must not become semantic admissibility: only values the
 contract admits are accepted.
+
+### Phase 2 was split into 2A and 2B
+
+ER-0052 found that this phase's two halves have different prerequisites. The
+value layer (§4.2) depends on nothing unsettled; the dimension-aware layer
+(§4.3, §4.4, §4.6) is gated on two open questions — **F-1**, which module hosts
+it, and **F-3**, how the distinguished `DIMENSIONLESS` symbol is bound given
+that dimension symbols are opaque and caller-supplied. The phase was therefore
+split so the unblocked half could proceed.
+
+| Sub-phase | Scope | Status |
+|---|---|---|
+| **2A** | §4.2 — the exact numeric value layer, dimension-free | **CLOSED** |
+| **2B** | §4.3, §4.4, §4.6 — dimension-aware semantics | **not started, not authorized**; gated on F-1 and F-3 |
+
+### Closure record — Phase 2A is CLOSED
+
+**Closed 2026-08-14** by Product Board authorization **PBA-0054**, reported in
+**ER-0055**, at baseline `25d17de`.
+
+**Basis.** Closure rests on **ARR-0018** — Phase-2A Final Closure Verification,
+authorized by PBA-0053 — which returned `PASS — PHASE 2A READY FOR CLOSURE`
+against all nineteen of its closure criteria.
+
+The Phase-2A cycle in full: implementation ER-0053 (PBA-0050) → review ARR-0017
+(PBA-0051), which found no semantic failure but required M-1 structural
+regression evidence → remediation ER-0054 (PBA-0052), which added that evidence
+with no runtime semantic change → final verification ARR-0018 (PBA-0053) →
+closure ER-0055 (PBA-0054).
+
+**A limitation the record must not obscure.** ARR-0018 disclosed that the same
+agent participated in implementing, remediating and reviewing Phase 2A. The
+review was independent in **method** — the diff was read unfiltered, the public
+API enumerated from source, and the structural boundaries confirmed by compiling
+probes outside the test harness — but **not in authorship**. This closure is
+recorded on that basis and is not represented as organizationally independent
+review.
+
+**What was closed.** The bounded Phase-2A scope, and nothing beyond it:
+`ExactNumber`; exact decimal-rational construction; arbitrary-precision
+representation; exact mathematical equality; deterministic exact mathematical
+value ordering; exact `add`, `subtract` and `multiply`; structural exclusion of
+arbitrary-ratio construction; encapsulation of the internal `BigRational`;
+structural absence of division; float exclusion; the `unsafe` prohibition;
+purity and determinism; the dependency and feature boundaries; and the Phase-2A
+regression and compile-fail evidence.
+
+**Final finding dispositions.**
+
+| Ref | Disposition | Basis |
+|---|---|---|
+| **ARR-0017 M-1** | **CLOSED** | ER-0054 added dependency-free executable compile-fail evidence that arbitrary-ratio construction, internal-representation access, and division all remain unavailable. ARR-0018 verified each boundary independently and confirmed no runtime semantic change. |
+| **ER-0052 F-2** | **CLOSED** | Every publicly constructible authoritative numeric value remains within the accepted exact-decimal-rational domain: arbitrary-ratio construction unavailable, representation private, division absent, admitted arithmetic closed under `+`, `−`, `×`. |
+| **ER-0052 F-4** | **CLOSED** | `ExactNumber` provides exact deterministic dimension-free value ordering, while dimension-aware semantic comparison remains absent and structurally separate — the type carries no dimension, so §4.4 comparison cannot be reached through it. |
+
+**What closure does not mean.** Slice 1 is **not** complete. Phase 2B has not
+begun and is **not** authorized by this closure — it requires its own Product
+Board authorization, and the F-1 and F-3 gating questions must be resolved
+first. No mandatory Well-Formedness check, defect, verdict, prerequisite gating
+or canonical ordering exists. No deferred decision is resolved: Q-06, Q-08,
+N-22, N-24, N-25 and F-8 all remain **OPEN**.
+
+**Carried observations — not resolved by this closure.**
+
+| Ref | Observation | Status |
+|---|---|---|
+| **F-1** | Which module hosts the dimension-aware §4.3/§4.4/§4.6 semantics — `numeric` or `semantics` — is unsettled. | **OPEN — gates Phase 2B.** |
+| **F-3** | The distinguished `DIMENSIONLESS` symbol has no binding, and one must not be invented: dimension symbols are opaque with no encoding selected (§3.3.1). | **OPEN — gates Phase 2B.** |
+| **B-4** | `Literal` has no `PartialEq`, `Eq`, `PartialOrd` or `Ord`. That absence is **protective**: it is what prevents `ExactNumber`'s value equality from silently becoming §4.3 equality that ignores the identical-dimension requirement. | **CARRIED.** Preserve deliberately; §4.3 equality must be built as an explicit dimension-aware operation. |
+| **B-5** | `ExactNumber::from_integer(i64)` remains, retained because six `src/model/**` call sites depend on it and that tree was outside the Phase-2A authorization. It does **not** limit the authoritative domain — `from_decimal` is public and unbounded. | **CARRIED.** No migration authorized. |
+| **O-1** | `EvidenceDeclaration.declared_values` has sequence-sensitive derived equality although §3.5 describes a set. Phase 2A never consumed it. | **DEFERRED — settle before check 6.** |
+| **O-2** | Check 13A's prohibited-operator population is structurally empty; its non-`NUMERIC`-leaf population remains representable. | **BOARD-NOTED — non-blocking.** |
+| **O-3** | Check 5's structural guarantee is narrower than some source prose implies; a real population remains through lineage resolution. | **BOARD-NOTED — non-blocking.** |
 
 ## Phase 3 — Guard and constraint-domain semantics
 
