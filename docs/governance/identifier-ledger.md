@@ -106,7 +106,9 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0028** | **ALLOCATED** | **Git Baseline & Private GitHub Repository Authorization Readiness** → ER-0036 (2026-08-13) |
 | **PBA-0029** | **ALLOCATED** | **Git Baseline & Private GitHub Repository Execution Authorization** → ER-0037 (2026-08-13) |
 | **PBA-0030** | **ALLOCATED** | **Post-Baseline Repository Hygiene authorization** → ER-0038 (2026-08-13) |
-| PBA-0031 and above | AVAILABLE-FUTURE | — |
+| **PBA-0031** | **ALLOCATED** | **Slice-1 Implementation Stack Decision authorization** → ER-0039 (2026-08-13) |
+| **PBA-0032** | **ALLOCATED** | **RFC-0002 Slice-1 Implementation Stack Authoring authorization** → ER-0040 (2026-08-13) |
+| PBA-0033 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -120,7 +122,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0031`.**
+**Next allocatable PBA: `PBA-0033`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -197,9 +199,11 @@ consumes an ARR number.
 | **ER-0036** | **ALLOCATED** | **Git Baseline & Private GitHub Repository Readiness Report** (authority PBA-0028; 2026-08-13; verdict PASS — PRIVATE GITHUB BASELINE CREATION MAY BE AUTHORIZED) |
 | **ER-0037** | **ALLOCATED** | **Ordina Git & Private GitHub Baseline Establishment Report** (authority PBA-0029; 2026-08-13) |
 | **ER-0038** | **ALLOCATED** | **Post-Baseline Repository Hygiene Report** (authority PBA-0030; 2026-08-13) |
-| ER-0039 and above | AVAILABLE-FUTURE | — |
+| **ER-0039** | **ALLOCATED** | **Slice-1 Implementation Stack Recommendation** (authority PBA-0031; 2026-08-13; read-only analysis, no repository change) |
+| **ER-0040** | **ALLOCATED** | **RFC-0002 Slice-1 Implementation Stack Authoring Report** (authority PBA-0032; 2026-08-13) |
+| ER-0041 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0039`.**
+**Next allocatable ER: `ER-0041`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -239,10 +243,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0030 | **PBA-0031** |
+| PBA | PBA-0032 | **PBA-0033** |
 | PBR | PBR-0011 | **PBR-0012** |
 | ARR | ARR-0010 | **ARR-0011** |
-| ER | ER-0038 | **ER-0039** |
+| ER | ER-0040 | **ER-0041** |
 | PBD | PBD-0005 | **PBD-0006** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -265,6 +269,8 @@ identifiers were allocated in the same period:
 | Git baseline readiness | PBA-0028 | ER-0036 | Read-only pre-Git readiness review (no ledger write; recorded by the cycle below, per §12(6)) |
 | **Git baseline establishment** | **PBA-0029** | **ER-0037** | Record PBA-0028 / ER-0036 and this cycle's own identifiers; establish the Git and private GitHub baseline |
 | Post-baseline hygiene | PBA-0030 | ER-0038 | Correct §11.1 narrative drift; establish the repository line-ending policy |
+| Slice-1 stack analysis | PBA-0031 | ER-0039 | Read-only stack recommendation (no ledger write; recorded by the cycle below, per §12(6)) |
+| RFC-0002 authoring | PBA-0032 | ER-0040 | Record PBA-0031 / ER-0039 and this cycle's own identifiers; author RFC-0002 |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their
