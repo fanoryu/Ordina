@@ -1,0 +1,10 @@
+# Slice-1 toolchain pin — ADR-0005 §5 (ACCEPTED, PBR-0013).
+#
+# An exact pin, never a floating channel: a compiler that changes underneath the
+# First Runnable Slice Contract would undermine conformance obligation 8.
+# rustup honours this file automatically, so every contributor and machine
+# resolves the identical toolchain.
+
+[toolchain]
+channel = "1.97.1"
+components = ["rustfmt", "clippy"]

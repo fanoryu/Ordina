@@ -33,3 +33,6 @@ scratch/
 *.sqlite3
 *.db
 data/
+
+# Rust build output
+/target/

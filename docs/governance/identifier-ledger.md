@@ -115,7 +115,9 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0037** | **ALLOCATED** | **ADR-0005 Final Bounded Remediation authorization** → ER-0043 (2026-08-13) |
 | **PBA-0038** | **ALLOCATED** | **ADR-0005 Final Remediation Verification authorization** → ARR-0013 (2026-08-13) |
 | **PBA-0039** | **ALLOCATED** | **ADR-0005 Acceptance authorization** → ER-0044 (2026-08-13) |
-| PBA-0040 and above | AVAILABLE-FUTURE | — |
+| **PBA-0040** | **ALLOCATED** | **Slice-1 Rust Bootstrap and Implementation-Plan authorization** → ER-0045 (2026-08-13) |
+| **PBA-0041** | **ALLOCATED** | **Windows MSVC Prerequisite Remediation and Slice-1 Bootstrap Retry authorization** → ER-0046 (2026-08-13) |
+| PBA-0042 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -129,7 +131,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0040`.**
+**Next allocatable PBA: `PBA-0042`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -217,9 +219,11 @@ consumes an ARR number.
 | **ER-0042** | **ALLOCATED** | **ADR-0005 Authoring Report** (authority PBA-0035; 2026-08-13) |
 | **ER-0043** | **ALLOCATED** | **ADR-0005 Final Bounded Remediation Report** (authority PBA-0037; 2026-08-13) |
 | **ER-0044** | **ALLOCATED** | **ADR-0005 Acceptance Report** (authority PBA-0039; 2026-08-13) |
-| ER-0045 and above | AVAILABLE-FUTURE | — |
+| **ER-0045** | **ALLOCATED** | **Slice-1 Rust Bootstrap and Implementation Plan Report** (authority PBA-0040; 2026-08-13; halted at preflight — missing MSVC linker; no repository change) |
+| **ER-0046** | **ALLOCATED** | **Windows MSVC Prerequisite Remediation and Slice-1 Bootstrap Report** (authority PBA-0041; 2026-08-13) |
+| ER-0047 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0045`.**
+**Next allocatable ER: `ER-0047`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -259,10 +263,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0039 | **PBA-0040** |
+| PBA | PBA-0041 | **PBA-0042** |
 | PBR | PBR-0013 | **PBR-0014** |
 | ARR | ARR-0013 | **ARR-0014** |
-| ER | ER-0044 | **ER-0045** |
+| ER | ER-0046 | **ER-0047** |
 | PBD | PBD-0005 | **PBD-0006** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -294,6 +298,8 @@ identifiers were allocated in the same period:
 | ADR-0005 remediation | PBA-0037 | ER-0043 | Record PBA-0036 / ARR-0012 and this cycle's own identifiers; close ARR-0012 findings |
 | ADR-0005 verification | PBA-0038 | ARR-0013 | Read-only final verification (no ledger write; recorded by the cycle below, per §12(6)) |
 | ADR-0005 acceptance | PBA-0039 | ER-0044 | Record PBA-0038 / ARR-0013, PBR-0013, and this cycle's own identifiers; accept ADR-0005 |
+| Slice-1 bootstrap (halted) | PBA-0040 | ER-0045 | Halted at preflight — no MSVC linker; no ledger write, recorded by the cycle below |
+| Slice-1 bootstrap (retry) | PBA-0041 | ER-0046 | Record PBA-0040 / ER-0045 and this cycle's own identifiers; MSVC prerequisite + Slice-1 bootstrap |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their

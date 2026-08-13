@@ -1,0 +1,32 @@
+# Slice-1 manifest — realizes ADR-0005 (ACCEPTED, PBR-0013).
+#
+# Library crate only. No binary, no framework, no async runtime, no network,
+# no database, no serialization, no logging or CLI framework.
+
+[package]
+name = "ordina"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.97.1"
+publish = false
+
+# Production dependencies — ADR-0005 §6.2 approves these two and no others.
+#
+# Version note (bootstrap resolution): num-rational 0.4.x requires
+# num-bigint ^0.4, so num-bigint is pinned to the 0.4 series deliberately.
+# Taking num-bigint 0.5 would place two incompatible BigInt types in the graph
+# and BigRational would not interoperate with them.
+#
+# Features are stated explicitly rather than inherited: ADR-0005 §6.4 requires
+# the prohibition on `serde`, `rand`, `rand_core`, `quickcheck` and `arbitrary`
+# to rest on this decision, not on upstream defaults staying as they are.
+[dependencies]
+num-bigint = { version = "0.4.8", default-features = false, features = ["std"] }
+num-rational = { version = "0.4.2", default-features = false, features = [
+    "std",
+    "num-bigint-std",
+] }
+
+# proptest is deferred at bootstrap — permitted by PBA-0041 §11. Phase 0 needs
+# no property tests, and deferring keeps the dev graph free of randomness
+# crates until the first property-test slice actually requires them.
