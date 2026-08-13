@@ -111,7 +111,9 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0033** | **ALLOCATED** | **RFC-0002 Product Board Review authorization** → ARR-0011 (2026-08-13) |
 | **PBA-0034** | **ALLOCATED** | **RFC-0002 Acceptance authorization** → ER-0041 (2026-08-13) |
 | **PBA-0035** | **ALLOCATED** | **ADR-0005 Authoring authorization** → ER-0042 (2026-08-13) |
-| PBA-0036 and above | AVAILABLE-FUTURE | — |
+| **PBA-0036** | **ALLOCATED** | **ADR-0005 Independent Architecture Review authorization** → ARR-0012 (2026-08-13) |
+| **PBA-0037** | **ALLOCATED** | **ADR-0005 Final Bounded Remediation authorization** → ER-0043 (2026-08-13) |
+| PBA-0038 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -125,7 +127,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0036`.**
+**Next allocatable PBA: `PBA-0038`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -169,14 +171,15 @@ engineering substance untouched. Only the governance identifier is corrected.
 | ARR-0009 | ALLOCATED | Slice Contract final closure review (FAIL — F-1 + §6.3 clerical) |
 | **ARR-0010** | **ALLOCATED** | **Pre-Git Governance Integrity Final Review** (authority PBA-0025; 2026-08-13; verdict PASS — PRE-GIT INTEGRITY CLOSED) |
 | **ARR-0011** | **ALLOCATED** | **RFC-0002 Product Board Review** (authority PBA-0033; 2026-08-13; verdict PASS — READY FOR PRODUCT BOARD ACCEPTANCE) |
-| ARR-0012 and above | AVAILABLE-FUTURE | — |
+| **ARR-0012** | **ALLOCATED** | **ADR-0005 Independent Architecture Review** (authority PBA-0036; 2026-08-13; verdict PASS — READY FOR PRODUCT BOARD ACCEPTANCE) |
+| ARR-0013 and above | AVAILABLE-FUTURE | — |
 
 Two review reports were issued under **temporary, deliberately unnumbered**
 identifiers by Board instruction: the *Pre-Git Governance & Repository Integrity
 Audit* and the *Governance Identifier Collision Reconciliation Report*. Neither
 consumes an ARR number.
 
-**Next allocatable ARR: `ARR-0012`.**
+**Next allocatable ARR: `ARR-0013`.**
 
 ## 8. ER — Execution Reports
 
@@ -208,9 +211,10 @@ consumes an ARR number.
 | **ER-0040** | **ALLOCATED** | **RFC-0002 Slice-1 Implementation Stack Authoring Report** (authority PBA-0032; 2026-08-13) |
 | **ER-0041** | **ALLOCATED** | **RFC-0002 Acceptance Report** (authority PBA-0034; 2026-08-13) |
 | **ER-0042** | **ALLOCATED** | **ADR-0005 Authoring Report** (authority PBA-0035; 2026-08-13) |
-| ER-0043 and above | AVAILABLE-FUTURE | — |
+| **ER-0043** | **ALLOCATED** | **ADR-0005 Final Bounded Remediation Report** (authority PBA-0037; 2026-08-13) |
+| ER-0044 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0043`.**
+**Next allocatable ER: `ER-0044`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -250,10 +254,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0035 | **PBA-0036** |
+| PBA | PBA-0037 | **PBA-0038** |
 | PBR | PBR-0012 | **PBR-0013** |
-| ARR | ARR-0011 | **ARR-0012** |
-| ER | ER-0042 | **ER-0043** |
+| ARR | ARR-0012 | **ARR-0013** |
+| ER | ER-0043 | **ER-0044** |
 | PBD | PBD-0005 | **PBD-0006** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -281,6 +285,8 @@ identifiers were allocated in the same period:
 | RFC-0002 review | PBA-0033 | ARR-0011 | Read-only Board review (no ledger write; recorded by the cycle below, per §12(6)) |
 | RFC-0002 acceptance | PBA-0034 | ER-0041 | Record PBA-0033 / ARR-0011, PBR-0012, and this cycle's own identifiers; accept RFC-0002 |
 | ADR-0005 authoring | PBA-0035 | ER-0042 | Author ADR-0005 (PROPOSED); record this cycle's own identifiers |
+| ADR-0005 review | PBA-0036 | ARR-0012 | Read-only architecture review (no ledger write; recorded by the cycle below, per §12(6)) |
+| ADR-0005 remediation | PBA-0037 | ER-0043 | Record PBA-0036 / ARR-0012 and this cycle's own identifiers; close ARR-0012 findings |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their

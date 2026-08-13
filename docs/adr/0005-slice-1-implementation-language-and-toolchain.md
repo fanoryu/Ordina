@@ -188,18 +188,38 @@ Authoritative Slice-1 semantic logic must not use `f32`, `f64`, floating-point
 rounding, implicit tolerance, epsilon comparison, or lossy numeric conversion.
 Comparison is exact.
 
-### 7.2 Float enforcement — policy versus enforcement
+### 7.2 Float exclusion — structural control, with lint as defense in depth
 
-Stated precisely, because overstating it would be misleading:
+**The primary control is structural type design:**
 
-- The **architecture policy** prohibits `f32`/`f64` on authoritative semantic
-  paths.
+> **No authoritative Slice-1 semantic type or field may be `f32` or `f64`;
+> floating-point values are unreachable by construction on the authoritative
+> checker path.**
+
+Because the authoritative numeric representation is fixed by §6.1 and the accepted
+contract's admitted constructs contain no floating-point form, a float has no
+type to inhabit on the authoritative path. Exclusion is therefore a property of the
+type design, not of a check that must remember to run.
+
+Lint enforcement is **defense in depth on top of that**, and its limits are stated
+precisely because overstating them would be misleading:
+
 - **Rust's type system does not itself forbid floating point.** No language
-  mechanism removes `f32`/`f64` from availability.
+  mechanism removes `f32`/`f64` from availability — which is exactly why the
+  structural rule above, not the language, is the primary control.
 - **`clippy::float_arithmetic` provides lint enforcement**, denied at crate level.
+  **`clippy::float_cmp` may additionally be denied**; if adopted it is likewise
+  defense in depth and **does not replace** the structural prohibition.
+- Lint coverage is **partial** — `float_arithmetic` catches arithmetic, not a
+  float-typed field that is merely stored or compared, nor a cast. This is why it
+  is a second layer rather than the first.
 - **Lint enforcement requires `cargo clippy` to actually run.**
 - The defined Slice-1 verification routine therefore **includes `cargo clippy`**.
 - **`cargo test` alone does not establish compliance** with the float policy.
+
+This introduces no new semantic rule: §7.1's prohibition and §6.1's representation
+are unchanged, and the accepted Slice Contract remains authoritative for numeric
+semantics.
 
 ### 7.3 `BigRational` domain boundary
 
@@ -219,9 +239,20 @@ implementations.
 
 The contract's finite categories are represented as **closed Rust enums** or
 equivalent statically closed representations. Authoritative matching over such
-categories is **exhaustive**. **Catch-all `_` arms must not be used** where doing so
-could conceal a newly introduced authoritative category — adding a category must
-break the build, not pass silently.
+categories is **exhaustive**.
+
+> **Catch-all `_` arms are prohibited unconditionally when matching one of the
+> contract's closed authoritative categories.**
+
+The purpose is that **adding a new authoritative category must cause every
+incomplete authoritative match to fail visibly at build time**, rather than be
+silently absorbed by a wildcard. The prohibition is unconditional for those
+categories precisely so that it requires no judgement call about whether a given
+wildcard "might" conceal something.
+
+This rule is **scoped to authoritative matching over the contract's closed
+categories**. It does not prohibit `_` in unrelated non-authoritative Rust code,
+where a wildcard carries no risk of absorbing a semantic category.
 
 ### 7.5 Opaque domains
 
@@ -232,8 +263,22 @@ domains cannot be compared or substituted accidentally.
 
 The implementation uses the **contract-supplied total orders** (§3.3.1) and must
 **not** derive authoritative semantic ordering from incidental Rust representation
-— not from derived trait order over an internal encoding, not from declaration
-order, not from any host-language convention.
+— not from declaration order, and not from any host-language convention.
+
+**`#[derive(Ord)]` on an opaque-domain newtype is the paradigm case of what is
+prohibited.** Deriving `Ord` yields the lexicographic or structural order of
+whatever the newtype happens to wrap — a byte string, an integer encoding — which
+is an **incidental representation order**, not the order the contract supplies. It
+must never define the authoritative order of an opaque semantic domain.
+
+`Ord` is **not** prohibited as an implementation trait. A hand-written `Ord`
+implementation that faithfully delegates to, or represents, the contract-supplied
+order is permitted and expected — that is how the supplied order is made usable by
+ordinary Rust containers and sorts. **The prohibition concerns deriving semantic
+authority from incidental representation**, not the use of the trait itself. The
+authoritative order continues to come **exclusively** from the total order supplied
+with the accepted Slice Contract input, and never from anything the implementation
+chooses.
 
 ### 7.6 Collection determinism
 
@@ -276,6 +321,38 @@ implementation convenience, a Rust idiom, a crate behaviour, or a compiler
 behaviour **must not silently become a second semantic specification**. Where
 something desirable is not derivable from the contract, it is an open question for
 the Product Board, not a test.
+
+### 8.1 Randomness boundary — `proptest` versus the §6.4 prohibition
+
+`proptest` generates test cases using randomness, and its own dependency graph
+therefore includes randomness crates. That is **not** in tension with §6.4's
+prohibition, and the boundary is stated here so no later reader has to infer it:
+
+1. **Randomness is prohibited from the authoritative checker path** (§7.7; Slice
+   Contract §1.1, §3.2).
+2. **Production dependencies must not introduce or rely on randomness.** §6.4's
+   prohibition on the `rand` and `rand_core` features of `num-bigint` and
+   `num-rational` is unchanged.
+3. **`proptest` may use randomness solely inside dev/test execution** — to choose
+   which inputs to try.
+4. **Such dev/test randomness must not participate in, seed, influence, or become
+   an input to an authoritative checker result.** The checker is invoked on
+   concrete constructed inputs and behaves deterministically for each; the
+   generator selects *which* inputs are exercised, never *what the checker
+   computes*.
+5. **`proptest` remains dev-only and must never become a production dependency.**
+6. **Adopting `proptest` authorizes randomness nowhere else** — not in the
+   authoritative path, not in production dependencies, not in any feature enabled
+   on them.
+7. **Optional `proptest` features that introduce filesystem or process facilities
+   — including `tempfile` and `rusty-fork` — are not enabled for Slice 1** unless
+   separately authorized, consistent with §7.7's exclusion of filesystem and
+   process-global state.
+
+The §6.4 prohibitions on enabling `serde`, `rand`, `rand_core`, `quickcheck`, and
+`arbitrary` through the Slice-1 numeric production dependencies remain in force
+exactly as written. This clause scopes an existing prohibition; it establishes no
+general dependency or supply-chain policy.
 
 ## 9. Q-06 Severability
 
