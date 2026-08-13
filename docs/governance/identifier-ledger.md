@@ -130,7 +130,9 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0052** | **ALLOCATED** | **Slice-1 Phase-2A M-1 Structural Regression-Evidence Remediation authorization** → ER-0054 (2026-08-14) |
 | **PBA-0053** | **ALLOCATED** | **Slice-1 Phase-2A Final Closure Verification authorization** → ARR-0018 (2026-08-14) |
 | **PBA-0054** | **ALLOCATED** | **Slice-1 Phase-2A Formal Closure Recording authorization** → ER-0055 (2026-08-14) |
-| PBA-0055 and above | AVAILABLE-FUTURE | — |
+| **PBA-0055** | **ALLOCATED** | **Slice-1 Phase-2B Gating Decisions authorization** → ER-0056 (2026-08-14) |
+| **PBA-0056** | **ALLOCATED** | **Slice-1 Distinguished Opaque-Domain Member Binding Decision authorization** → ER-0057 (2026-08-14) |
+| PBA-0057 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -144,7 +146,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0055`.**
+**Next allocatable PBA: `PBA-0057`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -248,9 +250,11 @@ consumes an ARR number.
 | **ER-0053** | **ALLOCATED** | **Slice-1 Phase-2A Exact Numeric Value Layer Implementation Report** (authority PBA-0050; 2026-08-13; closes ER-0052 F-2 and F-4; F-1 and F-3 remain open for Phase 2B) |
 | **ER-0054** | **ALLOCATED** | **Slice-1 Phase-2A M-1 Structural Regression-Evidence Remediation Report** (authority PBA-0052; 2026-08-14; closes ARR-0017 M-1) |
 | **ER-0055** | **ALLOCATED** | **Slice-1 Phase-2A Formal Closure Report** (authority PBA-0054; 2026-08-14; records PHASE 2A CLOSED on the basis of ARR-0018) |
-| ER-0056 and above | AVAILABLE-FUTURE | — |
+| **ER-0056** | **ALLOCATED** | **Slice-1 Phase-2B Gating Decisions (F-3 STOP)** (authority PBA-0055; 2026-08-14; read-only — F-1/B-4/B-5 determined, F-3 blocked; no repository write) |
+| **ER-0057** | **ALLOCATED** | **Slice-1 Distinguished Opaque-Domain Member Binding Decision Report** (authority PBA-0056; 2026-08-14; records F-1/B-4/B-5; F-3 ruling PROPOSED, not normative — Phase 2B remains blocked) |
+| ER-0058 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0056`.**
+**Next allocatable ER: `ER-0058`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -290,10 +294,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0054 | **PBA-0055** |
+| PBA | PBA-0056 | **PBA-0057** |
 | PBR | PBR-0013 | **PBR-0014** |
 | ARR | ARR-0018 | **ARR-0019** |
-| ER | ER-0055 | **ER-0056** |
+| ER | ER-0057 | **ER-0058** |
 | PBD | PBD-0005 | **PBD-0006** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -341,6 +345,8 @@ identifiers were allocated in the same period:
 | Phase 2A M-1 remediation | PBA-0052 | ER-0054 | Record PBA-0051 / ARR-0017 and this cycle's own identifiers; add compile-fail regression evidence for the Phase-2A structural boundaries |
 | Phase 2A closure verification | PBA-0053 | ARR-0018 | Read-only final closure verification (no ledger write; recorded by the cycle below, per §12(6)) |
 | **Phase 2A formal closure** | **PBA-0054** | **ER-0055** | Record PBA-0053 / ARR-0018 and this cycle's own identifiers; record **Phase 2A CLOSED** in the Slice-1 implementation plan. Governance-only write — no source, test, dependency or toolchain change. Terminates under §12(7). |
+| Phase 2B gating analysis | PBA-0055 | ER-0056 | Read-only; STOPPED on F-3 before any write (no ledger write; recorded by the cycle below, per §12(6)) |
+| Phase 2B gating decisions | PBA-0056 | ER-0057 | Record PBA-0055 / ER-0056 and this cycle's own identifiers; record F-1 / B-4 / B-5 and the blocked status of F-3 in the Slice-1 implementation plan. Governance-only write. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their

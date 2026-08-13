@@ -223,6 +223,120 @@ N-22, N-24, N-25 and F-8 all remain **OPEN**.
 | **O-2** | Check 13A's prohibited-operator population is structurally empty; its non-`NUMERIC`-leaf population remains representable. | **BOARD-NOTED — non-blocking.** |
 | **O-3** | Check 5's structural guarantee is narrower than some source prose implies; a real population remains through lineage resolution. | **BOARD-NOTED — non-blocking.** |
 
+### Phase-2B gating decisions
+
+Recorded under **PBA-0056** (ER-0057), continuing the analysis of ER-0056.
+Three of the four gating items are settled; the fourth is not, and Phase 2B
+stays blocked on it.
+
+| Item | Status |
+|---|---|
+| **F-1** — module placement | **RESOLVED** |
+| **F-3** — `DIMENSIONLESS` binding | **OPEN / BLOCKED** — needs a normative act this plan cannot perform |
+| **B-4** — `Literal` equality | **DISPOSITION RECORDED** |
+| **B-5** — `from_integer(i64)` | **DISPOSITION RECORDED** |
+
+> **Phase 2B remains BLOCKED.** F-1, B-4 and B-5 constrain *how* it will be
+> built; F-3 decides *whether* it can be built conformantly at all.
+
+#### F-1 — dimension-aware semantics belong in `semantics`
+
+The §4.3 / §4.4 / §4.6 operations go in `src/semantics/`, not `numeric` and not
+`model`.
+
+The reason is dependency direction, read from the live tree rather than
+preference. `numeric` imports nothing from the crate; five `model` files import
+`numeric`. The established direction is **`model → numeric`**, with `numeric` a
+leaf. Dimension-aware comparison needs `DimensionSymbol` and `Literal`, both in
+`model`, so placing it in `numeric` would close a module cycle — and two things
+would break: ADR-0005 §6.3's property that replacing the numeric representation
+"touches one module and no check logic" would become false, and `numeric` would
+stop being the narrow third-party isolation boundary §6.3 defines. `model` is
+equally wrong: it declares constructs, and these are semantics *over* declared
+constructs.
+
+`semantics` already owns semantic rules — Phase 3 is assigned to it — and exists
+empty, so no new module name is required. The resulting order is
+`semantics → model → numeric`, acyclic.
+
+Read this plan's Phase-2 **Modules** cell as naming the phase's *primary*
+module; §4.3/§4.4/§4.6 live in `semantics`.
+
+#### B-4 — `Literal` must not gain Rust's equality or ordering traits
+
+`Literal` must continue to derive and implement **no** `PartialEq`, `Eq`,
+`PartialOrd` or `Ord`. §4.3 equality arrives instead as a **named semantic
+operation** in `semantics`, returning a closed multi-state outcome matched
+exhaustively.
+
+`PartialEq` can never faithfully mean §4.3 equality, and the reason is decisive
+rather than stylistic: §4.3 says cross-dimension equality "is **not** `false` —
+it is a **type defect**", while `PartialEq::eq` returns `bool`. A faithful result
+needs at least *equal*, *not equal*, *dimension mismatch* and *type mismatch*, so
+implementing the trait would necessarily collapse a type defect into `false` —
+silently turning a check-2/check-14 defect into a passing comparison. That is the
+failure mode already remediated twice, at ARR-0014 MAJOR-1 and ARR-0015 M-1.
+
+Within the operation: numeric same-dimension equality delegates to Phase-2A's
+`ExactNumber` value equality; dimension mismatch and type mismatch each keep
+their own outcome. Because no `PartialEq` exists, `l1 == l2` does not compile —
+there is no syntax to reach for, so the guarantee is structural.
+
+**A consequence for Phase 4.** §6.4.2's ATOM discriminator orders atoms partly by
+literal under §6.4.3, which is a total order *across* literal types. `Literal`
+will therefore need an **ordering key** — and, exactly as F-4 established for
+`ExactNumber`, it must be a named defect-ordering function and never an `Ord`
+impl, so it cannot be mistaken for §4.4 semantic comparison.
+
+#### B-5 — `from_integer(i64)` is retained unchanged
+
+No migration is scheduled. The constructor is convenience-only; it does **not**
+define the authoritative magnitude boundary, because `from_decimal` remains the
+public arbitrary-precision construction path and admits values of any size. No
+change to `ExactNumber` semantics is implied.
+
+Replacing it was considered and rejected: an arbitrary-precision variant would
+have to accept `BigInt`, breaking the ADR-0005 §6.3 isolation boundary, or a
+digit sequence — which `from_decimal` already is. If a migration is ever wanted,
+the occasion is a cycle already authorized to touch `src/model/**` for an
+independent reason, realistically Phase 5. It should not motivate a cycle of its
+own.
+
+#### F-3 — why it is still blocked
+
+`DIMENSIONLESS` appears **exactly once** in the whole accepted corpus — Slice
+Contract §4.6, "a **dimensionless literal** carries the distinguished dimension
+symbol `DIMENSIONLESS`" — and no accepted document says how a conforming
+implementation identifies it. Every route is closed: picking a handle selects an
+encoding for an opaque domain (§3.3.1, ADR-0005 §7.5); reading it out of the
+supplied order contradicts §3.3.1's statement that the dimension order "carries
+no semantics"; and inferring it from an absent dimension contradicts §4.6 and
+§4.1. §2's m-2 paragraph makes exactly two things constitutive of the canonical
+input — the domain's values **and** its total order — and a distinguished-member
+binding is a third.
+
+This is not optional. §5.1 **check 14A** requires that every `*` node have a
+dimensionless literal operand, so a conforming checker cannot evaluate a
+mandatory check without deciding dimensionlessness.
+
+**The Product Board has ruled** (PBA-0056 §4) that a contract-declared
+distinguished member of an opaque domain is part of the canonical semantic input
+for that domain, supplied as a binding, never manufactured by the
+implementation. **That ruling is not yet normative against the accepted
+contract**, and this plan cannot make it so: Slice Contract §11.3 requires "an
+explicitly authorized successor or revision — never a silent rewrite", and this
+plan decides nothing. The clarification belongs in §2, and the authorized act
+that makes it effective is a separate Product Board matter.
+
+Recorded here as current-state status only. Phase-2B implementation must not
+begin until the ruling is normatively effective.
+
+**The same gap exists for `SM-1`.** §3.4.1 declares the semantic-model token as
+a contract-declared constant and check 16 compares against it, but `VersionToken`
+is opaque with no encoding selected — the identical identification problem, one
+check later. A ruling framed only around `DIMENSIONLESS` would leave it to be
+rediscovered in Phase 5.
+
 ## Phase 3 — Guard and constraint-domain semantics
 
 | | |
