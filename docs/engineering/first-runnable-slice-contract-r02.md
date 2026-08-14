@@ -150,7 +150,23 @@ implementation must **not** identify a distinguished member by:
 The identity used by every semantic rule in this contract is **the identity the
 canonical input supplies**, and no other.
 
-**The distinguished members Slice 1 requires.**
+**The distinguished members Slice 1 requires.** The table below is **normative**,
+and is the **exhaustive and definitive enumeration** of the distinguished
+semantic members Slice 1 requires a binding for. It is **not** illustrative and
+**not** a convenience summary: appearing in this table is what places a constant
+within the binding rule above, and a constant Slice 1 requires a binding for
+appears here and nowhere else. It lists exactly the contract-declared
+distinguished members Slice 1 currently requires — no more.
+
+Membership is decided by this table, **not** by the wording each declaring
+section happens to use. A constant listed here falls within the rule **however
+its declaring section designates it** — whether as a *distinguished* symbol
+(§4.6), a constant *declared by this contract* (§3.4.1), a *contract-declared
+constant* (check 16), or by any other wording by which the contract itself
+uniquely names the semantic constant. The incidental vocabulary of the declaring
+section neither adds a constant to this rule nor removes one from it. In
+particular, `SM-1` is within the rule on the same footing as `DIMENSIONLESS`,
+notwithstanding that §3.4.1 does not use the word "distinguished".
 
 | Distinguished constant | Domain (§3.3.1) | Declared in | Consumed by |
 |---|---|---|---|
@@ -184,6 +200,16 @@ defect.** If any condition above fails, the supplied object is **not canonical
 Slice-1 semantic input**, and therefore lies outside the domain of the
 authoritative `WF-1` checker. It produces no verdict, because there is nothing
 well-formed enough to reach a verdict about.
+
+**This does not weaken the checker's totality.** §1.1 scopes totality to "every
+input in the **admitted structural domain**", and §8 obligation 6 incorporates
+§1.1 by reference; an object that fails a canonical-input precondition is
+**outside** that admitted domain, exactly as a shape violation under §2's
+input-domain precondition is. Excluding such an object from the authoritative
+`WF-1` checker therefore contradicts neither §1.1's totality nor obligation 6 —
+totality was never a claim over arbitrary objects, only over admitted canonical
+input, and this binding requirement is one more condition on what makes an object
+admitted.
 
 This is the treatment the contract already gives the other constitutive elements
 of the input domain: no defect category exists for a supplied order that is not a
