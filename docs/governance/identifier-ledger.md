@@ -139,7 +139,8 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0061** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Final Bounded Remediation authorization** → ER-0061 (2026-08-14) |
 | **PBA-0062** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Final Re-Review authorization** → ARR-0020 (2026-08-14) |
 | **PBA-0063** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Product Board Acceptance authorization** → PBR-0014 / ER-0062 (2026-08-14) |
-| PBA-0064 and above | AVAILABLE-FUTURE | — |
+| **PBA-0064** | **ALLOCATED** | **Slice-1 Phase-2B Dimension-Aware Semantics Implementation authorization** → ER-0063 (2026-08-15) |
+| PBA-0065 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -153,7 +154,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0064`.**
+**Next allocatable PBA: `PBA-0065`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -267,9 +268,10 @@ consumes an ARR number.
 | **ER-0060** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Authoring Report** (authority PBA-0059; 2026-08-14; authors `first-runnable-slice-contract-r02.md` as PROPOSED — Revision 1 remains authoritative; F-3 and Phase 2B remain blocked) |
 | **ER-0061** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Bounded Remediation Report** (authority PBA-0061; 2026-08-14; closes ARR-0019 M-1 and M-2 inside §2.1; Revision 2 remains PROPOSED; F-3 and Phase 2B remain blocked) |
 | **ER-0062** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Acceptance Report** (authority PBA-0063; 2026-08-14; records PBR-0014 acceptance — Revision 2 ACCEPTED, Revision 1 superseded, F-3 CLOSED, Phase 2B UNBLOCKED) |
-| ER-0063 and above | AVAILABLE-FUTURE | — |
+| **ER-0063** | **ALLOCATED** | **Slice-1 Phase-2B Dimension-Aware Semantics Implementation Report** (authority PBA-0064; 2026-08-15; implements §4.3 / §4.4 / §4.6 semantic primitives in `src/semantics/`; independent review required before closure) |
+| ER-0064 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0063`.**
+**Next allocatable ER: `ER-0064`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -310,10 +312,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0063 | **PBA-0064** |
+| PBA | PBA-0064 | **PBA-0065** |
 | PBR | PBR-0014 | **PBR-0015** |
 | ARR | ARR-0020 | **ARR-0021** |
-| ER | ER-0062 | **ER-0063** |
+| ER | ER-0063 | **ER-0064** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -370,6 +372,7 @@ identifiers were allocated in the same period:
 | Slice Contract Revision 2 remediation | PBA-0061 | ER-0061 | Record PBA-0060 / ARR-0019 and this cycle's own identifiers; close ARR-0019 M-1/M-2 inside §2.1 of the PROPOSED Revision 2. No PBR allocated — no acceptance occurred. Terminates under §12(7). |
 | Slice Contract Revision 2 re-review | PBA-0062 | ARR-0020 | Read-only final re-review (no ledger write; recorded by the cycle below, per §12(6)) |
 | **Slice Contract Revision 2 acceptance** | **PBA-0063** | **PBR-0014 / ER-0062** | Record PBA-0062 / ARR-0020 and this cycle's own identifiers; **accept Revision 2 under PBR-0014**, superseding Revision 1 in governance provenance (predecessor file preserved immutable), closing F-3 and unblocking Phase 2B in the implementation plan. Governance-only write — no source, test, dependency or toolchain change. Terminates under §12(7). |
+| Phase 2B implementation | PBA-0064 | ER-0063 | Record this cycle's own identifiers; implement the Phase-2B §4.3 / §4.4 / §4.6 dimension-aware semantic primitives in `src/semantics/`. No ARR or PBR allocated — implementation is not review or closure. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their
