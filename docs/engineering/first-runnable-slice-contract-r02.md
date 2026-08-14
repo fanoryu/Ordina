@@ -3,24 +3,35 @@
 - **Title:** First Runnable Slice — Implementation Contract
 - **Contract family:** First Runnable Slice Contract
 - **Revision:** 2
-- **Status:** **PROPOSED** — no normative force
-- **Predecessor:** `first-runnable-slice-contract.md` — Revision 1, **ACCEPTED**
-  under PBR-0011 (2026-08-13), currently authoritative
-- **Authority:** PBA-0059 (authoring)
+- **Status:** **ACCEPTED** — normative
+- **Predecessor:** `first-runnable-slice-contract.md` — Revision 1, accepted under
+  PBR-0011 (2026-08-13); **SUPERSEDED** by this revision on acceptance (its file
+  remains an immutable historical artifact)
+- **Authority:** PBA-0059 (authoring); PBA-0063 (acceptance)
 - **Author:** Principal Engineer
-- **Tier:** 3 (engineering, normative — on acceptance)
+- **Tier:** 3 (engineering, normative)
 - **Governed by:** PBD-0006 — Normative Engineering Contract Revision Convention
   (`workflow.md`); Product Constitution v1.0 — ACTIVE — RATIFIED
-- **Review history:** none — independent review pending
-- **Accepted by:** — not accepted
-- **Decision date:** — not accepted
+- **Review history:** ARR-0019 (PASS WITH MINOR REMEDIATION REQUIRED — M-1, M-2)
+  → remediation ER-0061 → ARR-0020 (PASS — READY FOR PRODUCT BOARD ACCEPTANCE)
+- **Accepted by:** Product Board, **PBR-0014**
+- **Decision date:** 2026-08-14
 
-> ## This revision is PROPOSED and is not authoritative.
+> ## This revision is ACCEPTED and is the authoritative First Runnable Slice Contract.
 >
-> **Revision 1 remains the authoritative First Runnable Slice Contract.** Nothing
-> in this document governs any implementation, and no work may cite it as
-> authority. It acquires normative force only if the Product Board accepts it
-> under a `PBR`, following the review path PBD-0006 requires.
+> Accepted by the Product Board under **PBR-0014** on 2026-08-14, following the
+> review path PBD-0006 requires. It supersedes Revision 1, whose file
+> (`first-runnable-slice-contract.md`) remains an immutable historical artifact
+> and is not edited to record the supersession — the relationship is recorded
+> here and in the identifier ledger, per PBD-0006.
+>
+> **Normative boundary (ARR-0020 B-2).** The substantive checker-contract content
+> this acceptance makes normative is **§C's §2.1** — the addition to the accepted
+> Revision-1 §2 — together with the whole of Revision 1 §§0–11 as incorporated
+> unchanged by §D. The Revision-2 wrapper sections **§A, §B, §E, §F and §G are
+> governance and provenance material**, not checker-contract semantics: they
+> record how this revision came to be and what it changed, and bind no
+> implementation.
 
 ---
 
@@ -35,22 +46,22 @@ revision does not edit it, and does not mark it superseded. Its acceptance recor
 (PBR-0011), its review history, and its substantive text stand exactly as
 accepted.
 
-**Current normative authority.** Revision 1 **is** the contract. It remains
-authoritative for all Slice-1 behaviour while this revision is PROPOSED and
-throughout any review of it. Where this document and Revision 1 differ, Revision
-1 governs today, and will continue to until acceptance.
+**Current normative authority.** **This revision is now the contract.** It was
+accepted by the Product Board under PBR-0014 on 2026-08-14, and is authoritative
+for all Slice-1 behaviour. Revision 1 governed until that acceptance; where this
+document and Revision 1 differ, this revision now governs.
 
-**Future supersession.** Only a subsequent Product Board acceptance recorded
-through a `PBR` may make this revision authoritative and Revision 1 superseded.
-No other act does so — not authoring, not review, not an execution report, not
-implementation usage, not convention-by-practice, and not Git history. This
-follows PBD-0006's acceptance-authority rule and Revision 1 §11.3's requirement
-that future material changes proceed through "an explicitly authorized successor
-or revision — never a silent rewrite".
+**Supersession act.** Product Board acceptance recorded through **PBR-0014** made
+this revision authoritative and Revision 1 superseded. No lesser act did so — not
+authoring, not review, not an execution report, not implementation usage, not
+convention-by-practice, and not Git history. This followed PBD-0006's
+acceptance-authority rule and Revision 1 §11.3's requirement that future material
+changes proceed through "an explicitly authorized successor or revision — never a
+silent rewrite".
 
-**Form of supersession.** On acceptance this revision would supersede Revision 1
-**only in the enumerated surface below**, incorporating the whole remainder of
-Revision 1 unchanged. It is not a full replacement.
+**Form of supersession.** This revision supersedes Revision 1 **only in the
+enumerated surface below**, incorporating the whole remainder of Revision 1
+unchanged. It is not a full replacement.
 
 ---
 
@@ -303,17 +314,18 @@ the transcription risk such a reproduction would carry.
   policy, and **N-24 remains OPEN**.
 - **It adds no defect category.** §6.4.1's twenty-six remain complete.
 - **It adds, removes, and reorders no mandatory check**, and repurposes none.
-- **It implements nothing.** Checks 14A, 16 and 6 are unimplemented and
-  unauthorized, as is all of Slice-1 Phase 2B.
+- **It implements nothing.** Checks 14A, 16 and 6 are unimplemented, as is all of
+  Slice-1 Phase 2B. Acceptance unblocks Phase 2B (§G) but authorizes no
+  implementation.
 - **It resolves no deferred decision.** Q-06, Q-08, N-22, N-24, N-25 and F-8
   remain **OPEN**. It selects no platform, language, framework, UI technology,
   persistence, database, serialization format, parser, schema language,
   deployment target, hosting provider, broker, market-data provider, evaluator
   implementation, evaluator-semantics version scheme, hash algorithm, CI/CD
-  platform, or release packaging model.
+  platform, or release packaging model. In particular, resolving the `SM-1`
+  identity binding does **not** resolve N-24.
 - **It resolves no carried observation.** O-1, O-2 and O-3 stand; O-1 must still
   be settled before check 6.
-- **It does not close F-3.** Authoring is not acceptance — see §G.
 - **It amends, reinterprets, and supersedes no other accepted document.**
   ADR-0002, ADR-0003, ADR-0004, ADR-0005, RFC-0001, RFC-0002 and the Product
   Constitution are untouched and remain authoritative over this contract per §0.
@@ -322,21 +334,26 @@ the transcription risk such a reproduction would carry.
 
 ## G. Lifecycle and review path
 
-This revision is **PROPOSED**. Under PBD-0006 the remaining path is:
+This revision is **ACCEPTED**. Under PBD-0006 the path it completed was:
 
-1. a separately authorized independent, read-only review, recorded as an `ARR`;
-2. remediation of any BLOCKER / MAJOR / MINOR finding, under separate
-   authorization;
-3. re-review where required;
-4. separately authorized Product Board acceptance, recorded as a `PBR`.
+1. authoring — PBA-0059 / ER-0060;
+2. independent read-only review — PBA-0060 / **ARR-0019** (PASS WITH MINOR
+   REMEDIATION REQUIRED — M-1, M-2);
+3. bounded remediation — PBA-0061 / **ER-0061** (closed M-1 and M-2 inside §2.1);
+4. final read-only re-review — PBA-0062 / **ARR-0020** (PASS — READY FOR PRODUCT
+   BOARD ACCEPTANCE);
+5. Product Board acceptance — PBA-0063 / **PBR-0014**, 2026-08-14.
 
-**Until that `PBR`:**
+**On that acceptance:**
 
-- Revision 1 remains authoritative;
-- this revision has no normative force;
-- **F-3 remains OPEN / BLOCKED**;
-- **Slice-1 Phase 2B remains BLOCKED**;
-- the latent `SM-1` identification gap affecting check 16 remains open.
+- this revision became authoritative and Revision 1 became superseded;
+- **F-3 is CLOSED** — the normative distinguished-member identity mechanism now
+  exists, so the checker receives authoritative bindings for `DIMENSIONLESS` and
+  `SM-1` and manufactures neither;
+- the latent `SM-1` identification gap affecting check 16 is normatively
+  resolved (check 16 itself remains unimplemented);
+- **Slice-1 Phase 2B is UNBLOCKED — awaiting implementation authorization.**
+  Unblocking is not an implementation authorization; no Phase-2B code is
+  authorized by this acceptance.
 
-This revision is *intended* to resolve the F-3 normative gap and the `SM-1` gap
-alongside it. It does not do so by existing.
+Current-state phase status is tracked in `slice-1-implementation-plan.md`.

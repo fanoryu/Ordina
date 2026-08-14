@@ -137,7 +137,9 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0059** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Authoring authorization** → ER-0060 (2026-08-14) |
 | **PBA-0060** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Independent Review authorization** → ARR-0019 (2026-08-14) |
 | **PBA-0061** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Final Bounded Remediation authorization** → ER-0061 (2026-08-14) |
-| PBA-0062 and above | AVAILABLE-FUTURE | — |
+| **PBA-0062** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Final Re-Review authorization** → ARR-0020 (2026-08-14) |
+| **PBA-0063** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Product Board Acceptance authorization** → PBR-0014 / ER-0062 (2026-08-14) |
+| PBA-0064 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -151,7 +153,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0062`.**
+**Next allocatable PBA: `PBA-0064`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -170,7 +172,8 @@ evidence.
 | **PBR-0011** | **ALLOCATED** | **First Runnable Slice Contract acceptance** (2026-08-13; corrected identifier; PBD-0005 §4) |
 | **PBR-0012** | **ALLOCATED** | **RFC-0002 acceptance** (2026-08-13; authorization PBA-0034) |
 | **PBR-0013** | **ALLOCATED** | **ADR-0005 acceptance** (2026-08-13; authorization PBA-0039) |
-| PBR-0014 and above | AVAILABLE-FUTURE | — |
+| **PBR-0014** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 acceptance** (2026-08-14; authorization PBA-0063). Revision 2 becomes ACCEPTED and normative; Revision 1 SUPERSEDED in governance provenance, its file preserved immutable; closes F-3. |
+| PBR-0015 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §4).** `PBR-0010` was used twice: for the Slice
 Contract Final Review Authorization that produced ARR-0007, and later for the Slice
@@ -179,7 +182,7 @@ acceptance is reassigned **PBR-0011**. **The acceptance decision itself is
 unchanged** — decision date 2026-08-13, contract status ACCEPTED, architecture and
 engineering substance untouched. Only the governance identifier is corrected.
 
-**Next allocatable PBR: `PBR-0014`.**
+**Next allocatable PBR: `PBR-0015`.**
 
 ## 7. ARR — Architecture / Contract Review Reports
 
@@ -204,14 +207,15 @@ engineering substance untouched. Only the governance identifier is corrected.
 | **ARR-0017** | **ALLOCATED** | **Slice-1 Phase-2A Independent Implementation Review** (authority PBA-0051; 2026-08-14; verdict PASS WITH MINOR REMEDIATION REQUIRED — finding M-1, observations B-4/B-5/B-6) |
 | **ARR-0018** | **ALLOCATED** | **Slice-1 Phase-2A Final Closure Verification** (authority PBA-0053; 2026-08-14; verdict PASS — PHASE 2A READY FOR CLOSURE; M-1/F-2/F-4 closed; B-4/B-5/B-6 carried; authorship overlap disclosed) |
 | **ARR-0019** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Independent Review** (authority PBA-0060; 2026-08-14; verdict PASS WITH MINOR REMEDIATION REQUIRED — findings M-1, M-2; observations B-1, B-2; authorship overlap disclosed) |
-| ARR-0020 and above | AVAILABLE-FUTURE | — |
+| **ARR-0020** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Final Re-Review** (authority PBA-0062; 2026-08-14; verdict PASS — READY FOR PRODUCT BOARD ACCEPTANCE; M-1/M-2 closed; observations B-1/B-2 carried; authorship overlap disclosed) |
+| ARR-0021 and above | AVAILABLE-FUTURE | — |
 
 Two review reports were issued under **temporary, deliberately unnumbered**
 identifiers by Board instruction: the *Pre-Git Governance & Repository Integrity
 Audit* and the *Governance Identifier Collision Reconciliation Report*. Neither
 consumes an ARR number.
 
-**Next allocatable ARR: `ARR-0020`.**
+**Next allocatable ARR: `ARR-0021`.**
 
 ## 8. ER — Execution Reports
 
@@ -262,9 +266,10 @@ consumes an ARR number.
 | **ER-0059** | **ALLOCATED** | **Normative Engineering Contract Revision Convention Determination Report** (authority PBA-0058; 2026-08-14; establishes PBD-0006) |
 | **ER-0060** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Authoring Report** (authority PBA-0059; 2026-08-14; authors `first-runnable-slice-contract-r02.md` as PROPOSED — Revision 1 remains authoritative; F-3 and Phase 2B remain blocked) |
 | **ER-0061** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Bounded Remediation Report** (authority PBA-0061; 2026-08-14; closes ARR-0019 M-1 and M-2 inside §2.1; Revision 2 remains PROPOSED; F-3 and Phase 2B remain blocked) |
-| ER-0062 and above | AVAILABLE-FUTURE | — |
+| **ER-0062** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Acceptance Report** (authority PBA-0063; 2026-08-14; records PBR-0014 acceptance — Revision 2 ACCEPTED, Revision 1 superseded, F-3 CLOSED, Phase 2B UNBLOCKED) |
+| ER-0063 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0062`.**
+**Next allocatable ER: `ER-0063`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -305,10 +310,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0061 | **PBA-0062** |
-| PBR | PBR-0013 | **PBR-0014** |
-| ARR | ARR-0019 | **ARR-0020** |
-| ER | ER-0061 | **ER-0062** |
+| PBA | PBA-0063 | **PBA-0064** |
+| PBR | PBR-0014 | **PBR-0015** |
+| ARR | ARR-0020 | **ARR-0021** |
+| ER | ER-0062 | **ER-0063** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -363,6 +368,8 @@ identifiers were allocated in the same period:
 | Slice Contract Revision 2 authoring | PBA-0059 | ER-0060 | Author `first-runnable-slice-contract-r02.md` as **PROPOSED** under PBD-0006; record this cycle's own identifiers. No ARR or PBR allocated — no review or acceptance occurred. Terminates under §12(7). |
 | Slice Contract Revision 2 review | PBA-0060 | ARR-0019 | Read-only independent review (no ledger write; recorded by the cycle below, per §12(6)) |
 | Slice Contract Revision 2 remediation | PBA-0061 | ER-0061 | Record PBA-0060 / ARR-0019 and this cycle's own identifiers; close ARR-0019 M-1/M-2 inside §2.1 of the PROPOSED Revision 2. No PBR allocated — no acceptance occurred. Terminates under §12(7). |
+| Slice Contract Revision 2 re-review | PBA-0062 | ARR-0020 | Read-only final re-review (no ledger write; recorded by the cycle below, per §12(6)) |
+| **Slice Contract Revision 2 acceptance** | **PBA-0063** | **PBR-0014 / ER-0062** | Record PBA-0062 / ARR-0020 and this cycle's own identifiers; **accept Revision 2 under PBR-0014**, superseding Revision 1 in governance provenance (predecessor file preserved immutable), closing F-3 and unblocking Phase 2B in the implementation plan. Governance-only write — no source, test, dependency or toolchain change. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their

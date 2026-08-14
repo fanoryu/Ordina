@@ -2,7 +2,9 @@
 
 - **Tier:** 3 (engineering)
 - **Status:** ACTIVE — Phase 0 complete, **Phase 1 CLOSED**, **Phase 2A CLOSED**;
-  Phase 2B and Phases 3–8 not started and **not authorized**
+  **Phase 2B UNBLOCKED** (F-3 closed on acceptance of Slice Contract Revision 2
+  under PBR-0014) — **not started and not yet authorized for implementation**;
+  Phases 3–8 not started and **not authorized**
 - **Authority:** PBA-0040 / PBA-0041; Phase-1 closure under PBA-0048; Phase-2A
   closure under PBA-0054
 - **Realizes:** First Runnable Slice Contract (ACCEPTED, PBR-0011) under ADR-0005
@@ -232,12 +234,15 @@ stays blocked on it.
 | Item | Status |
 |---|---|
 | **F-1** — module placement | **RESOLVED** |
-| **F-3** — `DIMENSIONLESS` binding | **OPEN / BLOCKED** — needs a normative act this plan cannot perform |
+| **F-3** — distinguished-member binding | **CLOSED** — resolved normatively by Slice Contract Revision 2, accepted under PBR-0014 (2026-08-14) |
 | **B-4** — `Literal` equality | **DISPOSITION RECORDED** |
 | **B-5** — `from_integer(i64)` | **DISPOSITION RECORDED** |
 
-> **Phase 2B remains BLOCKED.** F-1, B-4 and B-5 constrain *how* it will be
-> built; F-3 decides *whether* it can be built conformantly at all.
+> **Phase 2B is UNBLOCKED** — all four gating items are settled. F-1, B-4 and
+> B-5 constrain *how* it will be built; F-3, which decided *whether* it could be
+> built conformantly, is now closed. Unblocking is **not** an implementation
+> authorization: Phase 2B still requires a separate Product Board authorization
+> before any code is written.
 
 #### F-1 — dimension-aware semantics belong in `semantics`
 
@@ -302,9 +307,17 @@ the occasion is a cycle already authorized to touch `src/model/**` for an
 independent reason, realistically Phase 5. It should not motivate a cycle of its
 own.
 
-#### F-3 — why it is still blocked
+#### F-3 — why it was blocked, and how it was closed
 
-`DIMENSIONLESS` appears **exactly once** in the whole accepted corpus — Slice
+> **CLOSED 2026-08-14.** F-3 is resolved by **Slice Contract Revision 2 §2.1**,
+> accepted by the Product Board under **PBR-0014** (authoring PBA-0059; review
+> ARR-0019 → remediation ER-0061 → re-review ARR-0020; acceptance PBA-0063 /
+> ER-0062). §2.1 makes the distinguished-member bindings for `DIMENSIONLESS` and
+> `SM-1` **constitutive canonical input**, so a conforming checker receives their
+> identities and manufactures neither. The account below is the authoring-time
+> analysis, preserved for provenance. `WF-1` is unchanged; N-24 stays OPEN.
+
+`DIMENSIONLESS` appears **exactly once** in the **accepted Revision-1** corpus — Slice
 Contract §4.6, "a **dimensionless literal** carries the distinguished dimension
 symbol `DIMENSIONLESS`" — and no accepted document says how a conforming
 implementation identifies it. Every route is closed: picking a handle selects an
