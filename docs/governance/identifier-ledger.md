@@ -134,7 +134,8 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0056** | **ALLOCATED** | **Slice-1 Distinguished Opaque-Domain Member Binding Decision authorization** → ER-0057 (2026-08-14) |
 | **PBA-0057** | **ALLOCATED** | **Canonical Distinguished-Member Binding Normative Revision authorization** → ER-0058 (2026-08-14) |
 | **PBA-0058** | **ALLOCATED** | **Normative Engineering Contract Revision Convention Determination authorization** → PBD-0006 / ER-0059 (2026-08-14) |
-| PBA-0059 and above | AVAILABLE-FUTURE | — |
+| **PBA-0059** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Authoring authorization** → ER-0060 (2026-08-14) |
+| PBA-0060 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -148,7 +149,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0059`.**
+**Next allocatable PBA: `PBA-0060`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -256,9 +257,10 @@ consumes an ARR number.
 | **ER-0057** | **ALLOCATED** | **Slice-1 Distinguished Opaque-Domain Member Binding Decision Report** (authority PBA-0056; 2026-08-14; records F-1/B-4/B-5; F-3 ruling PROPOSED, not normative — Phase 2B remains blocked) |
 | **ER-0058** | **ALLOCATED** | **Distinguished-Member Binding Normative Revision (Governance STOP)** (authority PBA-0057; 2026-08-14; read-only — no revision convention existed, so no artifact could be authored; no repository write) |
 | **ER-0059** | **ALLOCATED** | **Normative Engineering Contract Revision Convention Determination Report** (authority PBA-0058; 2026-08-14; establishes PBD-0006) |
-| ER-0060 and above | AVAILABLE-FUTURE | — |
+| **ER-0060** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Authoring Report** (authority PBA-0059; 2026-08-14; authors `first-runnable-slice-contract-r02.md` as PROPOSED — Revision 1 remains authoritative; F-3 and Phase 2B remain blocked) |
+| ER-0061 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0060`.**
+**Next allocatable ER: `ER-0061`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -299,10 +301,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0058 | **PBA-0059** |
+| PBA | PBA-0059 | **PBA-0060** |
 | PBR | PBR-0013 | **PBR-0014** |
 | ARR | ARR-0018 | **ARR-0019** |
-| ER | ER-0059 | **ER-0060** |
+| ER | ER-0060 | **ER-0061** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -354,6 +356,7 @@ identifiers were allocated in the same period:
 | Phase 2B gating decisions | PBA-0056 | ER-0057 | Record PBA-0055 / ER-0056 and this cycle's own identifiers; record F-1 / B-4 / B-5 and the blocked status of F-3 in the Slice-1 implementation plan. Governance-only write. Terminates under §12(7). |
 | Contract revision authoring | PBA-0057 | ER-0058 | Read-only; STOPPED before authoring — no revision convention existed (no ledger write; recorded by the cycle below, per §12(6)) |
 | Revision convention determination | PBA-0058 | ER-0059 | Record PBA-0057 / ER-0058 and this cycle's own identifiers; issue **PBD-0006** establishing the normative engineering contract successor convention in `docs/engineering/workflow.md`. Governance-only write. Terminates under §12(7). |
+| Slice Contract Revision 2 authoring | PBA-0059 | ER-0060 | Author `first-runnable-slice-contract-r02.md` as **PROPOSED** under PBD-0006; record this cycle's own identifiers. No ARR or PBR allocated — no review or acceptance occurred. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their
