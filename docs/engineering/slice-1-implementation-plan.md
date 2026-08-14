@@ -1,12 +1,10 @@
 # Slice-1 Implementation Plan
 
 - **Tier:** 3 (engineering)
-- **Status:** ACTIVE — Phase 0 complete, **Phase 1 CLOSED**, **Phase 2A CLOSED**;
-  **Phase 2B UNBLOCKED** (F-3 closed on acceptance of Slice Contract Revision 2
-  under PBR-0014) — **not started and not yet authorized for implementation**;
-  Phases 3–8 not started and **not authorized**
+- **Status:** ACTIVE — Phase 0 complete, **Phase 1 CLOSED**, **Phase 2A CLOSED**,
+  **Phase 2B CLOSED**; Phase 3 and Phases 4–8 not started and **not authorized**
 - **Authority:** PBA-0040 / PBA-0041; Phase-1 closure under PBA-0048; Phase-2A
-  closure under PBA-0054
+  closure under PBA-0054; Phase-2B closure under PBA-0066
 - **Realizes:** First Runnable Slice Contract (ACCEPTED, PBR-0011) under ADR-0005
   (ACCEPTED, PBR-0013)
 - **Created:** 2026-08-13
@@ -137,7 +135,7 @@ ARR-0016 (PBA-0047) → closure ER-0051 (PBA-0048).
 | **O-2** | Check 13A's prohibited-operator defect population is structurally constrained as reviewed; its non-`NUMERIC`-leaf population remains representable, so the check is not vacuous. | **BOARD-NOTED — non-blocking.** Check 13A is not implemented. |
 | **O-3** | Check 5's structural guarantee is narrower than some source prose implies; a real representable population remains through lineage resolution. | **BOARD-NOTED — non-blocking.** The accepted Slice Contract is not amended. |
 
-## Phase 2 — Exact numeric representation (2A ✅ CLOSED · 2B not authorized)
+## Phase 2 — Exact numeric representation (2A ✅ CLOSED · 2B ✅ CLOSED)
 
 | | |
 |---|---|
@@ -152,6 +150,67 @@ ARR-0016 (PBA-0047) → closure ER-0051 (PBA-0048).
 Representation capability must not become semantic admissibility: only values the
 contract admits are accepted.
 
+### Closure record — Phase 2B is CLOSED
+
+**Closed 2026-08-15** by Product Board authorization **PBA-0066**, reported in
+**ER-0064**, at baseline `44d9181`.
+
+**Basis.** Closure rests on **ARR-0021** — Phase-2B Independent Implementation
+Review, authorized by PBA-0065 — which returned `PASS — READY FOR PHASE-2B FORMAL
+CLOSURE` with zero BLOCKER, MAJOR or MINOR findings and three non-blocking
+observations.
+
+The Phase-2B cycle in full: implementation ER-0063 (PBA-0064) → independent
+review ARR-0021 (PBA-0065) → closure ER-0064 (PBA-0066).
+
+> **A limitation the record does not obscure.** ARR-0021 disclosed that the same
+> agent implemented and reviewed Phase 2B. The review was independent in method
+> — the diff was read directly, the B-4 compile-fail evidence was re-verified by
+> compiling probes outside the harness, and each contract branch was re-derived
+> — but not in authorship. This closure is recorded on that basis.
+
+**Closed scope — the §4.3 / §4.4 / §4.6 semantic primitives in `src/semantics/`,
+and nothing beyond.**
+
+- **§4.3 equality** — the named `equal` operation: numeric same-dimension exact
+  equality; numeric cross-dimension `DimensionMismatch` (a type defect, never
+  `false`); boolean equality; enum categorical equality; cross-kind
+  `TypeMismatch`; no coercion.
+- **§4.4 comparison** — the named `compare` operation: numeric same-dimension
+  `Less`/`Equal`/`Greater`; numeric cross-dimension `DimensionMismatch`;
+  `OrderingUndefined` on `BOOLEAN`/`ENUM`; cross-kind `TypeMismatch`; no public
+  `Ordering` result; `Literal` carries no ordering traits.
+- **§4.6 dimensional rules** — `additive_dimension` and `scaling_dimension`
+  returning a closed `DimensionOutcome`, with `DimensionBinding` carrying the
+  canonical-input-supplied `DIMENSIONLESS` identity, recognised by exact
+  dimension-symbol equality; no inferred dimensionless identity, no unit
+  conversion, no dimension algebra beyond Slice 1.
+
+**Carried decisions confirmed.** F-1 (semantics in `src/semantics/`,
+`semantics → model → numeric`) and F-3 (CLOSED; binding consumed, never
+manufactured) both satisfied. B-1 satisfied — `DimensionBinding` passed per
+invocation, no ambient state. B-4 satisfied — `Literal` implements none of
+`PartialEq`/`Eq`/`PartialOrd`/`Ord`, compiler-verified. B-5 retained —
+`ExactNumber::from_integer(i64)` unchanged. Phase 2A remains CLOSED: `ExactNumber`
+unchanged, dimension-free, no `BigRational` leakage, no division, no floats.
+
+**What closure does not mean.** Slice 1 is **not** complete. These are semantic
+**primitives**; no mandatory check (2, 6, 14A, 16), defect, verdict, or canonical
+ordering is implemented. **Phase 3 (§4.10 constraint domains) is not started and
+not authorized.** No deferred decision is resolved: Q-06, Q-08, N-22, N-24, N-25
+and F-8 remain **OPEN**; **N-24** in particular is untouched.
+
+**Carried observations — non-blocking, not resolved.**
+
+| Ref | Observation | Status |
+|---|---|---|
+| **B-1 caller authority** | The future checker-harness authorization must state that the `DimensionBinding::new(...)` argument originates from canonical input. The binding is correctly supplied per invocation today; the enforcement point is one layer up, in the harness. | **CARRIED to Phase 3 / harness.** |
+| **§4.6 mismatch granularity** | `scaling_dimension` returns one `Mismatch` for both a dimensioned numeric scalar and a non-numeric scalar. Contract-faithful at the primitive layer; the check layer must not assume the primitive distinguishes which mandatory check owns the higher-level failure. | **CARRIED to the check layer.** |
+| **Total primitive API** | `equal`/`compare` are total over all `Literal` pairs; cross-kind `TypeMismatch` is part of the primitive surface. ARR-0021 concluded `TOTAL PRIMITIVE APPROPRIATE`. | **CARRIED — no action.** |
+
+**Carried gating observations from Phase 2A** (unchanged): **B-4** and **B-5**
+above; **O-1** still gates check 6; **O-2**, **O-3** Board-noted.
+
 ### Phase 2 was split into 2A and 2B
 
 ER-0052 found that this phase's two halves have different prerequisites. The
@@ -164,7 +223,7 @@ split so the unblocked half could proceed.
 | Sub-phase | Scope | Status |
 |---|---|---|
 | **2A** | §4.2 — the exact numeric value layer, dimension-free | **CLOSED** |
-| **2B** | §4.3, §4.4, §4.6 — dimension-aware semantics | **not started, not authorized**; gated on F-1 and F-3 |
+| **2B** | §4.3, §4.4, §4.6 — dimension-aware semantics | **CLOSED** (F-1 and F-3 both resolved) |
 
 ### Closure record — Phase 2A is CLOSED
 
