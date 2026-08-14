@@ -142,7 +142,8 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0064** | **ALLOCATED** | **Slice-1 Phase-2B Dimension-Aware Semantics Implementation authorization** → ER-0063 (2026-08-15) |
 | **PBA-0065** | **ALLOCATED** | **Slice-1 Phase-2B Independent Implementation Review authorization** → ARR-0021 (2026-08-15) |
 | **PBA-0066** | **ALLOCATED** | **Slice-1 Phase-2B Formal Closure authorization** → ER-0064 (2026-08-15) |
-| PBA-0067 and above | AVAILABLE-FUTURE | — |
+| **PBA-0067** | **ALLOCATED** | **Slice-1 Phase-3 Constraint-Domain Semantics Implementation authorization** → ER-0065 (2026-08-15) |
+| PBA-0068 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -156,7 +157,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0067`.**
+**Next allocatable PBA: `PBA-0068`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -273,9 +274,10 @@ consumes an ARR number.
 | **ER-0062** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 Acceptance Report** (authority PBA-0063; 2026-08-14; records PBR-0014 acceptance — Revision 2 ACCEPTED, Revision 1 superseded, F-3 CLOSED, Phase 2B UNBLOCKED) |
 | **ER-0063** | **ALLOCATED** | **Slice-1 Phase-2B Dimension-Aware Semantics Implementation Report** (authority PBA-0064; 2026-08-15; implements §4.3 / §4.4 / §4.6 semantic primitives in `src/semantics/`; independent review required before closure) |
 | **ER-0064** | **ALLOCATED** | **Slice-1 Phase-2B Formal Closure Report** (authority PBA-0066; 2026-08-15; records PHASE 2B CLOSED on the basis of ARR-0021) |
-| ER-0065 and above | AVAILABLE-FUTURE | — |
+| **ER-0065** | **ALLOCATED** | **Slice-1 Phase-3 Constraint-Domain Semantics Implementation Report** (authority PBA-0067; 2026-08-15; implements §4.10 per-reference constraint-domain algebra in `src/semantics/constraint/`; independent review required before closure) |
+| ER-0066 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0065`.**
+**Next allocatable ER: `ER-0066`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -316,10 +318,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0066 | **PBA-0067** |
+| PBA | PBA-0067 | **PBA-0068** |
 | PBR | PBR-0014 | **PBR-0015** |
 | ARR | ARR-0021 | **ARR-0022** |
-| ER | ER-0064 | **ER-0065** |
+| ER | ER-0065 | **ER-0066** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -379,6 +381,7 @@ identifiers were allocated in the same period:
 | Phase 2B implementation | PBA-0064 | ER-0063 | Record this cycle's own identifiers; implement the Phase-2B §4.3 / §4.4 / §4.6 dimension-aware semantic primitives in `src/semantics/`. No ARR or PBR allocated — implementation is not review or closure. Terminates under §12(7). |
 | Phase 2B review | PBA-0065 | ARR-0021 | Read-only independent implementation review (no ledger write; recorded by the cycle below, per §12(6)) |
 | **Phase 2B formal closure** | **PBA-0066** | **ER-0064** | Record PBA-0065 / ARR-0021 and this cycle's own identifiers; record **Phase 2B CLOSED** in the Slice-1 implementation plan. Governance-only write — no source, test, dependency or toolchain change. Terminates under §12(7). |
+| Phase 3 implementation | PBA-0067 | ER-0065 | Record this cycle's own identifiers; implement the Phase-3 §4.10 per-reference constraint-domain algebra in `src/semantics/constraint/`. No ARR or PBR allocated — implementation is not review or closure. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their

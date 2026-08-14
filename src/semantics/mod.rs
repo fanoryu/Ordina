@@ -25,7 +25,8 @@
 //!   is passed per invocation (B-1).
 //!
 //! §4.10 constraint-domain semantics (contradiction, overlap, subsumption) are
-//! **Phase 3**, not implemented here.
+//! Phase 3, in [`constraint`].
 
 pub mod comparison;
+pub mod constraint;
 pub mod dimension;
