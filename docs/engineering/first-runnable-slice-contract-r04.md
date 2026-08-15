@@ -85,9 +85,11 @@ and canonical-ordering architecture of §3.3.1, §6.3, and §6.4:
    occurrence-identity uniqueness rather than checked lineage uniqueness (§C.9).
 5. **§8 conformance**: a minimum obligation making the occurrence assignment and
    order interoperable (§C.10).
-6. The **check-9 / pairwise offender-selection wording** that currently selects by
-   lineage order is restated to select by occurrence order (§C.7). No pairwise
-   **semantic condition, population, or prerequisite** changes.
+6. The **pairwise anchor wording** (§C.7): check 9's symmetric canonical selection
+   moves from lineage order to occurrence order; check 11's asymmetric anchor stays
+   the semantically-fixed subsumed rule (its identity representation moving from
+   lineage to occurrence). No pairwise **semantic condition, population, or
+   prerequisite** changes.
 
 **Everything else is unchanged.** No check's defect **population** is altered; no
 check **ownership** is reopened; §5.2 is untouched; §C.11 states this exhaustively.
@@ -236,28 +238,62 @@ collection-level coverage defects (`DIRECTION_COVERAGE_INCOMPLETE`,
 `MULTIPLE_TOTAL_DIRECTION_RULES`). Where an accepted category is instead tied to a
 specific offending **member** (for example `TOTAL_RULE_NOT_LOWEST_PRECEDENCE`, tied
 to the offending always-applicable rule), that **member's** occurrence identity is
-the anchor. **No defect population changes.**
+the anchor. **No defect population changes.** A Strategy-level defect with no
+category-specific discriminator uses the existing **NONE** kind (§6.4.2 kind 1);
+because each such category yields at most one defect per Strategy, keys 1–3 already
+distinguish it and NONE is reachable-safe.
 
-### C.7 Pairwise defects — occurrence offender selection + COUNTERPART
+### C.7 Pairwise defects — anchor selection + COUNTERPART
 
-For a defect whose semantic subject is an unordered **pair** of construct
-occurrences (`DIRECTION_PRECEDENCE_TIE`, check 9; `UNREACHABLE_SUBSUMED_RULE`,
-check 11):
+The two pairwise categories carry the COUNTERPART discriminator, but their
+offending-construct anchors are selected differently, because their inherited
+semantic relations differ: `DIRECTION_PRECEDENCE_TIE` (check 9) is **symmetric**,
+whereas `UNREACHABLE_SUBSUMED_RULE` (check 11) is **asymmetric**. Revision 4 does
+**not** state a single universal pairwise anchor rule; it states one rule per
+category, and in **both** the COUNTERPART payload is the **other** member's
+occurrence identity (§C.8).
 
-1. compare the two members' occurrence identities under the supplied occurrence
-   order;
-2. the member whose occurrence identity **sorts first** is the **anchor**
-   (offending occurrence);
-3. the other member is carried by the **COUNTERPART** discriminator (§C.8).
+**Check 9 — `DIRECTION_PRECEDENCE_TIE` (symmetric).** The inherited rule anchors a
+tie by a **canonical selection** over the pair — the two rules are peers and neither
+is inherently the offender (§5.1 check 9, F-1). Revision 4:
 
-This **replaces** the Revision-3/F-1 wording that selects the offending member by
+1. compares the two participating rules' occurrence identities under the supplied
+   occurrence order;
+2. makes the rule whose occurrence identity **sorts first** the **anchor**;
+3. carries the **other** rule's occurrence identity in **COUNTERPART**.
+
+This **replaces** the Revision-3/F-1 wording that made the canonical selection by
 **lineage** order — which is not total when a rule's lineage is Absent or
-duplicated. The replacement is **canonical tie-breaking only**: it is symmetric in
-discovery order (evaluating `(R_a, R_b)` or `(R_b, R_a)` yields the same anchor,
-identity, and ordering position) and invariant under order-preserving relabelling of
-occurrence identities. **The precedence-tie / subsumption semantic condition, the
-pair population, the COUNTERPART semantic role, and the §5.2 prerequisites are all
-unchanged.**
+duplicated. The replacement is **canonical selection only**: symmetric in discovery
+order (evaluating `(R_a, R_b)` or `(R_b, R_a)` yields the same anchor, identity, and
+ordering position) and invariant under order-preserving relabelling of occurrence
+identities. The precedence-tie semantic condition, the pair population, and the §5.2
+prerequisites are unchanged.
+
+**Check 11 — `UNREACHABLE_SUBSUMED_RULE` (asymmetric).** The inherited population and
+role assignment are **fixed by semantics**, not by any canonical order: *"one defect
+per **subsumed** rule, discriminated by the **subsuming** rule"* (§5.1 check 11). The
+subsumed (unreachable) rule is the defective construct; the subsuming
+higher-precedence rule is not. Revision 4 therefore:
+
+1. anchors the defect on the **subsumed rule's** occurrence identity — the offending
+   construct — **regardless** of how the two occurrence identities compare under the
+   supplied occurrence order;
+2. carries the **subsuming rule's** occurrence identity in **COUNTERPART**.
+
+Occurrence order does **not** select the check-11 offender; it only positions the
+resulting defect among others through §6.4 key 2 (the subsumed rule's occurrence).
+This changes **only** the identity *representation* of the inherited check-11
+semantics (subsumed-rule anchor: lineage → occurrence; subsuming-rule COUNTERPART:
+lineage → occurrence). It does **not** change which rule is defective, the
+one-per-subsumed-rule population, or the §5.2 prerequisites.
+
+> **Worked check-11 example.** Rule *A* is subsumed by a single strictly
+> higher-precedence rule *B*. The defect anchors on `OccurrenceId(A)` with
+> COUNTERPART `OccurrenceId(B)` — **whether `OccurrenceId(B) < OccurrenceId(A)` or
+> `OccurrenceId(A) < OccurrenceId(B)`**. The offending construct is always the
+> subsumed rule *A*; occurrence order never promotes the subsuming rule *B* to the
+> anchor.
 
 **COUNTERPART payload migration.** Because a Direction rule's lineage absence is a
 check-15 fault (Revision 3 §C.1) and check 9/11 do **not** take check 15 as a
@@ -408,8 +444,9 @@ supplied total order (§C.1); the §6.3 defect anchor from lineage identity to
 occurrence identity, with explicit ordinary/Strategy/class/pairwise anchor rules
 (§C.4–§C.7); the COUNTERPART discriminator payload from lineage identity to
 occurrence identity (§C.7, §C.8); a new LINEAGE discriminator kind 7 (§C.8); the
-§6.4 key-2 ordering domain and the rewritten totality proof (§C.9); the check-9 /
-pairwise offender-selection wording (§C.7); and a §8 conformance obligation (§C.10).
+§6.4 key-2 ordering domain and the rewritten totality proof (§C.9); the pairwise
+anchor wording — check 9 symmetric occurrence-order selection, check 11 asymmetric
+subsumed-rule anchor (§C.7); and a §8 conformance obligation (§C.10).
 
 **Deliberately unchanged.** Every check's defect population; every check ownership
 (Revision 3 §C in full); §5.2; §5.3; the 26 categories and their ordinals; the
