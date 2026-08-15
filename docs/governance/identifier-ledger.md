@@ -148,7 +148,9 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0070** | **ALLOCATED** | **Slice-1 Phase-3 M-1 Independent Remediation Re-Review authorization** → ARR-0023 (2026-08-15) |
 | **PBA-0071** | **ALLOCATED** | **Repository Attribution Trailer Removal and Bounded History Remediation authorization** → ER-0067 (2026-08-15) |
 | **PBA-0072** | **ALLOCATED** | **Slice-1 Phase-3 Formal Closure authorization** → ER-0068 (2026-08-15) |
-| PBA-0073 and above | AVAILABLE-FUTURE | — |
+| **PBA-0073** | **ALLOCATED** | **Slice-1 Post-Phase-3 Implementation Plan Review authorization** → ER-0069 (2026-08-15) |
+| **PBA-0074** | **ALLOCATED** | **Slice-1 Phase-4 Defect / Result Model and Canonical Ordering Implementation authorization** → ER-0070 (2026-08-15) |
+| PBA-0075 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -162,7 +164,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0073`.**
+**Next allocatable PBA: `PBA-0075`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -285,9 +287,11 @@ consumes an ARR number.
 | **ER-0066** | **ALLOCATED** | **Slice-1 Phase-3 Numeric Containment Remediation Report** (authority PBA-0069; 2026-08-15; closes ARR-0022 M-1 — restores exact §4.10 numeric subset containment in `src/semantics/constraint/numeric.rs`; independent re-review required before closure) |
 | **ER-0067** | **ALLOCATED** | **Repository Attribution Trailer Removal and History Remediation Report** (authority PBA-0071; 2026-08-15; removes a prohibited AI attribution trailer from the Phase-3 M-1 remediation commit via metadata-only history rewrite — tree identity preserved; `6e68dc8` → `4fb85da`; no source, test, dependency, toolchain, or accepted-document change) |
 | **ER-0068** | **ALLOCATED** | **Slice-1 Phase-3 Formal Closure Report** (authority PBA-0072; 2026-08-15; records **Phase 3 CLOSED** in the Slice-1 implementation plan on the basis of ARR-0023; resolves ARR-0022/ARR-0023 observations O-A (crate-doc currency) and O-B (plan currency); documentation-only — no source, test, dependency, toolchain, or accepted-document change) |
-| ER-0069 and above | AVAILABLE-FUTURE | — |
+| **ER-0069** | **ALLOCATED** | **Slice-1 Post-Phase-3 Implementation Plan Review** (authority PBA-0073; 2026-08-15; read-only; disposition NEXT PHASE IDENTIFIED — READY FOR IMPLEMENTATION AUTHORIZATION (Phase 4, §6.1–§6.4)) |
+| **ER-0070** | **ALLOCATED** | **Slice-1 Phase-4 Defect / Result Model and Canonical Ordering Implementation Report** (authority PBA-0074; 2026-08-15; implements §6.1–§6.4 result/defect model and canonical ordering in `src/result/`; no defect production, no check; independent review required before closure) |
+| ER-0071 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0069`.**
+**Next allocatable ER: `ER-0071`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -328,10 +332,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0072 | **PBA-0073** |
+| PBA | PBA-0074 | **PBA-0075** |
 | PBR | PBR-0014 | **PBR-0015** |
 | ARR | ARR-0023 | **ARR-0024** |
-| ER | ER-0068 | **ER-0069** |
+| ER | ER-0070 | **ER-0071** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -397,6 +401,8 @@ identifiers were allocated in the same period:
 | Phase 3 M-1 re-review | PBA-0070 | ARR-0023 | Read-only independent re-review of the M-1 remediation (no ledger write; recorded by the cycle below, per §12(6)). Verdict PASS — M-1 CLOSED. |
 | Attribution trailer removal | PBA-0071 | ER-0067 | Record PBA-0070 / ARR-0023 (pending from the read-only re-review, §12(6)) and this cycle's own identifiers; remove a prohibited AI attribution trailer from the Phase-3 M-1 remediation commit via metadata-only history rewrite (`6e68dc8` → `4fb85da`, tree identity preserved). No source, test, dependency, toolchain, or accepted-document change; Phase 3 remains IMPLEMENTED, not CLOSED. |
 | **Phase 3 formal closure** | **PBA-0072** | **ER-0068** | Record this cycle's own identifiers; record **Phase 3 CLOSED** in the Slice-1 implementation plan on the basis of ARR-0023, and resolve observations O-A (crate-doc currency in `src/lib.rs`) and O-B (plan currency). Documentation-only write — no source, test, dependency, toolchain or accepted-document change. Terminates under §12(7). |
+| Post-Phase-3 planning review | PBA-0073 | ER-0069 | Read-only review of the implementation plan after Phase-3 closure (no ledger write; recorded by the cycle below, per §12(6)). Disposition: Phase 4 READY FOR IMPLEMENTATION AUTHORIZATION. |
+| Phase 4 implementation | PBA-0074 | ER-0070 | Record PBA-0073 / ER-0069 (pending from the read-only planning review, §12(6)) and this cycle's own identifiers; implement the §6.1–§6.4 defect/result model and canonical ordering in `src/result/`. No ARR or PBR allocated — implementation is not review or closure. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their
