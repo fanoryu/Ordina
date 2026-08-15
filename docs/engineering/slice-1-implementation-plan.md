@@ -604,6 +604,32 @@ authorized and still blocked.
 Implement in dependency order: 1, 16, 15, 2 → 3, 4, 6 → 5 → 8, 10 → 9, 11, 12 →
 13A/13B, 14A/14B. Take one check per increment.
 
+### Phase 5A — check 1 IMPLEMENTED (independent review pending)
+
+**Implemented 2026-08-16** under Product Board authorization **PBA-0100**, reported
+in **ER-0088**, at baseline `3081abd`, on the reconciled Revision-4 model
+(ER-0086/ARR-0030 Phase 1; ER-0087/ARR-0031 Phase 4).
+
+`checks::required_property` implements **check 1** (`MISSING_REQUIRED_PROPERTY`) as
+pure per-construct defect production returning `Vec<DefectCore>` (empty = PASS). It
+follows the accepted Revision-3 §C.3 / Revision-4 ownership matrix exactly: it emits
+for the envelope's five required collections (positions 3–7), evidence-declaration
+lineage (1) and declared-type absence (2), configuration-parameter lineage/dimension/
+bounds/adjustable (1, 3, 4, 5, 6), Direction-rule precedence/guard (2, 3),
+candidate-derivation role/expression (2, 3), and condition guard (3). Each defect
+anchors on the offending construct's **occurrence identity** (Revision 4 §C.4), so a
+missing-lineage defect on an evidence declaration or configuration parameter is
+reportable even when that lineage is itself absent.
+
+**Exclusions honoured:** operative-node lineage absence (envelope, condition,
+Direction rule, candidate derivation) → check 15 only; envelope version absence →
+check 16 only; present-but-invalid states → checks 6/3/10/4/16; `declared_values`
+never inspected (O-1 stays OPEN). No prerequisite gating, not-evaluated record,
+verdict, revision qualification, or global canonical sort is implemented; no other
+mandatory check exists. **Independent review of check 1 is required** before the
+next check increment. This is a per-check increment of Phase 5, not Phase-5
+completion.
+
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
 
 | | |

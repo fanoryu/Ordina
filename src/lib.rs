@@ -15,11 +15,12 @@
 //! verdict, deterministic defect identity, and the total canonical defect
 //! ordering (`result`).
 //!
-//! These are **semantic primitives and data models, not a running checker.** No
-//! mandatory Well-Formedness check is implemented, no defect is produced, and
-//! nothing computes a verdict from a Strategy: prerequisite gating, Direction
-//! logic, and checker orchestration are absent, and `checks` is deliberately
-//! empty. The authoritative, always-current phase status lives in
+//! On that foundation the first mandatory check now runs: `checks` implements
+//! **check 1** (required-property completeness, `MISSING_REQUIRED_PROPERTY`) as
+//! pure per-construct defect production over the reconciled model. It is **not**
+//! a running checker: no other mandatory check, no prerequisite gating, no
+//! Direction logic, no verdict, and no checker orchestration exists yet. The
+//! authoritative, always-current phase status lives in
 //! `docs/engineering/slice-1-implementation-plan.md`, not in this comment.
 
 // ADR-0005 §7.7 — no `unsafe` is authorized or required for Slice 1.

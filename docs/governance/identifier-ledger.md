@@ -174,7 +174,9 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0096** | **ALLOCATED** | **Phase-1 Canonical Occurrence Identity Post-Closure Remediation authorization** → ER-0086 (2026-08-16; implements the Revision-4 §C.1 Phase-1 consequence — `OccurrenceId` opaque domain and a mandatory occurrence field on every construct; no Phase-4/check change; Phase 1 remains CLOSED; independent reconciliation required) |
 | **PBA-0097** | **ALLOCATED** | **Phase-1 Canonical Occurrence Identity Independent Reconciliation Review authorization** → ARR-0030 (2026-08-16; read-only; verdict PASS — PHASE-1 REMEDIATION RECONCILED; zero BLOCKER/MAJOR/MINOR) |
 | **PBA-0098** | **ALLOCATED** | **Bounded Phase-4 Result-Model Remediation authorization** → ER-0087 (2026-08-16; migrates `DefectCore.offending` to `OccurrenceId`, COUNTERPART payload to `OccurrenceId`, adds the `LINEAGE` discriminator kind 7, per accepted Revision 4; no `src/checks/**` change; Phase 4 remains CLOSED; independent reconciliation required) |
-| PBA-0099 and above | AVAILABLE-FUTURE | — |
+| **PBA-0099** | **ALLOCATED** | **Phase-4 Result-Model Independent Reconciliation Review authorization** → ARR-0031 (2026-08-16; read-only; verdict PASS — PHASE-4 REMEDIATION RECONCILED; zero findings) |
+| **PBA-0100** | **ALLOCATED** | **Phase-5A Check-1 Required-Property Completeness Implementation authorization** → ER-0088 (2026-08-16; implements check 1 `MISSING_REQUIRED_PROPERTY` in `src/checks/required_property.rs` on the reconciled Revision-4 model; defect production only, no other check/gating/verdict; independent review required) |
+| PBA-0101 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -188,7 +190,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0099`.**
+**Next allocatable PBA: `PBA-0101`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -255,14 +257,15 @@ engineering substance untouched. Only the governance identifier is corrected.
 | **ARR-0028** | **ALLOCATED** | **Slice Contract Revision 4 Independent Architecture and Contract Review** (authority PBA-0092; 2026-08-16; read-only; verdict FAIL — BOUNDED REMEDIATION REQUIRED — one MAJOR M-1 (§C.7 applied symmetric occurrence-order offender selection to the asymmetric check-11 `UNREACHABLE_SUBSUMED_RULE`); occurrence-identity architecture otherwise independently verified; remediated under PBA-0093 / ER-0084) |
 | **ARR-0029** | **ALLOCATED** | **Slice Contract Revision 4 Independent Post-Remediation Re-Review** (authority PBA-0094; 2026-08-16; read-only; verdict PASS — ACCEPTANCE-READY; ARR-0028 M-1 CLOSED; zero BLOCKER/MAJOR/MINOR; check-9 symmetric and check-11 asymmetric anchors, OccurrenceId/LINEAGE/COUNTERPART, §6.4 totality, and Revision-3 preservation all independently re-verified) |
 | **ARR-0030** | **ALLOCATED** | **Phase-1 Canonical Occurrence Identity Independent Reconciliation Review** (authority PBA-0097; 2026-08-16; read-only; verdict PASS — PHASE-1 REMEDIATION RECONCILED; universal coverage, envelope identity, absent/duplicate-lineage independence, supplied-order neutrality, occurrence/lineage separation, and Phase-4/Phase-5 boundary all independently verified; zero findings) |
-| ARR-0031 and above | AVAILABLE-FUTURE | — |
+| **ARR-0031** | **ALLOCATED** | **Phase-4 Result-Model Independent Reconciliation Review** (authority PBA-0099; 2026-08-16; read-only; verdict PASS — PHASE-4 REMEDIATION RECONCILED; `DefectCore.offending` occurrence migration, LINEAGE kind 7, COUNTERPART occurrence payload, §6.4 key-2 occurrence order, symmetric/asymmetric pairwise anchors, ATOM and not-evaluated preservation all independently verified; zero findings) |
+| ARR-0032 and above | AVAILABLE-FUTURE | — |
 
 Two review reports were issued under **temporary, deliberately unnumbered**
 identifiers by Board instruction: the *Pre-Git Governance & Repository Integrity
 Audit* and the *Governance Identifier Collision Reconciliation Report*. Neither
 consumes an ARR number.
 
-**Next allocatable ARR: `ARR-0031`.**
+**Next allocatable ARR: `ARR-0032`.**
 
 ## 8. ER — Execution Reports
 
@@ -339,9 +342,10 @@ consumes an ARR number.
 | **ER-0085** | **ALLOCATED** | **Slice Contract Revision 4 Acceptance Report** (authority PBA-0095; 2026-08-16; records **PBR-0016** — Revision 4 ACCEPTED and authoritative, Revision 3 SUPERSEDED; clerical status/metadata transition only, substantive §C byte-frozen from the ARR-0029-reviewed version; contract/design O-A resolved; Phase-1/Phase-4 implementation remediation pending; Phase 5A remains blocked) |
 | **ER-0086** | **ALLOCATED** | **Phase-1 Canonical Occurrence Identity Remediation Report** (authority PBA-0096; 2026-08-16; adds the `OccurrenceId` opaque domain in `src/model/opaque.rs` and a mandatory `occurrence` field on the Strategy envelope and all five child constructs, with focused occurrence-identity tests; no Phase-4 result-model or `src/checks/**` change; Phase 1 remains CLOSED; independent Phase-1 reconciliation review required before Phase-4 remediation) |
 | **ER-0087** | **ALLOCATED** | **Bounded Phase-4 Result-Model Remediation Report** (authority PBA-0098; 2026-08-16; migrates `src/result/{identity,discriminator,mod}.rs` to the Revision-4 occurrence anchor — `DefectCore.offending: OccurrenceId`, COUNTERPART payload `OccurrenceId`, new `LINEAGE` discriminator kind 7, §6.4 key-2 occurrence order — with focused anchor-semantics tests; ATOM payload and §6.2 not-evaluated representation unchanged; no `src/checks/**` change; Phase 4 remains CLOSED; independent Phase-4 reconciliation required) |
-| ER-0088 and above | AVAILABLE-FUTURE | — |
+| **ER-0088** | **ALLOCATED** | **Slice-1 Phase-5A Check-1 Implementation Report** (authority PBA-0100; 2026-08-16; implements check 1 `MISSING_REQUIRED_PROPERTY` in `src/checks/required_property.rs` — per-construct `Vec<DefectCore>` production, occurrence-anchored, ownership matrix exact, O-1 isolated; `src/model/**` and `src/result/**` unchanged; lib.rs crate-doc currency only; no other mandatory check, gating, or verdict; independent review required) |
+| ER-0089 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0088`.**
+**Next allocatable ER: `ER-0089`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -382,10 +386,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0098 | **PBA-0099** |
+| PBA | PBA-0100 | **PBA-0101** |
 | PBR | PBR-0016 | **PBR-0017** |
-| ARR | ARR-0030 | **ARR-0031** |
-| ER | ER-0087 | **ER-0088** |
+| ARR | ARR-0031 | **ARR-0032** |
+| ER | ER-0088 | **ER-0089** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -477,6 +481,8 @@ identifiers were allocated in the same period:
 | Phase-1 occurrence-identity remediation | PBA-0096 | ER-0086 | Record this cycle's own identifiers; implement the Revision-4 §C.1 Phase-1 consequence — the `OccurrenceId` opaque domain and a mandatory `occurrence` field on every construct — in `src/model/**`, with focused tests. Source-writing cycle; no Phase-4/`src/checks/**` change; Phase 1 remains CLOSED. Independent reconciliation review required before Phase-4 remediation. Terminates under §12(7). |
 | Phase-1 occurrence-identity reconciliation review | PBA-0097 | ARR-0030 | Read-only independent reconciliation review of ER-0086 (no ledger write; recorded by the cycle below, per §12(6)). Verdict PASS — PHASE-1 REMEDIATION RECONCILED. |
 | **Phase-4 result-model remediation** | **PBA-0098** | **ER-0087** | Record PBA-0097 / ARR-0030 (pending from the read-only review, §12(6)) and this cycle's own identifiers; migrate the §6.3/§6.4 result model to the Revision-4 occurrence anchor (`DefectCore.offending → OccurrenceId`, COUNTERPART → occurrence, new `LINEAGE` kind 7) in `src/result/**`, with focused tests. Source-writing cycle; no `src/checks/**` change; Phase 4 remains CLOSED. Independent reconciliation review required. Terminates under §12(7). |
+| Phase-4 result-model reconciliation review | PBA-0099 | ARR-0031 | Read-only independent reconciliation review of ER-0087 (no ledger write; recorded by the cycle below, per §12(6)). Verdict PASS — PHASE-4 REMEDIATION RECONCILED. |
+| **Phase-5A check-1 implementation** | **PBA-0100** | **ER-0088** | Record PBA-0099 / ARR-0031 (pending from the read-only review, §12(6)) and this cycle's own identifiers; implement mandatory check 1 (`MISSING_REQUIRED_PROPERTY`) in `src/checks/required_property.rs` on the reconciled Revision-4 model, with focused tests. Source-writing cycle; defect production only — no other check, gating, verdict, or `src/model`/`src/result` change (lib.rs crate-doc currency only). Independent review required. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their
