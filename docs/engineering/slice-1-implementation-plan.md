@@ -2,9 +2,11 @@
 
 - **Tier:** 3 (engineering)
 - **Status:** ACTIVE — Phase 0 complete, **Phase 1 CLOSED**, **Phase 2A CLOSED**,
-  **Phase 2B CLOSED**; Phase 3 and Phases 4–8 not started and **not authorized**
+  **Phase 2B CLOSED**, **Phase 3 CLOSED**; Phases 4–8 not started and **not
+  authorized**
 - **Authority:** PBA-0040 / PBA-0041; Phase-1 closure under PBA-0048; Phase-2A
-  closure under PBA-0054; Phase-2B closure under PBA-0066
+  closure under PBA-0054; Phase-2B closure under PBA-0066; Phase-3 closure under
+  PBA-0072
 - **Realizes:** First Runnable Slice Contract (ACCEPTED, PBR-0011) under ADR-0005
   (ACCEPTED, PBR-0013)
 - **Created:** 2026-08-13
@@ -196,9 +198,11 @@ unchanged, dimension-free, no `BigRational` leakage, no division, no floats.
 
 **What closure does not mean.** Slice 1 is **not** complete. These are semantic
 **primitives**; no mandatory check (2, 6, 14A, 16), defect, verdict, or canonical
-ordering is implemented. **Phase 3 (§4.10 constraint domains) is not started and
-not authorized.** No deferred decision is resolved: Q-06, Q-08, N-22, N-24, N-25
-and F-8 remain **OPEN**; **N-24** in particular is untouched.
+ordering is implemented. **As of that Phase-2B closure, Phase 3 (§4.10
+constraint domains) was not started or authorized** (it was subsequently
+authorized under PBA-0067 and is now CLOSED — see the Phase 3 closure record
+below). No deferred decision is resolved: Q-06, Q-08, N-22, N-24, N-25 and F-8
+remain **OPEN**; **N-24** in particular is untouched.
 
 **Carried observations — non-blocking, not resolved.**
 
@@ -419,6 +423,48 @@ rediscovered in Phase 5.
 | **Prerequisites** | Phases 1–2 |
 | **Exit criteria** | The three relations decided by per-reference comparison of declared literals; **no solver or constraint library**; verification green |
 | **Not in scope** | Direction resolution; any check; disjunction or negation (not admitted) |
+
+### Closure record — Phase 3 is CLOSED
+
+**Closed 2026-08-15** by Product Board authorization **PBA-0072**, reported in
+**ER-0068**, at the post-remediation baseline `3956089`.
+
+**Lineage.** Implementation `PBA-0067 / ER-0065` → independent review
+`PBA-0068 / ARR-0022` (**FAIL — REMEDIATION REQUIRED**, one MAJOR finding M-1)
+→ bounded remediation `PBA-0069 / ER-0066` → independent re-review
+`PBA-0070 / ARR-0023` (**PASS — M-1 CLOSED**) → attribution-history remediation
+`PBA-0071 / ER-0067` (Git metadata only; Phase-3 tree preserved) → formal
+closure `PBA-0072 / ER-0068`.
+
+**What was closed — the §4.10 per-reference constraint-domain algebra in
+`src/semantics/constraint/`, and nothing beyond it.** Three per-reference domain
+types, each with admission, emptiness (contradiction), intersection, overlap
+(non-empty intersection) and containment (subsumption, `D2 ⊆ D1` iff
+`D1.contains(&D2)`):
+
+- **`NumericDomain`** — an exact-rational interval (inclusive/exclusive/unbounded
+  bounds) minus a finite excluded set, folding all six comparison operators; no
+  float, no solver, exact `ExactNumber` comparison throughout.
+- **`BooleanDomain`** — subsets of `{true, false}`.
+- **`EnumDomain`** — an admitted subset of the declared value set by exact opaque
+  identity; order-independent, relabelling-invariant.
+
+**M-1 — CLOSED.** The reviewed and independently re-verified rule is
+`D1.contains(&D2)` iff `D2 ⊆ D1` for **every** representable `NumericDomain`.
+Endpoint canonicalization (`[a, b] \ {a}` ≡ `(a, b]`) preserves admitted-set
+identity for the lower endpoint, the upper endpoint, both endpoints, the
+singleton/empty edge, unbounded sides, and intersection-produced domains
+(ARR-0023 §5, §13).
+
+**Reviewed boundaries preserved.** `PER-REFERENCE PRIMITIVE BOUNDARY SUFFICIENT`
+(whole-guard contradiction/overlap/subsumption belong to checks 9/11/12, not
+here) and `CORRECT LAYERING` (builders consume already-typed constraints; check-2
+typing is an upstream prerequisite).
+
+**What closure does not mean.** Slice 1 is **not** complete. No mandatory check,
+defect, verdict, or canonical ordering is implemented. **Phase 4 is NOT STARTED
+and NOT AUTHORIZED.** O-1, O-2, O-3 remain unresolved; Q-06, Q-08, N-22, N-24,
+N-25, F-8 remain OPEN. B-1 remains a future checker/harness caller obligation.
 
 ## Phase 4 — Defect / result model and canonical ordering
 

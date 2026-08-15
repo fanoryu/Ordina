@@ -5,11 +5,20 @@
 //! (ACCEPTED); where the two could ever be read as differing, the contract
 //! governs.
 //!
-//! **Phase 0 — bootstrap only.** No mandatory Well-Formedness check, defect
-//! semantics, canonical ordering, constraint-domain algebra, Direction logic,
-//! prerequisite gating, or verdict logic is implemented yet. The modules below
-//! exist to fix the architecture boundaries; they are filled in by later
-//! phases of `docs/engineering/slice-1-implementation-plan.md`.
+//! **Slice 1 is built one authorized phase at a time.** The semantic
+//! foundation is in place: the §3 construct model and the five opaque domains
+//! (`model`), the exact dimension-free numeric value layer (`numeric`), the
+//! dimension-aware equality, comparison and dimension primitives
+//! (`semantics::comparison`, `semantics::dimension`), and the §4.10
+//! per-reference constraint-domain algebra — contradiction, overlap and
+//! subsumption (`semantics::constraint`).
+//!
+//! These are **semantic primitives, not checks.** The mandatory Well-Formedness
+//! checks, the defect model, the canonical defect ordering, prerequisite
+//! gating, Direction logic, and the final verdict are **not implemented**;
+//! `checks` and `result` are deliberately empty until their phases. The
+//! authoritative, always-current phase status lives in
+//! `docs/engineering/slice-1-implementation-plan.md`, not in this comment.
 
 // ADR-0005 §7.7 — no `unsafe` is authorized or required for Slice 1.
 #![forbid(unsafe_code)]
