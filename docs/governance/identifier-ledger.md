@@ -154,7 +154,11 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0076** | **ALLOCATED** | **Slice-1 Phase-4 MINOR-1 Bounded Remediation authorization** → ER-0071 (2026-08-15) |
 | **PBA-0077** | **ALLOCATED** | **Slice-1 Phase-4 MINOR-1 Independent Re-Review authorization** → ARR-0025 (2026-08-15) |
 | **PBA-0078** | **ALLOCATED** | **Slice-1 Phase-4 Formal Closure authorization** → ER-0072 (2026-08-15) |
-| PBA-0079 and above | AVAILABLE-FUTURE | — |
+| **PBA-0079** | **ALLOCATED** | **Slice-1 Phase-5 Implementation Planning Review authorization** → ER-0073 (2026-08-15) |
+| **PBA-0080** | **ALLOCATED** | **Slice-1 Phase-5A Check-1 Implementation authorization** → ER-0074 (2026-08-15; STOPPED before write — clarification required) |
+| **PBA-0081** | **ALLOCATED** | **Slice-1 Check-1 Defect-Population Clarification Review authorization** → ER-0075 (2026-08-15) |
+| **PBA-0082** | **ALLOCATED** | **Slice Contract Revision 3 Check-1 Ownership Clarification Authoring authorization** → ER-0076 (2026-08-15) |
+| PBA-0083 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -168,7 +172,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0079`.**
+**Next allocatable PBA: `PBA-0083`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -297,9 +301,13 @@ consumes an ARR number.
 | **ER-0070** | **ALLOCATED** | **Slice-1 Phase-4 Defect / Result Model and Canonical Ordering Implementation Report** (authority PBA-0074; 2026-08-15; implements §6.1–§6.4 result/defect model and canonical ordering in `src/result/`; no defect production, no check; independent review required before closure) |
 | **ER-0071** | **ALLOCATED** | **Slice-1 Phase-4 MINOR-1 Remediation Report** (authority PBA-0076; 2026-08-15; closes ARR-0024 MINOR-1 — makes the §6.2 `UNUSABLE`+empty state unrepresentable via a required first-defect argument on `WellFormednessResult::unusable`; independent re-review required before closure) |
 | **ER-0072** | **ALLOCATED** | **Slice-1 Phase-4 Formal Closure Report** (authority PBA-0078; 2026-08-15; records **Phase 4 CLOSED** in the Slice-1 implementation plan on the basis of ARR-0025; resolves observation OBS-2 (crate-doc currency in `src/lib.rs`); documentation-only — no source, test, dependency, toolchain, or accepted-document change) |
-| ER-0073 and above | AVAILABLE-FUTURE | — |
+| **ER-0073** | **ALLOCATED** | **Slice-1 Phase-5 Implementation Planning Review** (authority PBA-0079; 2026-08-15; read-only; disposition NEXT PHASE IDENTIFIED — READY FOR IMPLEMENTATION AUTHORIZATION (Phase 5, check 1 first)) |
+| **ER-0074** | **ALLOCATED** | **Slice-1 Phase-5A Check-1 Implementation Report (STOPPED)** (authority PBA-0080; 2026-08-15; halted before any repository write on a check-1/check-15 lineage-ownership ambiguity; no source/ledger change) |
+| **ER-0075** | **ALLOCATED** | **Slice-1 Check-1 Defect-Population Clarification Review** (authority PBA-0081; 2026-08-15; read-only; classification SUCCESSOR CONTRACT CLARIFICATION REQUIRED; recommends operative-node lineage exclusively check 15) |
+| **ER-0076** | **ALLOCATED** | **Slice Contract Revision 3 Check-1 Ownership Clarification Authoring Report** (authority PBA-0082; 2026-08-15; authors `first-runnable-slice-contract-r03.md` as PROPOSED — Revision 2 remains authoritative; independent review and Product Board acceptance required before Phase-5A) |
+| ER-0077 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0073`.**
+**Next allocatable ER: `ER-0077`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -340,10 +348,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0078 | **PBA-0079** |
+| PBA | PBA-0082 | **PBA-0083** |
 | PBR | PBR-0014 | **PBR-0015** |
 | ARR | ARR-0025 | **ARR-0026** |
-| ER | ER-0072 | **ER-0073** |
+| ER | ER-0076 | **ER-0077** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -415,6 +423,10 @@ identifiers were allocated in the same period:
 | Phase 4 MINOR-1 remediation | PBA-0076 | ER-0071 | Record PBA-0075 / ARR-0024 (pending from the read-only review, §12(6)) and this cycle's own identifiers; enforce the §6.2 defect-set/verdict biconditional on `WellFormednessResult::unusable` (ARR-0024 MINOR-1) in `src/result/mod.rs`. Source-writing cycle — not ledger-only; independent re-review required before closure. |
 | Phase 4 MINOR-1 re-review | PBA-0077 | ARR-0025 | Read-only independent re-review of the MINOR-1 remediation (no ledger write; recorded by the cycle below, per §12(6)). Verdict PASS — M-1 CLOSED. |
 | **Phase 4 formal closure** | **PBA-0078** | **ER-0072** | Record PBA-0077 / ARR-0025 (pending from the read-only re-review, §12(6)) and this cycle's own identifiers; record **Phase 4 CLOSED** in the Slice-1 implementation plan on the basis of ARR-0025, and resolve observation OBS-2 (crate-doc currency in `src/lib.rs`). Documentation-only write — no source, test, dependency, toolchain or accepted-document change. Terminates under §12(7). |
+| Phase 5 planning review | PBA-0079 | ER-0073 | Read-only review of the implementation plan after Phase-4 closure (no ledger write; recorded by the cycle below, per §12(6)). Disposition: Phase 5 check 1 READY FOR IMPLEMENTATION AUTHORIZATION. |
+| Phase 5A check-1 (stopped) | PBA-0080 | ER-0074 | Read-only STOP before any write on a check-1/check-15 lineage-ownership ambiguity (no ledger write; recorded by the cycle below, per §12(6)). |
+| Check-1 ownership clarification review | PBA-0081 | ER-0075 | Read-only normative clarification review (no ledger write; recorded by the cycle below, per §12(6)). Classification: SUCCESSOR CONTRACT CLARIFICATION REQUIRED. |
+| Slice Contract Revision 3 authoring | PBA-0082 | ER-0076 | Record PBA-0079/ER-0073, PBA-0080/ER-0074, PBA-0081/ER-0075 (pending from the read-only/stopped cycles, §12(6)) and this cycle's own identifiers; author `first-runnable-slice-contract-r03.md` as **PROPOSED** under PBD-0006 (check-1 ownership clarification). Revision 2 remains authoritative; no ARR or PBR allocated — no review or acceptance occurred. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their
