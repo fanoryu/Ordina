@@ -174,9 +174,16 @@ mod tests {
         LineageId::new(OpaqueValue::new(handle))
     }
 
+    fn occurrence(handle: u64) -> crate::model::opaque::OccurrenceId {
+        crate::model::opaque::OccurrenceId::new(OpaqueValue::new(handle))
+    }
+
     fn a_defect() -> DefectIdentity {
+        // Defect identity anchors on an occurrence (Revision 4 §C.4); the
+        // not-evaluated record below still names its construct by lineage
+        // (Revision 4 §C.11 preserves the not-evaluated representation).
         DefectIdentity::unqualified(DefectCore::new(
-            lineage(1),
+            occurrence(1),
             DefectCategory::TypeMismatch,
             Discriminator::None,
         ))

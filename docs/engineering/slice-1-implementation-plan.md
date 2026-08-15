@@ -552,6 +552,44 @@ Q-08, N-22, N-24, N-25, F-8 remain OPEN. Carried observations OBS-1 (identity
 component accessors) and OBS-3 (`PropertyPosition` supplied ordinal) require no
 remediation; OBS-2 (crate-doc currency) was resolved in this closure cycle.
 
+### Post-closure remediation — occurrence-anchored defect identity (Revision 4)
+
+**Remediated 2026-08-16** under Product Board authorization **PBA-0098**, reported
+in **ER-0087**, at baseline `c902eec`, on the authority of accepted **Slice
+Contract Revision 4** (PBR-0016), following the Phase-1 occurrence-identity
+remediation (ER-0086) and its reconciliation (ARR-0030 PASS).
+
+This bounded post-closure cycle migrates the §6.3/§6.4 result model to the accepted
+occurrence-anchor design:
+
+- **`DefectCore.offending: LineageId → OccurrenceId`** — the universal defect
+  anchor is now the occurrence identity (Revision 4 §C.4), so defects stay
+  distinct and orderable even when a construct's lineage is absent or duplicated.
+  §6.4 key 2 orders by the supplied occurrence order; the totality rationale no
+  longer relies on lineage uniqueness (§C.9).
+- **`Discriminator::Counterpart` payload `LineageId → OccurrenceId`** (kind 6,
+  ordinal unchanged) — a pairwise defect's counterpart is representable when a
+  rule's lineage is absent or duplicated (§C.7/§C.8).
+- **New `Discriminator::Lineage(LineageId)` kind 7** — carries the duplicated
+  lineage identity of an envelope-anchored `DUPLICATE_LINEAGE_IDENTITY` defect,
+  ordered by the supplied lineage order (§C.5/§C.8). Kinds 1–6 are not renumbered.
+
+The result model now represents the accepted anchor rules: ordinary → offending
+occurrence; Strategy/class-level → envelope occurrence + (ROLE | LINEAGE)
+discriminator; check-9 symmetric → lower-occurrence anchor + COUNTERPART occurrence;
+check-11 asymmetric → subsumed-rule occurrence anchor (regardless of order) +
+subsuming-rule COUNTERPART occurrence. Focused adversarial tests exercise each.
+
+**Scope boundary.** The `ATOM` discriminator's referenced payload stays lineage
+identity (a semantic reference, not an anchor); the §6.2 **not-evaluated
+representation is unchanged** (Revision 4 §C.11 preserves it — its `construct`
+field remains `LineageId`); no §5.1 population, §5.2 prerequisite, or mandatory
+check was implemented; `src/checks/**` remains non-substantive. Phase 4 remains
+**CLOSED**; this remediation awaits an **independent Phase-4 reconciliation
+review**. O-1/O-2/O-3 remain OPEN. This completes the accepted Revision-4
+implementation delta; only Phase-5A (mandatory checks) remains, separately
+authorized and still blocked.
+
 ## Phase 5 — Mandatory Well-Formedness checks
 
 | | |

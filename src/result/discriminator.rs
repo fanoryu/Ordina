@@ -17,7 +17,7 @@ use core::cmp::Ordering;
 use crate::model::derivation::CandidateRole;
 use crate::model::guard::ComparisonOperator;
 use crate::model::literal::Literal;
-use crate::model::opaque::LineageId;
+use crate::model::opaque::{LineageId, OccurrenceId};
 
 /// The §6.4.3 type ordinal — `NUMERIC` (1) < `BOOLEAN` (2) < `ENUM` (3).
 const fn literal_type_ordinal(literal: &Literal) -> u8 {
@@ -207,29 +207,47 @@ impl AtomKey {
     }
 }
 
-/// A defect discriminator — one of the six §6.4.2 kinds.
+/// A defect discriminator — one of the seven §6.4.2 kinds (Revision 4 §C.8).
 ///
 /// Compared by **kind ordinal** first, then by that kind's rule. A closed
 /// authoritative category; `Literal` inside the `Atom` kind is why this type
 /// carries a hand-written order and equality rather than a derive.
+///
+/// Revision 4 §C.8 makes exactly two changes to the Revision-3 six kinds: the
+/// `Counterpart` payload migrates from lineage identity to **occurrence
+/// identity** (kind 6, unchanged ordinal), and a new **`Lineage`** kind 7 is
+/// added for `DUPLICATE_LINEAGE_IDENTITY`. Kinds 1–5 are unchanged.
 #[derive(Debug, Clone)]
 pub enum Discriminator {
     /// Kind 1 — no discriminator; the preceding keys already distinguish.
     None,
     /// Kind 2 — a property's declared position (checks 1, 4, 6).
     Property(PropertyPosition),
-    /// Kind 3 — a candidate role (check 13B).
+    /// Kind 3 — a candidate role (check 13B, incl. `DUPLICATE_CANDIDATE_DERIVATION`).
     Role(CandidateRole),
-    /// Kind 4 — a guard atom, by content (checks 2, 12).
+    /// Kind 4 — a guard atom, by content (checks 2, 12). Its referenced-lineage
+    /// payload stays lineage identity (a semantic reference, not an anchor).
     Atom(AtomKey),
     /// Kind 5 — a derivation-node path (checks 2, 13A, 14A).
     NodePath(NodePath),
-    /// Kind 6 — the counterpart rule's lineage identity (checks 9, 11).
-    Counterpart(LineageId),
+    /// Kind 6 — the counterpart construct's **occurrence identity** (checks 9, 11).
+    ///
+    /// Revision 4 §C.7/§C.8 migrated this payload from lineage to occurrence
+    /// identity so a pairwise defect stays representable when a rule's lineage is
+    /// absent or duplicated. Ordered by the supplied occurrence order.
+    Counterpart(OccurrenceId),
+    /// Kind 7 — the **duplicated lineage identity** of a
+    /// `DUPLICATE_LINEAGE_IDENTITY` defect (check 2), Revision 4 §C.5/§C.8.
+    ///
+    /// That defect is envelope-anchored (§6.3), so this discriminator separates
+    /// multiple duplicated-lineage classes within one Strategy. Its payload is a
+    /// semantic lineage identity, ordered by the supplied lineage order.
+    Lineage(LineageId),
 }
 
 impl Discriminator {
-    /// The §6.4.2 kind ordinal, 1..=6. Declared, not derived from layout.
+    /// The §6.4.2 kind ordinal, 1..=7 (Revision 4 §C.8). Declared, not derived
+    /// from layout.
     #[must_use]
     pub const fn kind_ordinal(&self) -> u8 {
         // No catch-all `_` arm: a new kind must be placed here deliberately.
@@ -240,6 +258,7 @@ impl Discriminator {
             Self::Atom(_) => 4,
             Self::NodePath(_) => 5,
             Self::Counterpart(_) => 6,
+            Self::Lineage(_) => 7,
         }
     }
 }
@@ -257,7 +276,10 @@ impl Ord for Discriminator {
             (Self::Role(a), Self::Role(b)) => role_ordinal(*a).cmp(&role_ordinal(*b)),
             (Self::Atom(a), Self::Atom(b)) => a.compare(b),
             (Self::NodePath(a), Self::NodePath(b)) => a.cmp(b),
+            // Counterpart orders by the supplied occurrence order (§C.8).
             (Self::Counterpart(a), Self::Counterpart(b)) => a.cmp(b),
+            // Lineage orders by the supplied lineage order (§C.8).
+            (Self::Lineage(a), Self::Lineage(b)) => a.cmp(b),
             _ => unreachable!("discriminator kinds already separated by kind ordinal"),
         }
     }
@@ -287,6 +309,10 @@ mod tests {
 
     fn lineage(handle: u64) -> LineageId {
         LineageId::new(OpaqueValue::new(handle))
+    }
+
+    fn occ(handle: u64) -> OccurrenceId {
+        OccurrenceId::new(OpaqueValue::new(handle))
     }
 
     fn num(value: i64, dimension: u64) -> Literal {
@@ -352,13 +378,37 @@ mod tests {
                 num(0, 1),
             )),
             Discriminator::NodePath(NodePath::root()),
-            Discriminator::Counterpart(lineage(1)),
+            Discriminator::Counterpart(occ(1)),
+            Discriminator::Lineage(lineage(1)),
         ];
         for (i, a) in discriminators.iter().enumerate() {
             for (j, b) in discriminators.iter().enumerate() {
                 assert_eq!(a.cmp(b), i.cmp(&j), "kind {i} vs {j}");
             }
         }
+    }
+
+    #[test]
+    fn discriminator_kind_ordinals_are_one_through_seven() {
+        // Revision 4 §C.8: kinds 1–6 keep their ordinals; LINEAGE is the new 7.
+        assert_eq!(Discriminator::None.kind_ordinal(), 1);
+        assert_eq!(
+            Discriminator::Property(PropertyPosition::new(0)).kind_ordinal(),
+            2
+        );
+        assert_eq!(Discriminator::Role(CandidateRole::Entry).kind_ordinal(), 3);
+        assert_eq!(
+            Discriminator::Atom(AtomKey::new(
+                lineage(1),
+                ComparisonOperator::Less,
+                num(0, 1)
+            ))
+            .kind_ordinal(),
+            4
+        );
+        assert_eq!(Discriminator::NodePath(NodePath::root()).kind_ordinal(), 5);
+        assert_eq!(Discriminator::Counterpart(occ(1)).kind_ordinal(), 6);
+        assert_eq!(Discriminator::Lineage(lineage(1)).kind_ordinal(), 7);
     }
 
     #[test]
@@ -434,10 +484,47 @@ mod tests {
     }
 
     #[test]
-    fn counterpart_orders_by_supplied_lineage_order() {
-        let a = Discriminator::Counterpart(lineage(1));
-        let b = Discriminator::Counterpart(lineage(2));
+    fn counterpart_orders_by_supplied_occurrence_order() {
+        // Revision 4 §C.8: COUNTERPART payload is now an OccurrenceId, ordered by
+        // the supplied occurrence order.
+        let a = Discriminator::Counterpart(occ(1));
+        let b = Discriminator::Counterpart(occ(2));
         assert!(a < b);
+    }
+
+    #[test]
+    fn counterpart_represents_rules_regardless_of_lineage() {
+        // §C.7: because COUNTERPART carries an occurrence identity (always
+        // present), a pairwise defect's counterpart is representable even when the
+        // counterpart rule's lineage is absent or shared — no lineage is consulted
+        // here at all. Two distinct counterpart occurrences stay distinct.
+        let a = Discriminator::Counterpart(occ(10));
+        let b = Discriminator::Counterpart(occ(11));
+        assert_ne!(a, b);
+        assert!(a < b);
+    }
+
+    #[test]
+    fn lineage_discriminator_orders_by_supplied_lineage_order() {
+        // §C.5/§C.8: the LINEAGE kind carries the duplicated lineage identity,
+        // ordered by the supplied lineage order — this is what separates multiple
+        // duplicate-lineage classes sharing the envelope anchor.
+        let l4 = Discriminator::Lineage(lineage(4));
+        let l7 = Discriminator::Lineage(lineage(7));
+        assert!(l4 < l7);
+        assert_ne!(l4, l7);
+        assert_eq!(l4, Discriminator::Lineage(lineage(4)));
+    }
+
+    #[test]
+    fn counterpart_occurrence_and_lineage_class_are_different_kinds() {
+        // A COUNTERPART (kind 6, occurrence payload) and a LINEAGE (kind 7,
+        // lineage payload) are separated by kind ordinal first, so they never
+        // compare equal and the occurrence/lineage domains never mix here.
+        let counterpart = Discriminator::Counterpart(occ(1));
+        let lineage_class = Discriminator::Lineage(lineage(1));
+        assert!(counterpart < lineage_class);
+        assert_ne!(counterpart, lineage_class);
     }
 
     #[test]
