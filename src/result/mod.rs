@@ -108,10 +108,34 @@ impl WellFormednessResult {
         }
     }
 
-    /// An `Unusable` result carrying its non-empty defect set (§6.2). The caller
-    /// supplies defects already in §6.4 canonical order (see [`canonical_sort`]).
+    /// An `Unusable` result carrying its **non-empty** defect set (§6.2).
+    ///
+    /// §6.2 binds "the defect set — empty **iff** `WELL-FORMED`", so an
+    /// `Unusable` result with an empty defect set is a state the contract makes
+    /// impossible. That impossibility is **structural** here: the first defect is
+    /// a required positional argument, so no safe call can produce the invalid
+    /// state — there is nothing to reject at runtime because there is nothing to
+    /// construct. The remaining defects follow; the caller supplies them already
+    /// in §6.4 canonical order (see [`canonical_sort`]).
+    ///
+    /// An empty `Unusable` therefore does not compile — there is no defect to
+    /// pass as the first argument:
+    ///
+    /// ```compile_fail
+    /// use ordina::result::WellFormednessResult;
+    ///
+    /// // No first defect exists to supply, so this cannot be written.
+    /// let _ = WellFormednessResult::unusable(Vec::new(), Vec::new());
+    /// ```
     #[must_use]
-    pub fn unusable(defects: Vec<DefectIdentity>, not_evaluated: Vec<NotEvaluatedRecord>) -> Self {
+    pub fn unusable(
+        first_defect: DefectIdentity,
+        remaining_defects: Vec<DefectIdentity>,
+        not_evaluated: Vec<NotEvaluatedRecord>,
+    ) -> Self {
+        let mut defects = Vec::with_capacity(remaining_defects.len() + 1);
+        defects.push(first_defect);
+        defects.extend(remaining_defects);
         Self {
             verdict: Verdict::Unusable,
             defects,
@@ -168,10 +192,32 @@ mod tests {
 
     #[test]
     fn unusable_carries_its_defect_set_and_binds_wf1() {
-        let result = WellFormednessResult::unusable(vec![a_defect()], Vec::new());
+        let result = WellFormednessResult::unusable(a_defect(), Vec::new(), Vec::new());
         assert_eq!(result.verdict(), Verdict::Unusable);
         assert_eq!(result.defects().len(), 1);
         assert_eq!(result.semantics_version(), CheckerSemanticsVersion::Wf1);
+    }
+
+    #[test]
+    fn unusable_prepends_the_required_first_defect_to_the_rest() {
+        let result = WellFormednessResult::unusable(a_defect(), vec![a_defect()], Vec::new());
+        assert_eq!(result.verdict(), Verdict::Unusable);
+        assert_eq!(result.defects().len(), 2);
+    }
+
+    #[test]
+    fn the_defect_set_is_empty_iff_well_formed() {
+        // WellFormed ⟹ empty (structural: no way to add a defect here).
+        let wf = WellFormednessResult::well_formed(Vec::new());
+        assert_eq!(wf.verdict(), Verdict::WellFormed);
+        assert!(wf.defects().is_empty());
+
+        // Unusable ⟹ non-empty (structural: the first defect is required, so
+        // an empty Unusable cannot be constructed — see the compile_fail doctest
+        // on `unusable`).
+        let unusable = WellFormednessResult::unusable(a_defect(), Vec::new(), Vec::new());
+        assert_eq!(unusable.verdict(), Verdict::Unusable);
+        assert!(!unusable.defects().is_empty());
     }
 
     #[test]
