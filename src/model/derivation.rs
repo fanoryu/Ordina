@@ -29,7 +29,7 @@
 
 use crate::model::declared::Declared;
 use crate::model::literal::Literal;
-use crate::model::opaque::LineageId;
+use crate::model::opaque::{LineageId, OccurrenceId};
 
 /// A candidate role — Slice Contract §3.8.
 ///
@@ -134,6 +134,10 @@ pub enum DerivationExpression {
 /// multiplicity within one derivation.
 #[derive(Debug, Clone)]
 pub struct CandidateDerivation {
+    /// Canonical occurrence identity (Revision 4 §C.1) — mandatory, present even
+    /// when `lineage` is absent. A candidate derivation is an operative node, so
+    /// lineage absence is check 15's; the occurrence identity anchors that defect.
+    pub occurrence: OccurrenceId,
     pub lineage: Declared<LineageId>,
     pub role: Declared<CandidateRole>,
     pub expression: Declared<DerivationExpression>,
@@ -144,11 +148,13 @@ impl CandidateDerivation {
     /// Malformed shapes are built from the fields directly.
     #[must_use]
     pub const fn new(
+        occurrence: OccurrenceId,
         lineage: LineageId,
         role: CandidateRole,
         expression: DerivationExpression,
     ) -> Self {
         Self {
+            occurrence,
             lineage: Declared::Present(lineage),
             role: Declared::Present(role),
             expression: Declared::Present(expression),
@@ -164,6 +170,10 @@ mod tests {
 
     fn lineage(handle: u64) -> LineageId {
         LineageId::new(OpaqueValue::new(handle))
+    }
+
+    fn occ(handle: u64) -> OccurrenceId {
+        OccurrenceId::new(OpaqueValue::new(handle))
     }
 
     fn literal(value: i64) -> Literal {
@@ -210,6 +220,7 @@ mod tests {
 
         for role in roles {
             let derivation = CandidateDerivation::new(
+                occ(1),
                 lineage(1),
                 role,
                 DerivationExpression::Literal(literal(1)),
@@ -228,6 +239,7 @@ mod tests {
         // key 1 (check number), not the PROPERTY discriminator. Both absences
         // must be buildable regardless of which check owns each.
         let bare = CandidateDerivation {
+            occurrence: occ(2),
             lineage: Declared::Absent,
             role: Declared::Absent,
             expression: Declared::Absent,

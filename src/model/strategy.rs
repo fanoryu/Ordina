@@ -51,7 +51,7 @@ use crate::model::declared::Declared;
 use crate::model::derivation::CandidateDerivation;
 use crate::model::direction::DirectionRule;
 use crate::model::evidence::EvidenceDeclaration;
-use crate::model::opaque::{LineageId, VersionToken};
+use crate::model::opaque::{LineageId, OccurrenceId, VersionToken};
 
 /// A canonical Strategy as Slice 1 receives it — Slice Contract §3.4.
 ///
@@ -60,6 +60,11 @@ use crate::model::opaque::{LineageId, VersionToken};
 /// and the checker must not mutate it.
 #[derive(Debug, Clone)]
 pub struct Strategy {
+    /// The envelope's canonical occurrence identity (Revision 4 §C.1). Mandatory
+    /// and non-optional: it exists even when the envelope's lineage is absent, and
+    /// it is the anchor for envelope- and Strategy/class-level defects (§C.4–§C.6).
+    /// It is a distinct domain from `lineage` and never substitutes for it.
+    pub occurrence: OccurrenceId,
     /// The envelope is an operative node (§5.1 check 15), so an absent lineage
     /// identity is `MISSING_OPERATIVE_PROVENANCE` under check 15 **exclusively**
     /// (Slice Contract Revision 3 §C.1); check 1 reports nothing for it.
@@ -82,8 +87,14 @@ impl Strategy {
     /// envelope shape. It says nothing about the contents: the collections are
     /// taken as given, and every check from 1 to 16 still has work to do.
     /// Malformed envelopes are built from the fields directly.
+    ///
+    /// The envelope has seven declared properties plus its canonical occurrence
+    /// identity (Revision 4 §C.1), so the constructor takes eight arguments by
+    /// necessity — one per §3.4 property and the occurrence anchor.
     #[must_use]
+    #[allow(clippy::too_many_arguments)]
     pub const fn new(
+        occurrence: OccurrenceId,
         lineage: LineageId,
         semantic_model_version: VersionToken,
         evidence_declarations: Vec<EvidenceDeclaration>,
@@ -93,6 +104,7 @@ impl Strategy {
         candidate_derivations: Vec<CandidateDerivation>,
     ) -> Self {
         Self {
+            occurrence,
             lineage: Declared::Present(lineage),
             semantic_model_version: Declared::Present(semantic_model_version),
             evidence_declarations: Declared::Present(evidence_declarations),
@@ -108,8 +120,9 @@ impl Strategy {
     /// Every check-1 envelope absence at once, and check 15's and check 16's
     /// absences with them. Phase 1 asserts only that it can be built.
     #[must_use]
-    pub const fn wholly_undeclared() -> Self {
+    pub const fn wholly_undeclared(occurrence: OccurrenceId) -> Self {
         Self {
+            occurrence,
             lineage: Declared::Absent,
             semantic_model_version: Declared::Absent,
             evidence_declarations: Declared::Absent,
@@ -137,6 +150,10 @@ mod tests {
         LineageId::new(OpaqueValue::new(handle))
     }
 
+    fn occ(handle: u64) -> OccurrenceId {
+        OccurrenceId::new(OpaqueValue::new(handle))
+    }
+
     fn price() -> DimensionSymbol {
         DimensionSymbol::new(OpaqueValue::new(1))
     }
@@ -155,10 +172,12 @@ mod tests {
         let evidence = lineage(100);
 
         Strategy::new(
+            occ(1),
             lineage(1),
             VersionToken::new(OpaqueValue::new(1)),
-            vec![EvidenceDeclaration::numeric(evidence, price())],
+            vec![EvidenceDeclaration::numeric(occ(100), evidence, price())],
             vec![ConfigurationParameter::new(
+                occ(200),
                 lineage(200),
                 price(),
                 price_literal(1),
@@ -166,6 +185,7 @@ mod tests {
                 true,
             )],
             vec![Condition::new(
+                occ(300),
                 lineage(300),
                 ConditionClassification::Blocking,
                 Guard::from_atoms(vec![Atom::new(
@@ -176,6 +196,7 @@ mod tests {
             )],
             vec![
                 DirectionRule::new(
+                    occ(400),
                     lineage(400),
                     PrecedenceOrdinal::new(OpaqueValue::new(9)),
                     Guard::from_atoms(vec![Atom::new(
@@ -187,6 +208,7 @@ mod tests {
                 ),
                 // The mandatory lowest-precedence always-applicable rule (§3.7).
                 DirectionRule::new(
+                    occ(401),
                     lineage(401),
                     PrecedenceOrdinal::new(OpaqueValue::new(1)),
                     Guard::always_applicable(),
@@ -195,11 +217,13 @@ mod tests {
             ],
             vec![
                 CandidateDerivation::new(
+                    occ(500),
                     lineage(500),
                     CandidateRole::Entry,
                     DerivationExpression::EvidenceReference(evidence),
                 ),
                 CandidateDerivation::new(
+                    occ(501),
                     lineage(501),
                     CandidateRole::StopLoss,
                     DerivationExpression::Subtract {
@@ -208,6 +232,7 @@ mod tests {
                     },
                 ),
                 CandidateDerivation::new(
+                    occ(502),
                     lineage(502),
                     CandidateRole::TakeProfit,
                     DerivationExpression::Literal(price_literal(150)),
@@ -259,6 +284,7 @@ mod tests {
         // Note these are *present but empty* / *present but duplicated*
         // collections — a different state from the absent collections below.
         let degenerate = Strategy::new(
+            occ(2),
             lineage(2),
             VersionToken::new(OpaqueValue::new(1)),
             vec![],
@@ -267,11 +293,13 @@ mod tests {
             vec![],
             vec![
                 CandidateDerivation::new(
+                    occ(600),
                     lineage(600),
                     CandidateRole::Entry,
                     DerivationExpression::Literal(price_literal(1)),
                 ),
                 CandidateDerivation::new(
+                    occ(601),
                     lineage(601),
                     CandidateRole::Entry,
                     DerivationExpression::Literal(price_literal(2)),
@@ -290,7 +318,7 @@ mod tests {
         // exclusively, the semantic-model version by check 16 exclusively, and
         // the five collections (positions 3-7) by check 1. All seven absences
         // must be representable regardless of which check owns each.
-        let bare = Strategy::wholly_undeclared();
+        let bare = Strategy::wholly_undeclared(occ(2));
 
         assert!(bare.lineage.is_absent());
         assert!(bare.semantic_model_version.is_absent());
@@ -306,7 +334,7 @@ mod tests {
         // The distinction check 1 and check 8 depend on: "no candidate-derivation
         // collection" is a different state from "an empty one".
         let empty = complete_strategy();
-        let absent = Strategy::wholly_undeclared();
+        let absent = Strategy::wholly_undeclared(occ(2));
 
         assert!(empty.candidate_derivations.is_present());
         assert!(absent.candidate_derivations.is_absent());
@@ -318,6 +346,7 @@ mod tests {
         // is any token that is not the contract's `SM-1`; Phase 1 neither knows
         // nor decides which token that is — it only keeps both shapes buildable.
         let unsupported = Strategy::new(
+            occ(3),
             lineage(3),
             VersionToken::new(OpaqueValue::new(999)),
             vec![],
@@ -326,7 +355,7 @@ mod tests {
             vec![],
             vec![],
         );
-        let absent = Strategy::wholly_undeclared();
+        let absent = Strategy::wholly_undeclared(occ(4));
 
         assert!(unsupported.semantic_model_version.is_present());
         assert!(absent.semantic_model_version.is_absent());
@@ -338,15 +367,18 @@ mod tests {
         // well-formed may still contain constructs in every malformed state the
         // contract names. None of it is judged here.
         let malformed = Strategy::new(
+            occ(4),
             lineage(4),
             VersionToken::new(OpaqueValue::new(1)),
             vec![EvidenceDeclaration {
+                occurrence: occ(1000),
                 lineage: Declared::Absent,
                 declared_type: DeclaredCategory::OutOfDomain,
                 declared_dimension: Declared::Present(price()),
                 declared_values: Declared::Present(vec![]),
             }],
             vec![ConfigurationParameter {
+                occurrence: occ(1001),
                 lineage: Declared::Absent,
                 dimension: Declared::Absent,
                 lower_bound: Declared::Absent,
@@ -354,17 +386,20 @@ mod tests {
                 adjustable: Declared::Absent,
             }],
             vec![Condition {
+                occurrence: occ(1002),
                 lineage: Declared::Absent,
                 classification: DeclaredCategory::Absent,
                 guard: Declared::Absent,
             }],
             vec![DirectionRule {
+                occurrence: occ(1003),
                 lineage: Declared::Absent,
                 precedence: Declared::Absent,
                 guard: Declared::Absent,
                 outcome: DeclaredCategory::multiple(Direction::Buy, Direction::Sell, vec![]),
             }],
             vec![CandidateDerivation {
+                occurrence: occ(1004),
                 lineage: Declared::Absent,
                 role: Declared::Absent,
                 expression: Declared::Absent,
@@ -376,5 +411,102 @@ mod tests {
         assert_eq!(present(&malformed.conditions).len(), 1);
         assert_eq!(present(&malformed.direction_rules).len(), 1);
         assert_eq!(present(&malformed.candidate_derivations).len(), 1);
+    }
+
+    // -- Revision 4 §C.1 canonical occurrence identity ----------------------
+    //
+    // These assert only the Phase-1 consequence of accepted Revision 4: every
+    // construct occurrence carries a mandatory canonical occurrence identity,
+    // available even when lineage is absent or duplicated, distinct from lineage,
+    // and ordered by the caller-supplied occurrence order. No defect is produced
+    // and no check is run here — that is Phase 4 / Phase 5.
+
+    #[test]
+    fn every_construct_occurrence_including_the_envelope_exposes_an_occurrence_id() {
+        // Universal coverage (§C.1): the envelope and all five child kinds expose
+        // a canonical occurrence identity. If any kind lacked one this would not
+        // compile, because the field is mandatory and non-optional.
+        let strategy = complete_strategy();
+
+        assert_eq!(strategy.occurrence, occ(1));
+        assert_eq!(
+            present(&strategy.evidence_declarations)[0].occurrence,
+            occ(100)
+        );
+        assert_eq!(
+            present(&strategy.configuration_parameters)[0].occurrence,
+            occ(200)
+        );
+        assert_eq!(present(&strategy.conditions)[0].occurrence, occ(300));
+        assert_eq!(present(&strategy.direction_rules)[0].occurrence, occ(400));
+        assert_eq!(
+            present(&strategy.candidate_derivations)[0].occurrence,
+            occ(500)
+        );
+    }
+
+    #[test]
+    fn absent_lineage_does_not_imply_absent_occurrence_identity() {
+        // §C.1 / §22: a construct whose lineage is absent still has an occurrence
+        // identity, so its check-1 / check-15 defect stays anchorable in Phase 4.
+        let envelope = Strategy::wholly_undeclared(occ(7));
+        assert!(envelope.lineage.is_absent());
+        assert_eq!(envelope.occurrence, occ(7));
+
+        let declaration = EvidenceDeclaration {
+            occurrence: occ(8),
+            lineage: Declared::Absent,
+            declared_type: DeclaredCategory::Absent,
+            declared_dimension: Declared::Absent,
+            declared_values: Declared::Absent,
+        };
+        assert!(declaration.lineage.is_absent());
+        assert_eq!(declaration.occurrence, occ(8));
+    }
+
+    #[test]
+    fn two_occurrences_may_share_one_lineage_yet_stay_distinct() {
+        // §C.1 / §23: duplicate lineage does not collapse occurrences. Both
+        // declarations carry lineage 900; their distinct occurrence identities
+        // keep them individually addressable (so their per-occurrence defects will
+        // not collide under Revision 4 §6.3).
+        let a = EvidenceDeclaration::numeric(occ(10), lineage(900), price());
+        let b = EvidenceDeclaration::numeric(occ(11), lineage(900), price());
+
+        assert_eq!(a.lineage, b.lineage);
+        assert_ne!(a.occurrence, b.occurrence);
+    }
+
+    #[test]
+    fn identical_content_siblings_stay_distinct_by_occurrence() {
+        // §C.1: two byte-identical declarations (same lineage, same fields) remain
+        // distinct occurrences. Only the occurrence identity separates them.
+        let a = EvidenceDeclaration::boolean(occ(20), lineage(901));
+        let b = EvidenceDeclaration::boolean(occ(21), lineage(901));
+
+        assert_eq!(a.lineage, b.lineage);
+        assert_eq!(a.declared_type, b.declared_type);
+        assert_ne!(a.occurrence, b.occurrence);
+    }
+
+    #[test]
+    fn occurrence_order_is_the_supplied_order_not_traversal_or_container_order() {
+        // §C.1 / §C.3: the occurrence order is the caller-supplied total order,
+        // read from the handle — never derived from Vec position or traversal.
+        // Here two declarations are placed in a collection in one order while
+        // their supplied occurrence order is the *opposite*, so sorting by the
+        // supplied order must disagree with the container order.
+        let first_in_container = EvidenceDeclaration::boolean(occ(31), lineage(1));
+        let second_in_container = EvidenceDeclaration::boolean(occ(30), lineage(2));
+        let collection = [first_in_container, second_in_container];
+
+        let container_order: Vec<_> = collection.iter().map(|d| d.occurrence).collect();
+        assert_eq!(container_order, vec![occ(31), occ(30)]);
+
+        let mut by_supplied_order = container_order.clone();
+        by_supplied_order.sort();
+        // The supplied order is occ(30) < occ(31) — not the container order.
+        assert_eq!(by_supplied_order, vec![occ(30), occ(31)]);
+        assert_ne!(by_supplied_order, container_order);
     }
 }

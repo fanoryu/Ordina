@@ -1,9 +1,18 @@
-//! The five opaque semantic domains — Slice Contract §3.3, §3.3.1.
+//! The opaque value domains — Slice Contract §3.3, §3.3.1 (and §C.1 of
+//! Revision 4).
 //!
 //! Lineage identities, dimension symbols, `ENUM` categorical values, version
-//! tokens and precedence ordinals are **opaque**: the contract selects no
-//! encoding, format or representation for them, and the checker must never take
-//! authoritative meaning from whatever representation it happens to use.
+//! tokens and precedence ordinals are the five **semantic** opaque domains: the
+//! contract selects no encoding, format or representation for them, and the
+//! checker must never take authoritative meaning from whatever representation it
+//! happens to use.
+//!
+//! Revision 4 §C.1 adds a sixth opaque domain — **construct-occurrence
+//! identities** ([`OccurrenceId`]). It is opaque and supplied-ordered exactly
+//! like the semantic domains, but it is an **addressing / conformance** identity,
+//! not a semantic one: it identifies one concrete construct occurrence in the
+//! canonical input and carries no product semantics (§C.1, §C.3). It is distinct
+//! from lineage identity and never substitutes for it.
 //!
 //! Each domain is its own newtype, so a dimension symbol cannot be compared
 //! against a lineage identity by accident — that is a compile error, not a bug
@@ -136,7 +145,51 @@ pub struct VersionToken(OpaqueValue);
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PrecedenceOrdinal(OpaqueValue);
 
+/// A canonical construct-occurrence identity — Slice Contract Revision 4 §C.1.
+///
+/// Identifies **one concrete construct occurrence** in one canonical Strategy
+/// input. It is mandatory and non-optional (every occurrence has exactly one,
+/// even a malformed one), opaque, caller-supplied, and unique within one Strategy
+/// input. It is a **separate domain from [`LineageId`]** — the two are never
+/// compared or substituted (that is a compile error) — and it exists even when a
+/// construct's lineage is absent, is duplicated, or its content is identical to
+/// another occurrence's.
+///
+/// Its order is the §C.1 caller-supplied total order — "ordering only, carries no
+/// semantics" — read back from the supplied handle exactly as the semantic
+/// domains are, never derived from representation, collection position, or
+/// traversal order (ADR-0005 §7.5).
+///
+/// Occurrence identity and lineage identity are distinct domains and cannot be
+/// compared:
+///
+/// ```compile_fail
+/// use ordina::model::opaque::{LineageId, OccurrenceId, OpaqueValue};
+///
+/// let occurrence = OccurrenceId::new(OpaqueValue::new(1));
+/// let lineage = LineageId::new(OpaqueValue::new(1));
+///
+/// let _ = occurrence == lineage;
+/// ```
+///
+/// Comparison **within** the occurrence domain reads the contract-supplied order:
+///
+/// ```
+/// use ordina::model::opaque::{OccurrenceId, OpaqueValue};
+///
+/// assert!(OccurrenceId::new(OpaqueValue::new(1)) < OccurrenceId::new(OpaqueValue::new(2)));
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct OccurrenceId(OpaqueValue);
+
 impl LineageId {
+    #[must_use]
+    pub const fn new(value: OpaqueValue) -> Self {
+        Self(value)
+    }
+}
+
+impl OccurrenceId {
     #[must_use]
     pub const fn new(value: OpaqueValue) -> Self {
         Self(value)
@@ -191,6 +244,18 @@ impl Ord for LineageId {
 }
 
 impl PartialOrd for LineageId {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for OccurrenceId {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0.supplied_order().cmp(&other.0.supplied_order())
+    }
+}
+
+impl PartialOrd for OccurrenceId {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
@@ -274,5 +339,37 @@ mod tests {
 
         assert_eq!(a, VersionToken::new(OpaqueValue::new(1)));
         assert_ne!(a, VersionToken::new(OpaqueValue::new(2)));
+    }
+
+    fn occurrence(handle: u64) -> OccurrenceId {
+        OccurrenceId::new(OpaqueValue::new(handle))
+    }
+
+    #[test]
+    fn occurrence_identity_follows_the_supplied_order() {
+        // Revision 4 §C.1: the occurrence order is the caller-supplied total
+        // order, read back from the handle exactly as the semantic domains are.
+        assert!(occurrence(1) < occurrence(2));
+        assert!(occurrence(9) > occurrence(3));
+        assert_eq!(occurrence(4), occurrence(4));
+
+        let mut sorted = vec![occurrence(3), occurrence(1), occurrence(2)];
+        sorted.sort();
+        assert_eq!(sorted, vec![occurrence(1), occurrence(2), occurrence(3)]);
+    }
+
+    #[test]
+    fn occurrence_and_lineage_are_distinct_domains() {
+        // Cross-domain comparison is a *compile* error (see the `compile_fail`
+        // doctest on `OccurrenceId`). What is testable is that the same handle in
+        // the two domains is two independent, non-substitutable values: an
+        // occurrence identity is never a lineage identity.
+        let occ = occurrence(1);
+        let lin = LineageId::new(OpaqueValue::new(1));
+
+        assert_eq!(occ, OccurrenceId::new(OpaqueValue::new(1)));
+        assert_eq!(lin, LineageId::new(OpaqueValue::new(1)));
+        // Distinct occurrence identities never coincide.
+        assert_ne!(occurrence(1), occurrence(2));
     }
 }

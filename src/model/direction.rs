@@ -24,7 +24,7 @@
 
 use crate::model::declared::{Declared, DeclaredCategory};
 use crate::model::guard::Guard;
-use crate::model::opaque::{LineageId, PrecedenceOrdinal};
+use crate::model::opaque::{LineageId, OccurrenceId, PrecedenceOrdinal};
 
 /// A Direction outcome — `glossary.md`, Slice Contract §3.7.
 ///
@@ -45,6 +45,12 @@ pub enum Direction {
 /// representable, so both are declaration states.
 #[derive(Debug, Clone)]
 pub struct DirectionRule {
+    /// Canonical occurrence identity (Revision 4 §C.1) — mandatory, present even
+    /// when `lineage` is absent. It anchors this rule's defects and, for check-9
+    /// ties and check-11 subsumption, is the offender/COUNTERPART occurrence
+    /// (§C.7) — so a pairwise defect stays representable when a rule's lineage is
+    /// absent or duplicated.
+    pub occurrence: OccurrenceId,
     pub lineage: Declared<LineageId>,
     pub precedence: Declared<PrecedenceOrdinal>,
     pub guard: Declared<Guard>,
@@ -56,12 +62,14 @@ impl DirectionRule {
     /// shape. Malformed shapes are built from the fields directly.
     #[must_use]
     pub const fn new(
+        occurrence: OccurrenceId,
         lineage: LineageId,
         precedence: PrecedenceOrdinal,
         guard: Guard,
         outcome: Direction,
     ) -> Self {
         Self {
+            occurrence,
             lineage: Declared::Present(lineage),
             precedence: Declared::Present(precedence),
             guard: Declared::Present(guard),
@@ -83,8 +91,12 @@ mod tests {
         PrecedenceOrdinal::new(OpaqueValue::new(handle))
     }
 
+    fn occ(handle: u64) -> OccurrenceId {
+        OccurrenceId::new(OpaqueValue::new(handle))
+    }
+
     fn rule(id: u64, ordinal: u64, guard: Guard, outcome: Direction) -> DirectionRule {
-        DirectionRule::new(lineage(id), precedence(ordinal), guard, outcome)
+        DirectionRule::new(occ(id), lineage(id), precedence(ordinal), guard, outcome)
     }
 
     #[test]
@@ -120,18 +132,21 @@ mod tests {
         // §5.1 check 10 reports a zero, multiple, or out-of-domain outcome as
         // `INVALID_DIRECTION_OUTCOME` in Phase 5.
         let zero = DirectionRule {
+            occurrence: occ(3),
             lineage: Declared::Present(lineage(3)),
             precedence: Declared::Present(precedence(1)),
             guard: Declared::Present(Guard::always_applicable()),
             outcome: DeclaredCategory::Absent,
         };
         let multiple = DirectionRule {
+            occurrence: occ(4),
             lineage: Declared::Present(lineage(4)),
             precedence: Declared::Present(precedence(2)),
             guard: Declared::Present(Guard::always_applicable()),
             outcome: DeclaredCategory::multiple(Direction::Buy, Direction::Sell, vec![]),
         };
         let out_of_domain = DirectionRule {
+            occurrence: occ(5),
             lineage: Declared::Present(lineage(5)),
             precedence: Declared::Present(precedence(3)),
             guard: Declared::Present(Guard::always_applicable()),
@@ -177,6 +192,7 @@ mod tests {
         // guard are present; check 15 anchors on the lineage identity of an
         // operative node. All three absences must therefore be buildable.
         let bare = DirectionRule {
+            occurrence: occ(6),
             lineage: Declared::Absent,
             precedence: Declared::Absent,
             guard: Declared::Absent,

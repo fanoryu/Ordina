@@ -23,7 +23,7 @@
 
 use crate::model::declared::Declared;
 use crate::model::literal::Literal;
-use crate::model::opaque::{DimensionSymbol, LineageId};
+use crate::model::opaque::{DimensionSymbol, LineageId, OccurrenceId};
 
 /// A declared configuration parameter — Slice Contract §3.9.
 ///
@@ -32,6 +32,11 @@ use crate::model::opaque::{DimensionSymbol, LineageId};
 /// unrepresentable, and no check owns that shape.
 #[derive(Debug, Clone)]
 pub struct ConfigurationParameter {
+    /// Canonical occurrence identity (Revision 4 §C.1) — mandatory, non-optional,
+    /// present even when `lineage` is absent. A configuration parameter is not an
+    /// operative node, so its lineage absence is check 1's; its occurrence identity
+    /// anchors that defect regardless.
+    pub occurrence: OccurrenceId,
     pub lineage: Declared<LineageId>,
     pub dimension: Declared<DimensionSymbol>,
     /// Declared lower bound. §4.11 requires it to share the parameter's
@@ -49,6 +54,7 @@ impl ConfigurationParameter {
     /// Malformed shapes are built from the fields directly.
     #[must_use]
     pub const fn new(
+        occurrence: OccurrenceId,
         lineage: LineageId,
         dimension: DimensionSymbol,
         lower_bound: Literal,
@@ -56,6 +62,7 @@ impl ConfigurationParameter {
         adjustable: bool,
     ) -> Self {
         Self {
+            occurrence,
             lineage: Declared::Present(lineage),
             dimension: Declared::Present(dimension),
             lower_bound: Declared::Present(lower_bound),
@@ -75,6 +82,10 @@ mod tests {
         LineageId::new(OpaqueValue::new(handle))
     }
 
+    fn occ(handle: u64) -> OccurrenceId {
+        OccurrenceId::new(OpaqueValue::new(handle))
+    }
+
     fn dimension() -> DimensionSymbol {
         DimensionSymbol::new(OpaqueValue::new(1))
     }
@@ -89,7 +100,7 @@ mod tests {
     #[test]
     fn a_parameter_declares_structure_and_bounds_but_no_value() {
         let parameter =
-            ConfigurationParameter::new(lineage(1), dimension(), bound(1), bound(10), true);
+            ConfigurationParameter::new(occ(1), lineage(1), dimension(), bound(1), bound(10), true);
 
         assert_eq!(parameter.adjustable, Declared::Present(true));
         assert!(parameter.lower_bound.is_present());
@@ -100,8 +111,14 @@ mod tests {
     fn check_4_faults_remain_representable() {
         // An inverted pair is a §5.1 check 4 defect in Phase 5, so Phase 1 must
         // let it be built.
-        let inverted =
-            ConfigurationParameter::new(lineage(2), dimension(), bound(10), bound(1), false);
+        let inverted = ConfigurationParameter::new(
+            occ(2),
+            lineage(2),
+            dimension(),
+            bound(10),
+            bound(1),
+            false,
+        );
 
         assert_eq!(inverted.adjustable, Declared::Present(false));
     }
@@ -112,6 +129,7 @@ mod tests {
         // property in its table is required, so check 1 must be able to find
         // each one missing.
         let bare = ConfigurationParameter {
+            occurrence: occ(3),
             lineage: Declared::Absent,
             dimension: Declared::Absent,
             lower_bound: Declared::Absent,

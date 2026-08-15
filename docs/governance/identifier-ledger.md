@@ -171,7 +171,8 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0093** | **ALLOCATED** | **Slice Contract Revision 4 Check-11 Pairwise Anchor Bounded Remediation authorization** → ER-0084 (2026-08-16; corrects ARR-0028 M-1 in `first-runnable-slice-contract-r04.md`; Revision 4 remains PROPOSED; independent re-review required) |
 | **PBA-0094** | **ALLOCATED** | **Slice Contract Revision 4 Independent Post-Remediation Re-Review authorization** → ARR-0029 (2026-08-16; read-only; verdict PASS — ARR-0028 M-1 CLOSED; ACCEPTANCE-READY) |
 | **PBA-0095** | **ALLOCATED** | **Slice Contract Revision 4 Product Board Acceptance authorization** → PBR-0016 / ER-0085 (2026-08-16; accepts Revision 4, supersedes Revision 3 in governance provenance) |
-| PBA-0096 and above | AVAILABLE-FUTURE | — |
+| **PBA-0096** | **ALLOCATED** | **Phase-1 Canonical Occurrence Identity Post-Closure Remediation authorization** → ER-0086 (2026-08-16; implements the Revision-4 §C.1 Phase-1 consequence — `OccurrenceId` opaque domain and a mandatory occurrence field on every construct; no Phase-4/check change; Phase 1 remains CLOSED; independent reconciliation required) |
+| PBA-0097 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -185,7 +186,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0096`.**
+**Next allocatable PBA: `PBA-0097`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -333,9 +334,10 @@ consumes an ARR number.
 | **ER-0083** | **ALLOCATED** | **Slice Contract Revision 4 Canonical Occurrence and Integrated Defect Identity Authoring Report** (authority PBA-0091; 2026-08-15; authors `first-runnable-slice-contract-r04.md` as **PROPOSED** and synchronizes PBA-0088–0091 / ER-0080–0083; Revision 3 remains authoritative; independent review and Product Board acceptance required before Phase-1/Phase-4 remediation) |
 | **ER-0084** | **ALLOCATED** | **Slice Contract Revision 4 Check-11 Anchor Remediation Report** (authority PBA-0093; 2026-08-16; splits §C.7 into symmetric check-9 occurrence-order selection and asymmetric check-11 subsumed-rule anchor per ARR-0028 M-1; closes ARR-0028 O-1 editorially (NONE for Strategy-level defects); COUNTERPART/OccurrenceId/LINEAGE architecture unchanged; Revision 4 remains PROPOSED; independent re-review required) |
 | **ER-0085** | **ALLOCATED** | **Slice Contract Revision 4 Acceptance Report** (authority PBA-0095; 2026-08-16; records **PBR-0016** — Revision 4 ACCEPTED and authoritative, Revision 3 SUPERSEDED; clerical status/metadata transition only, substantive §C byte-frozen from the ARR-0029-reviewed version; contract/design O-A resolved; Phase-1/Phase-4 implementation remediation pending; Phase 5A remains blocked) |
-| ER-0086 and above | AVAILABLE-FUTURE | — |
+| **ER-0086** | **ALLOCATED** | **Phase-1 Canonical Occurrence Identity Remediation Report** (authority PBA-0096; 2026-08-16; adds the `OccurrenceId` opaque domain in `src/model/opaque.rs` and a mandatory `occurrence` field on the Strategy envelope and all five child constructs, with focused occurrence-identity tests; no Phase-4 result-model or `src/checks/**` change; Phase 1 remains CLOSED; independent Phase-1 reconciliation review required before Phase-4 remediation) |
+| ER-0087 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0086`.**
+**Next allocatable ER: `ER-0087`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -376,10 +378,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0095 | **PBA-0096** |
+| PBA | PBA-0096 | **PBA-0097** |
 | PBR | PBR-0016 | **PBR-0017** |
 | ARR | ARR-0029 | **ARR-0030** |
-| ER | ER-0085 | **ER-0086** |
+| ER | ER-0086 | **ER-0087** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -468,6 +470,7 @@ identifiers were allocated in the same period:
 | **Slice Contract Revision 4 M-1 remediation** | **PBA-0093** | **ER-0084** | Record PBA-0092 / ARR-0028 (pending from the read-only review, §12(6)) and this cycle's own identifiers; correct the ARR-0028 M-1 check-11 pairwise anchor in `first-runnable-slice-contract-r04.md`, and complete the pre-existing ARR-0027 §7 clerical omission (§3 currency, no assignment changed). Revision 4 remains PROPOSED; independent re-review required before acceptance. Terminates under §12(7). |
 | Slice Contract Revision 4 re-review | PBA-0094 | ARR-0029 | Read-only independent post-remediation re-review (no ledger write; recorded by the cycle below, per §12(6)). Verdict PASS — ARR-0028 M-1 CLOSED; ACCEPTANCE-READY. |
 | **Slice Contract Revision 4 acceptance** | **PBA-0095** | **PBR-0016 / ER-0085** | Record PBA-0094 / ARR-0029 (pending from the read-only re-review, §12(6)) and this cycle's own identifiers; **accept Revision 4 under PBR-0016**, superseding Revision 3 in governance provenance (predecessor file preserved immutable). Clerical status/metadata transition of `first-runnable-slice-contract-r04.md` only — no substantive §C change, no source/test/dependency/toolchain change. Terminates under §12(7). |
+| Phase-1 occurrence-identity remediation | PBA-0096 | ER-0086 | Record this cycle's own identifiers; implement the Revision-4 §C.1 Phase-1 consequence — the `OccurrenceId` opaque domain and a mandatory `occurrence` field on every construct — in `src/model/**`, with focused tests. Source-writing cycle; no Phase-4/`src/checks/**` change; Phase 1 remains CLOSED. Independent reconciliation review required before Phase-4 remediation. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their

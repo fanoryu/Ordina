@@ -137,6 +137,33 @@ ARR-0016 (PBA-0047) → closure ER-0051 (PBA-0048).
 | **O-2** | Check 13A's prohibited-operator defect population is structurally constrained as reviewed; its non-`NUMERIC`-leaf population remains representable, so the check is not vacuous. | **BOARD-NOTED — non-blocking.** Check 13A is not implemented. |
 | **O-3** | Check 5's structural guarantee is narrower than some source prose implies; a real representable population remains through lineage resolution. | **BOARD-NOTED — non-blocking.** The accepted Slice Contract is not amended. |
 
+### Post-closure remediation — canonical occurrence identity (Revision 4)
+
+**Remediated 2026-08-16** under Product Board authorization **PBA-0096**, reported
+in **ER-0086**, at baseline `7c11d69`, on the authority of accepted **Slice
+Contract Revision 4** (PBR-0016).
+
+Revision 4 §C.1 adds a sixth opaque domain — a mandatory, non-optional,
+caller-supplied, opaque **canonical construct-occurrence identity** with a supplied
+total order — and makes it the offending-construct anchor for defect identity and
+canonical ordering (§6.3/§6.4). This bounded post-closure cycle implements **only**
+the Phase-1 consequence: an [`OccurrenceId`] opaque newtype (`src/model/opaque.rs`,
+alongside the five semantic domains, hand-written supplied order, no `derive(Ord)`)
+and a mandatory `occurrence: OccurrenceId` field on every construct occurrence — the
+Strategy envelope and every evidence declaration, configuration parameter,
+condition, Direction rule, and candidate derivation. The field is non-optional, so
+a construct cannot be built without an occurrence identity; it is present even when
+`lineage` is absent, and it is a distinct domain from lineage.
+
+**Scope boundary.** No defect model, discriminator, or check was changed: Phase-4's
+`DefectCore.offending` still uses `LineageId`, and `src/checks/**` remains
+non-substantive. The **Phase-4 result-model remediation** (`offending →
+OccurrenceId`, the `LINEAGE` discriminator, the COUNTERPART occurrence payload,
+check-9/check-11 anchors) and Phase-5A remain **pending** and separately
+authorized. O-1/O-2/O-3 remain OPEN; O-1 still gates check 6. Phase 1 remains
+**CLOSED**; this remediation awaits an **independent Phase-1 reconciliation review**
+before the Phase-4 remediation may be authorized.
+
 ## Phase 2 — Exact numeric representation (2A ✅ CLOSED · 2B ✅ CLOSED)
 
 | | |

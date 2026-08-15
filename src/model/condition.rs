@@ -20,7 +20,7 @@
 
 use crate::model::declared::{Declared, DeclaredCategory};
 use crate::model::guard::Guard;
-use crate::model::opaque::LineageId;
+use crate::model::opaque::{LineageId, OccurrenceId};
 
 /// The static classification of a condition — Slice Contract §3.10, §4.8.
 ///
@@ -46,6 +46,10 @@ pub enum ConditionClassification {
 /// evidence relations are not admitted in Slice 1 (§3.1).
 #[derive(Debug, Clone)]
 pub struct Condition {
+    /// Canonical occurrence identity (Revision 4 §C.1) — mandatory, present even
+    /// when `lineage` is absent. A condition is an operative node, so lineage
+    /// absence is check 15's; the occurrence identity anchors that defect.
+    pub occurrence: OccurrenceId,
     pub lineage: Declared<LineageId>,
     pub classification: DeclaredCategory<ConditionClassification>,
     pub guard: Declared<Guard>,
@@ -56,11 +60,13 @@ impl Condition {
     /// shape. Malformed shapes are built from the fields directly.
     #[must_use]
     pub const fn new(
+        occurrence: OccurrenceId,
         lineage: LineageId,
         classification: ConditionClassification,
         guard: Guard,
     ) -> Self {
         Self {
+            occurrence,
             lineage: Declared::Present(lineage),
             classification: DeclaredCategory::One(classification),
             guard: Declared::Present(guard),
@@ -77,14 +83,20 @@ mod tests {
         LineageId::new(OpaqueValue::new(handle))
     }
 
+    fn occ(handle: u64) -> OccurrenceId {
+        OccurrenceId::new(OpaqueValue::new(handle))
+    }
+
     #[test]
     fn a_well_formed_condition_carries_exactly_one_classification() {
         let blocking = Condition::new(
+            occ(1),
             lineage(1),
             ConditionClassification::Blocking,
             Guard::always_applicable(),
         );
         let temporary = Condition::new(
+            occ(2),
             lineage(2),
             ConditionClassification::Temporary,
             Guard::always_applicable(),
@@ -119,11 +131,13 @@ mod tests {
         // as `INVALID_CONDITION_CLASSIFICATION` in Phase 5. All three must be
         // constructible now.
         let zero = Condition {
+            occurrence: occ(3),
             lineage: Declared::Present(lineage(3)),
             classification: DeclaredCategory::Absent,
             guard: Declared::Present(Guard::always_applicable()),
         };
         let multiple = Condition {
+            occurrence: occ(4),
             lineage: Declared::Present(lineage(4)),
             classification: DeclaredCategory::multiple(
                 ConditionClassification::Blocking,
@@ -133,6 +147,7 @@ mod tests {
             guard: Declared::Present(Guard::always_applicable()),
         };
         let out_of_domain = Condition {
+            occurrence: occ(5),
             lineage: Declared::Present(lineage(5)),
             classification: DeclaredCategory::OutOfDomain,
             guard: Declared::Present(Guard::always_applicable()),
@@ -178,6 +193,7 @@ mod tests {
         // A condition is an operative node (§5.1 check 15), so an absent lineage
         // identity must be buildable; so must an absent guard (check 1).
         let anonymous = Condition {
+            occurrence: occ(6),
             lineage: Declared::Absent,
             classification: DeclaredCategory::One(ConditionClassification::Blocking),
             guard: Declared::Absent,

@@ -31,7 +31,7 @@
 //! closed three-variant enum, so a fourth evidence type is still unrepresentable.
 
 use crate::model::declared::{Declared, DeclaredCategory};
-use crate::model::opaque::{DimensionSymbol, EnumValue, LineageId};
+use crate::model::opaque::{DimensionSymbol, EnumValue, LineageId, OccurrenceId};
 
 /// The declared type of an evidence item — Slice Contract §3.5.
 ///
@@ -62,6 +62,11 @@ pub enum EvidenceTypeTag {
 /// | `declared_values` | present **iff** `Enum` | present when forbidden, absent when required, empty, duplicate-bearing → check 6 (§5.1.1 rows 4–7) |
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EvidenceDeclaration {
+    /// Canonical occurrence identity (Revision 4 §C.1) — mandatory, present even
+    /// when `lineage` is absent or shared with another declaration. It keeps two
+    /// declarations distinct (and their per-occurrence defects non-colliding) when
+    /// their lineage is absent, duplicated, or their content identical.
+    pub occurrence: OccurrenceId,
     pub lineage: Declared<LineageId>,
     pub declared_type: DeclaredCategory<EvidenceTypeTag>,
     /// Required **iff** the declared type is `NUMERIC` (§3.5).
@@ -79,8 +84,13 @@ pub struct EvidenceDeclaration {
 impl EvidenceDeclaration {
     /// A well-formed `NUMERIC` declaration: dimension present, no value set.
     #[must_use]
-    pub const fn numeric(lineage: LineageId, dimension: DimensionSymbol) -> Self {
+    pub const fn numeric(
+        occurrence: OccurrenceId,
+        lineage: LineageId,
+        dimension: DimensionSymbol,
+    ) -> Self {
         Self {
+            occurrence,
             lineage: Declared::Present(lineage),
             declared_type: DeclaredCategory::One(EvidenceTypeTag::Numeric),
             declared_dimension: Declared::Present(dimension),
@@ -90,8 +100,9 @@ impl EvidenceDeclaration {
 
     /// A well-formed `BOOLEAN` declaration: neither dimension nor value set.
     #[must_use]
-    pub const fn boolean(lineage: LineageId) -> Self {
+    pub const fn boolean(occurrence: OccurrenceId, lineage: LineageId) -> Self {
         Self {
+            occurrence,
             lineage: Declared::Present(lineage),
             declared_type: DeclaredCategory::One(EvidenceTypeTag::Boolean),
             declared_dimension: Declared::Absent,
@@ -104,8 +115,13 @@ impl EvidenceDeclaration {
     /// The values are taken as given. Whether the set is non-empty and
     /// duplicate-free is check 6's judgement in Phase 5, not this constructor's.
     #[must_use]
-    pub const fn enumerated(lineage: LineageId, declared_values: Vec<EnumValue>) -> Self {
+    pub const fn enumerated(
+        occurrence: OccurrenceId,
+        lineage: LineageId,
+        declared_values: Vec<EnumValue>,
+    ) -> Self {
         Self {
+            occurrence,
             lineage: Declared::Present(lineage),
             declared_type: DeclaredCategory::One(EvidenceTypeTag::Enum),
             declared_dimension: Declared::Absent,
@@ -123,6 +139,10 @@ mod tests {
         LineageId::new(OpaqueValue::new(handle))
     }
 
+    fn occ(handle: u64) -> OccurrenceId {
+        OccurrenceId::new(OpaqueValue::new(handle))
+    }
+
     fn dimension(handle: u64) -> DimensionSymbol {
         DimensionSymbol::new(OpaqueValue::new(handle))
     }
@@ -133,7 +153,7 @@ mod tests {
 
     #[test]
     fn a_well_formed_numeric_declaration_carries_a_dimension_and_no_value_set() {
-        let declaration = EvidenceDeclaration::numeric(lineage(1), dimension(7));
+        let declaration = EvidenceDeclaration::numeric(occ(1), lineage(1), dimension(7));
 
         assert_eq!(
             declaration.declared_type,
@@ -148,7 +168,7 @@ mod tests {
 
     #[test]
     fn a_well_formed_boolean_declaration_carries_neither() {
-        let declaration = EvidenceDeclaration::boolean(lineage(2));
+        let declaration = EvidenceDeclaration::boolean(occ(2), lineage(2));
 
         assert!(declaration.declared_dimension.is_absent());
         assert!(declaration.declared_values.is_absent());
@@ -156,8 +176,11 @@ mod tests {
 
     #[test]
     fn a_well_formed_enum_declaration_carries_its_values_and_no_dimension() {
-        let declaration =
-            EvidenceDeclaration::enumerated(lineage(3), vec![enum_value(10), enum_value(11)]);
+        let declaration = EvidenceDeclaration::enumerated(
+            occ(3),
+            lineage(3),
+            vec![enum_value(10), enum_value(11)],
+        );
 
         assert!(declaration.declared_dimension.is_absent());
         assert_eq!(
@@ -195,6 +218,7 @@ mod tests {
         // §3.5 marks lineage identity and declared type Unconditional, so their
         // absence is check 1's `MISSING_REQUIRED_PROPERTY` in Phase 5.
         let declaration = EvidenceDeclaration {
+            occurrence: occ(100),
             lineage: Declared::Absent,
             declared_type: DeclaredCategory::Absent,
             declared_dimension: Declared::Absent,
@@ -219,6 +243,7 @@ mod tests {
     fn an_out_of_domain_declared_type_remains_representable() {
         // §5.1.1 row 1: "declared type is not one of NUMERIC / BOOLEAN / ENUM".
         let declaration = EvidenceDeclaration {
+            occurrence: occ(4),
             lineage: Declared::Present(lineage(4)),
             declared_type: DeclaredCategory::OutOfDomain,
             declared_dimension: Declared::Absent,
@@ -235,6 +260,7 @@ mod tests {
     fn a_dimension_absent_where_required_remains_representable() {
         // §5.1.1 row 2: a NUMERIC declaration with no dimension.
         let declaration = EvidenceDeclaration {
+            occurrence: occ(5),
             lineage: Declared::Present(lineage(5)),
             declared_type: DeclaredCategory::One(EvidenceTypeTag::Numeric),
             declared_dimension: Declared::Absent,
@@ -248,12 +274,14 @@ mod tests {
     fn a_dimension_present_where_forbidden_remains_representable() {
         // §5.1.1 row 3: a dimension on a BOOLEAN or ENUM declaration.
         let on_boolean = EvidenceDeclaration {
+            occurrence: occ(6),
             lineage: Declared::Present(lineage(6)),
             declared_type: DeclaredCategory::One(EvidenceTypeTag::Boolean),
             declared_dimension: Declared::Present(dimension(7)),
             declared_values: Declared::Absent,
         };
         let on_enum = EvidenceDeclaration {
+            occurrence: occ(7),
             lineage: Declared::Present(lineage(7)),
             declared_type: DeclaredCategory::One(EvidenceTypeTag::Enum),
             declared_dimension: Declared::Present(dimension(7)),
@@ -268,6 +296,7 @@ mod tests {
     fn a_value_set_absent_where_required_remains_representable() {
         // §5.1.1 row 4: an ENUM declaration with no value set.
         let declaration = EvidenceDeclaration {
+            occurrence: occ(8),
             lineage: Declared::Present(lineage(8)),
             declared_type: DeclaredCategory::One(EvidenceTypeTag::Enum),
             declared_dimension: Declared::Absent,
@@ -281,12 +310,14 @@ mod tests {
     fn a_value_set_present_where_forbidden_remains_representable() {
         // §5.1.1 row 7: a value set on a NUMERIC or BOOLEAN declaration.
         let on_numeric = EvidenceDeclaration {
+            occurrence: occ(9),
             lineage: Declared::Present(lineage(9)),
             declared_type: DeclaredCategory::One(EvidenceTypeTag::Numeric),
             declared_dimension: Declared::Present(dimension(7)),
             declared_values: Declared::Present(vec![enum_value(10)]),
         };
         let on_boolean = EvidenceDeclaration {
+            occurrence: occ(10),
             lineage: Declared::Present(lineage(10)),
             declared_type: DeclaredCategory::One(EvidenceTypeTag::Boolean),
             declared_dimension: Declared::Absent,
@@ -300,9 +331,12 @@ mod tests {
     #[test]
     fn empty_and_duplicate_enum_value_sets_remain_representable() {
         // §5.1.1 rows 5 and 6.
-        let empty = EvidenceDeclaration::enumerated(lineage(11), vec![]);
-        let duplicated =
-            EvidenceDeclaration::enumerated(lineage(12), vec![enum_value(10), enum_value(10)]);
+        let empty = EvidenceDeclaration::enumerated(occ(11), lineage(11), vec![]);
+        let duplicated = EvidenceDeclaration::enumerated(
+            occ(12),
+            lineage(12),
+            vec![enum_value(10), enum_value(10)],
+        );
 
         match empty.declared_values {
             // No catch-all `_` arm (ADR-0005 §7.4).
