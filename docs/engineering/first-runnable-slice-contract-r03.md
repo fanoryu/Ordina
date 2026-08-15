@@ -3,30 +3,34 @@
 - **Title:** First Runnable Slice — Implementation Contract
 - **Contract family:** First Runnable Slice Contract
 - **Revision:** 3
-- **Status:** **PROPOSED** — Product Board review required. **No normative force.**
+- **Status:** **ACCEPTED** — normative.
 - **Predecessor:** `first-runnable-slice-contract-r02.md` — Revision 2, accepted
-  under PBR-0014 (2026-08-14). Revision 2 remains the authoritative contract until
-  and unless this revision is accepted; on acceptance it becomes **SUPERSEDED** in
-  governance provenance, its file preserved immutable.
-- **Authority:** PBA-0082 (authoring). Acceptance authority is a future PBR, not
-  yet issued.
+  under PBR-0014 (2026-08-14); **SUPERSEDED** by this revision on acceptance
+  (2026-08-15) in governance provenance, its file preserved immutable.
+- **Authority:** PBA-0082 (authoring); PBA-0086 (acceptance).
 - **Author:** Principal Engineer
-- **Tier:** 3 (engineering, normative once accepted)
+- **Tier:** 3 (engineering, normative)
 - **Governed by:** PBD-0006 — Normative Engineering Contract Revision Convention
   (`workflow.md`); Product Constitution v1.0 — ACTIVE — RATIFIED
 - **Review history:** authored under PBA-0082 following the ER-0074 stop and the
-  ER-0075 clarification review; independent review not yet performed.
-- **Accepted by:** *(not accepted)*
-- **Decision date:** *(not accepted)*
+  ER-0075 clarification review → independent review PBA-0083 / **ARR-0026** (FAIL —
+  BOUNDED REMEDIATION REQUIRED, MINOR M-1) → remediation PBA-0084 / **ER-0077** →
+  independent re-review PBA-0085 / **ARR-0027** (PASS — M-1 CLOSED; READY FOR
+  ACCEPTANCE).
+- **Accepted by:** Product Board, **PBR-0015**
+- **Decision date:** 2026-08-15
 
-> ## This revision is PROPOSED and carries NO normative force.
+> ## This revision is ACCEPTED and is the authoritative First Runnable Slice Contract.
 >
-> Revision 2 (`first-runnable-slice-contract-r02.md`) remains the authoritative
-> First Runnable Slice Contract. This revision changes **only** the explicitly
-> enumerated surfaces in §C and **incorporates the whole of Revision 2 unchanged**
-> otherwise (§D). Its sole substantive purpose is to make the **check-1
-> required-property ownership** — and its boundary with checks 15 and 16 —
-> explicit, resolving the ambiguity ER-0075 identified.
+> Accepted by the Product Board under **PBR-0015** on 2026-08-15 (acceptance
+> authorization PBA-0086), following the review path PBD-0006 requires
+> (ARR-0026 → ER-0077 → ARR-0027 PASS). It **supersedes Revision 2**, whose file
+> (`first-runnable-slice-contract-r02.md`) remains an immutable historical
+> artifact. This revision changes **only** the explicitly enumerated surfaces in
+> §C and **incorporates the whole of Revision 2 unchanged** otherwise (§D): it
+> makes the **check-1 required-property ownership** — and its boundary with checks
+> 15 and 16 — explicit, resolving the ambiguity ER-0075 identified. The acceptance
+> was clerical; the substantive §C ruling is exactly as reviewed under ARR-0027.
 
 ---
 
