@@ -296,7 +296,28 @@ are **Q-06, Q-08, N-22, N-24, N-25, F-8**.
 
 **Not decided here.** This revision does not accept itself, does not reauthorize
 Phase-5A check 1, and does not correct the Phase-1 model documentation comments
-that ER-0075 flagged as becoming stale under this ruling
-(`src/model/strategy.rs`, `src/model/condition.rs`); those are bounded
-documentation-currency items for a separate authorized cycle after acceptance, and
-no executable model semantic changes.
+that become stale under this ruling. The complete model-comment currency
+inventory (ER-0075, ARR-0026) is:
+
+- **`src/model/strategy.rs`** — the envelope description that has check 1 report a
+  missing lineage identity (with check 15 "additionally"), and that reads "one
+  defect per missing property" across all seven envelope properties. Under §C.1
+  and §C.2 an absent envelope lineage is check 15 only and an absent version is
+  check 16 only; check 1 reports neither.
+- **`src/model/condition.rs`** — the condition description stating an absent
+  lineage identity is "check 15's `MISSING_OPERATIVE_PROVENANCE` **and** check
+  1's `MISSING_REQUIRED_PROPERTY`". Under §C.1 it is check 15 only.
+- **`src/model/derivation.rs`** — the `CandidateDerivation` doc-comment describing
+  a derivation missing both its lineage identity and its expression as yielding
+  "**the two check-1 defects** … separated by the PROPERTY discriminator," and the
+  related statement that check 1 owns candidate-derivation lineage absence. Under
+  §C.1 and §C.4 the lineage absence is a **check-15** defect and only the
+  expression absence is a **check-1** defect; the two are separated by §6.4 key 1
+  (check number), not the PROPERTY discriminator.
+
+By contrast, `src/model/direction.rs` (rule lineage → check 15; check 1 =
+precedence and guard), `src/model/evidence.rs`, and `src/model/config.rs` already
+match this ruling and require no correction. These currency items are bounded,
+**documentation-comment-only** fixes for a separate authorized cycle **after
+acceptance**; **no executable Phase-1 model semantic change** is implied or
+authorized.
