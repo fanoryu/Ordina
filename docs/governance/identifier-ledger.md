@@ -163,7 +163,11 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0085** | **ALLOCATED** | **Slice Contract Revision 3 M-1 Independent Re-Review authorization** → ARR-0027 (2026-08-15) |
 | **PBA-0086** | **ALLOCATED** | **Slice Contract Revision 3 Acceptance authorization** → PBR-0015 / ER-0078 (2026-08-15) |
 | **PBA-0087** | **ALLOCATED** | **Revision 3 Post-Acceptance Model-Comment Currency Correction authorization** → ER-0079 (2026-08-15) |
-| PBA-0088 and above | AVAILABLE-FUTURE | — |
+| **PBA-0088** | **ALLOCATED** | **Slice-1 Governance Recovery and Canonical Construct-Occurrence Identity Determination authorization** → ER-0080 (2026-08-15; read-only; restarted the determination from the live allocator after the assumed PBA-0088–0092 / ER-0080–0084 chain was found unrecorded) |
+| **PBA-0089** | **ALLOCATED** | **Slice Contract Revision 4 Canonical Construct-Occurrence Identity Authoring authorization** → ER-0081 (2026-08-15; **STOPPED before write** — class-level `DUPLICATE_LINEAGE_IDENTITY` and COUNTERPART absent-lineage anchoring blockers; no contract authored) |
+| **PBA-0090** | **ALLOCATED** | **Slice-1 Class-Level and Counterpart Defect Identity Determination authorization** → ER-0082 (2026-08-15; read-only; integrated design determined — REVISION 4 SUFFICIENT) |
+| **PBA-0091** | **ALLOCATED** | **Slice Contract Revision 4 Canonical Occurrence and Integrated Defect Identity Authoring authorization** → ER-0083 (2026-08-15; authors `first-runnable-slice-contract-r04.md` as PROPOSED and synchronizes PBA-0088–0091 / ER-0080–0083) |
+| PBA-0092 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -177,7 +181,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0088`.**
+**Next allocatable PBA: `PBA-0092`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -315,9 +319,13 @@ consumes an ARR number.
 | **ER-0077** | **ALLOCATED** | **Slice Contract Revision 3 M-1 Remediation Report** (authority PBA-0084; 2026-08-15; completes the Revision-3 §E model-comment currency inventory by adding `src/model/derivation.rs` — ARR-0026 M-1; no normative §C change; Revision 3 remains PROPOSED; independent re-review required) |
 | **ER-0078** | **ALLOCATED** | **Slice Contract Revision 3 Acceptance Report** (authority PBA-0086; 2026-08-15; records **PBR-0015** — Revision 3 ACCEPTED and authoritative, Revision 2 SUPERSEDED; clerical status transition only, substantive §C unchanged; Phase 5A remains unimplemented) |
 | **ER-0079** | **ALLOCATED** | **Revision 3 Post-Acceptance Model-Comment Currency Report** (authority PBA-0087; 2026-08-15; comment-only alignment of `src/model/strategy.rs`, `src/model/condition.rs`, `src/model/derivation.rs` to accepted Revision 3 §C; resolves ARR-0027 O-B; no executable model change) |
-| ER-0080 and above | AVAILABLE-FUTURE | — |
+| **ER-0080** | **ALLOCATED** | **Slice-1 Governance Recovery and Canonical Construct-Occurrence Identity Determination** (authority PBA-0088; 2026-08-15; read-only; concludes lineage identity is an insufficient universal defect anchor for both absent and duplicate lineage, and that a canonical opaque `OccurrenceId` + supplied total order is required — SUCCESSOR REVISION REQUIRED; no source/ledger change) |
+| **ER-0081** | **ALLOCATED** | **Slice Contract Revision 4 Authoring Report (STOPPED)** (authority PBA-0089; 2026-08-15; halted before any repository write on two anchoring blockers — `DUPLICATE_LINEAGE_IDENTITY` class-level anchor and COUNTERPART absent-lineage representability; no contract authored, no source/ledger change) |
+| **ER-0082** | **ALLOCATED** | **Slice-1 Class-Level and Counterpart Defect Identity Determination** (authority PBA-0090; 2026-08-15; read-only; integrated design — envelope anchor + new `LINEAGE` discriminator for `DUPLICATE_LINEAGE_IDENTITY`, COUNTERPART payload → `OccurrenceId`, first-occurrence pairwise selection — REVISION 4 SUFFICIENT; no source/ledger change) |
+| **ER-0083** | **ALLOCATED** | **Slice Contract Revision 4 Canonical Occurrence and Integrated Defect Identity Authoring Report** (authority PBA-0091; 2026-08-15; authors `first-runnable-slice-contract-r04.md` as **PROPOSED** and synchronizes PBA-0088–0091 / ER-0080–0083; Revision 3 remains authoritative; independent review and Product Board acceptance required before Phase-1/Phase-4 remediation) |
+| ER-0084 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0080`.**
+**Next allocatable ER: `ER-0084`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -358,10 +366,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0087 | **PBA-0088** |
+| PBA | PBA-0091 | **PBA-0092** |
 | PBR | PBR-0015 | **PBR-0016** |
 | ARR | ARR-0027 | **ARR-0028** |
-| ER | ER-0079 | **ER-0080** |
+| ER | ER-0083 | **ER-0084** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -442,6 +450,10 @@ identifiers were allocated in the same period:
 | Slice Contract Revision 3 re-review | PBA-0085 | ARR-0027 | Read-only independent re-review of the M-1 remediation (no ledger write; recorded by the cycle below, per §12(6)). Verdict PASS — M-1 CLOSED; READY FOR ACCEPTANCE. |
 | **Slice Contract Revision 3 acceptance** | **PBA-0086** | **PBR-0015 / ER-0078** | Record PBA-0085 / ARR-0027 (pending from the read-only re-review, §12(6)) and this cycle's own identifiers; **accept Revision 3 under PBR-0015**, superseding Revision 2 in governance provenance (predecessor file preserved immutable). Clerical status transition of `first-runnable-slice-contract-r03.md` only — no substantive §C change, no source/test/dependency/toolchain change. Terminates under §12(7). |
 | Revision 3 model-comment currency | PBA-0087 | ER-0079 | Record this cycle's own identifiers; align the closed Phase-1 model doc/test comments in `src/model/{strategy,condition,derivation}.rs` to accepted Revision 3 §C (operative-node lineage → check 15; version → check 16; candidate-derivation correction). **Comment-only** — no executable model semantic change; resolves ARR-0027 O-B. Terminates under §12(7). |
+| Canonical occurrence-identity determination | PBA-0088 | ER-0080 | Read-only determination (no ledger write; recorded by the cycle below, per §12(6)). Concludes lineage identity is an insufficient universal defect anchor; SUCCESSOR REVISION REQUIRED. |
+| Revision 4 authoring (stopped) | PBA-0089 | ER-0081 | Read-only STOP before any write on two anchoring blockers (`DUPLICATE_LINEAGE_IDENTITY` class-level anchor; COUNTERPART absent-lineage representability). No contract authored (no ledger write; recorded by the cycle below, per §12(6)). |
+| Class-level / counterpart identity determination | PBA-0090 | ER-0082 | Read-only integrated determination (no ledger write; recorded by the cycle below, per §12(6)). Disposition REVISION 4 SUFFICIENT. |
+| **Slice Contract Revision 4 authoring** | **PBA-0091** | **ER-0083** | Record PBA-0088/ER-0080, PBA-0089/ER-0081, PBA-0090/ER-0082 (pending from the read-only/stopped cycles, §12(6)) and this cycle's own identifiers; author `first-runnable-slice-contract-r04.md` as **PROPOSED** under PBD-0006 (canonical occurrence and integrated defect identity). Revision 3 remains authoritative; no ARR or PBR allocated — no review or acceptance occurred. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their
