@@ -230,19 +230,77 @@ impl NumericDomain {
         !self.intersect(other).is_empty()
     }
 
+    /// An admitted-set-preserving rewrite in which an inclusive endpoint that
+    /// this domain's own exclusion set removes becomes the equivalent strict
+    /// bound, and that value is dropped from the exclusions.
+    ///
+    /// `[a, b] \ {a}` and `(a, b]` admit **exactly** the same values — the
+    /// endpoint is excluded either way — but the first form hides the excluded
+    /// endpoint inside `excluded`, where the structural bound comparison in
+    /// [`contains`] cannot see it. §4.10 subsumption is set containment, not
+    /// structural nesting, so the two forms must compare identically;
+    /// canonicalizing both operands first makes the bound comparison exact
+    /// without changing any admitted set. Only the two endpoints can be folded;
+    /// every interior exclusion is retained unchanged.
+    ///
+    /// [`contains`]: Self::contains
+    fn endpoint_canonical(&self) -> Self {
+        let mut lower = self.lower.clone();
+        let mut upper = self.upper.clone();
+        let mut folded: Vec<ExactNumber> = Vec::new();
+
+        if let Bound::Inclusive(a) = &self.lower
+            && self.excluded.iter().any(|p| p == a)
+        {
+            lower = Bound::Exclusive(a.clone());
+            folded.push(a.clone());
+        }
+        if let Bound::Inclusive(b) = &self.upper
+            && self.excluded.iter().any(|p| p == b)
+        {
+            upper = Bound::Exclusive(b.clone());
+            folded.push(b.clone());
+        }
+
+        let excluded = self
+            .excluded
+            .iter()
+            .filter(|p| !folded.iter().any(|f| f == *p))
+            .cloned()
+            .collect();
+
+        Self {
+            lower,
+            upper,
+            excluded,
+        }
+    }
+
     /// Containment — §4.10: whether `inner ⊆ self` (every value `inner` admits,
     /// `self` admits).
     ///
     /// Subsumption uses this: `D2` is subsumed by `D1` iff `D1.contains(&D2)`.
+    ///
+    /// The test is exact set containment, **not** structural bound nesting: a
+    /// domain that excludes its own inclusive endpoint (`[a, b] \ {a}`) admits
+    /// the same values as the strict form (`(a, b]`) and must compare
+    /// identically. Both operands are therefore reduced by
+    /// [`Self::endpoint_canonical`] before the bounds are compared, so an
+    /// endpoint an operand removes with `!=` is treated as the strict bound it
+    /// is. This shape arises from ordinary construction and from
+    /// [`Self::intersect`] (e.g. `[0, 10]` intersected with `!= 0`), so the
+    /// reduction is not a corner case.
     #[must_use]
     pub fn contains(&self, inner: &Self) -> bool {
         if inner.is_empty() {
             return true;
         }
-        lower_contains(&self.lower, &inner.lower)
-            && upper_contains(&self.upper, &inner.upper)
-            // Any point `self` excludes must not be admitted by `inner`.
-            && self.excluded.iter().all(|p| !inner.admits(p))
+        let outer = self.endpoint_canonical();
+        let inner = inner.endpoint_canonical();
+        lower_contains(&outer.lower, &inner.lower)
+            && upper_contains(&outer.upper, &inner.upper)
+            // Any point `outer` excludes must not be admitted by `inner`.
+            && outer.excluded.iter().all(|p| !inner.admits(p))
     }
 }
 
@@ -441,6 +499,93 @@ mod tests {
         assert!(outer.contains(&inner));
         assert!(!inner.is_empty());
         assert!(outer.overlaps(&inner));
+    }
+
+    // -- endpoint-exclusion healing (ARR-0022 M-1) --------------------------
+
+    #[test]
+    fn lower_endpoint_removed_by_exclusion_heals_to_a_strict_bound() {
+        // outer = (0,10]; inner = [0,10] \ {0}. Both admit exactly (0,10], so
+        // each contains the other — subsumption is set containment, not bound
+        // nesting.
+        let outer = domain(&[(Greater, 0), (LessOrEqual, 10)]);
+        let inner = domain(&[(GreaterOrEqual, 0), (LessOrEqual, 10), (NotEqual, 0)]);
+        assert!(outer.contains(&inner));
+        assert!(inner.contains(&outer));
+    }
+
+    #[test]
+    fn upper_endpoint_removed_by_exclusion_heals_to_a_strict_bound() {
+        // outer = [0,10); inner = [0,10] \ {10}. Both admit exactly [0,10).
+        let outer = domain(&[(GreaterOrEqual, 0), (Less, 10)]);
+        let inner = domain(&[(GreaterOrEqual, 0), (LessOrEqual, 10), (NotEqual, 10)]);
+        assert!(outer.contains(&inner));
+        assert!(inner.contains(&outer));
+    }
+
+    #[test]
+    fn both_endpoints_removed_by_exclusion_heal() {
+        // outer = (0,10); inner = [0,10] \ {0,10}. Both admit exactly (0,10).
+        let outer = domain(&[(Greater, 0), (Less, 10)]);
+        let inner = domain(&[
+            (GreaterOrEqual, 0),
+            (LessOrEqual, 10),
+            (NotEqual, 0),
+            (NotEqual, 10),
+        ]);
+        assert!(outer.contains(&inner));
+        assert!(inner.contains(&outer));
+    }
+
+    #[test]
+    fn admitting_an_open_endpoint_is_genuine_non_containment() {
+        // outer = (0,10]; inner = [0,10] admits 0, which outer does not — so
+        // healing must NOT paper over a real difference.
+        let outer = domain(&[(Greater, 0), (LessOrEqual, 10)]);
+        let inner = domain(&[(GreaterOrEqual, 0), (LessOrEqual, 10)]);
+        assert!(!outer.contains(&inner));
+        assert!(inner.contains(&outer)); // [0,10] ⊇ (0,10]
+    }
+
+    #[test]
+    fn containment_holds_for_an_intersection_produced_endpoint_exclusion() {
+        // The healed shape arises naturally from `intersect`: [0,10] ∩ (!=0)
+        // yields lower=Inclusive(0) with 0 excluded. It must contain, and be
+        // contained by, the strict form (0,10].
+        let wide = domain(&[(GreaterOrEqual, 0), (LessOrEqual, 10)]);
+        let not_zero = domain(&[(NotEqual, 0)]);
+        let produced = wide.intersect(&not_zero); // [0,10] \ {0} == (0,10]
+        let strict = domain(&[(Greater, 0), (LessOrEqual, 10)]);
+        assert!(strict.contains(&produced));
+        assert!(produced.contains(&strict));
+        // And the admitted set is genuinely (0,10].
+        assert!(!produced.admits(&n(0)));
+        assert!(produced.admits(&n(1)));
+        assert!(produced.admits(&n(10)));
+    }
+
+    #[test]
+    fn interior_exclusion_survives_endpoint_canonicalization() {
+        // outer = [0,10] \ {5}; inner = [0,10] admits 5 — still not contained,
+        // because 5 is interior, not an endpoint, and must not be folded away.
+        let outer = domain(&[(GreaterOrEqual, 0), (LessOrEqual, 10), (NotEqual, 5)]);
+        let inner = domain(&[(GreaterOrEqual, 0), (LessOrEqual, 10)]);
+        assert!(!outer.contains(&inner));
+        // inner narrowed below the exclusion IS contained.
+        let below = domain(&[(GreaterOrEqual, 0), (LessOrEqual, 4)]);
+        assert!(outer.contains(&below));
+    }
+
+    #[test]
+    fn healing_preserves_empty_and_unbounded_containment() {
+        // Empty inner contained by anything, including a healed outer.
+        let empty = domain(&[(GreaterOrEqual, 5), (LessOrEqual, 4)]);
+        let healed = domain(&[(GreaterOrEqual, 0), (NotEqual, 0)]); // (0, +inf)
+        assert!(healed.contains(&empty));
+        // Unbounded strict-lower forms compare exactly: (0,+inf) via two forms.
+        let strict_unbounded = domain(&[(Greater, 0)]);
+        assert!(healed.contains(&strict_unbounded));
+        assert!(strict_unbounded.contains(&healed));
     }
 
     #[test]
