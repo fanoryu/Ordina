@@ -117,10 +117,16 @@ pub enum DerivationExpression {
 /// One candidate-value derivation — Slice Contract §3.8.
 ///
 /// §3.8 marks lineage identity, role and derivation expression all
-/// **unconditional**, and explicitly works through the case of a derivation
-/// missing both its lineage identity and its expression: the two check-1 defects
-/// tie on §6.4 keys 1–3 and are separated by the PROPERTY discriminator. That
-/// case has to be constructible for the ordering to ever be exercised.
+/// **unconditional**, and works through the case of a derivation missing both
+/// its lineage identity and its expression. Under Slice Contract Revision 3
+/// (§C.1, §C.4) that case yields **two** defects owned by different checks: the
+/// missing lineage identity is check 15's `MISSING_OPERATIVE_PROVENANCE` (a
+/// candidate derivation is an operative node), and the missing expression is
+/// check 1's `MISSING_REQUIRED_PROPERTY`. They are separated by §6.4 key 1 (the
+/// ADR-0004 check number, check 1 before check 15), not by the PROPERTY
+/// discriminator; the missing role would likewise be check 1's. The §3.8
+/// property positions (lineage 1, role 2, expression 3) are unchanged, and both
+/// absences must be constructible for the ordering to ever be exercised.
 ///
 /// The role is a plain [`Declared`] rather than a `DeclaredCategory`: §3.8
 /// prohibits "a missing role" and "a duplicated role", but duplication is a
@@ -215,10 +221,12 @@ mod tests {
     #[test]
     fn check_1_and_check_15_absences_remain_representable() {
         // §3.8 works through exactly this case: a derivation missing both its
-        // lineage identity and its expression yields two check-1 defects,
-        // separated by the PROPERTY discriminator. A candidate derivation is
-        // also an operative node, so check 15 anchors on the same absent
-        // lineage identity.
+        // lineage identity and its expression. Under Revision 3 (§C.1, §C.4) the
+        // missing lineage is check 15's `MISSING_OPERATIVE_PROVENANCE` (a
+        // candidate derivation is an operative node) and the missing expression
+        // is check 1's `MISSING_REQUIRED_PROPERTY`; the two are separated by §6.4
+        // key 1 (check number), not the PROPERTY discriminator. Both absences
+        // must be buildable regardless of which check owns each.
         let bare = CandidateDerivation {
             lineage: Declared::Absent,
             role: Declared::Absent,

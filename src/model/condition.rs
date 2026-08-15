@@ -35,10 +35,11 @@ pub enum ConditionClassification {
 
 /// One declared condition — Slice Contract §3.10.
 ///
-/// All three §3.10 properties are unconditional, so each is a declaration state:
-/// an absent lineage identity is check 15's `MISSING_OPERATIVE_PROVENANCE` (a
-/// condition is an operative node) and check 1's `MISSING_REQUIRED_PROPERTY`, an
-/// absent guard is check 1's, and a zero / multiple / out-of-domain
+/// All three §3.10 properties are unconditional, so each is a declaration state.
+/// A condition is an operative node, so an absent lineage identity is check 15's
+/// `MISSING_OPERATIVE_PROVENANCE` **exclusively** (Slice Contract Revision 3
+/// §C.1) — check 1 reports nothing for it. An absent guard is check 1's
+/// `MISSING_REQUIRED_PROPERTY`, and a zero / multiple / out-of-domain
 /// classification is check 3's.
 ///
 /// There is deliberately no field relating one condition to another: ordered

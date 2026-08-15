@@ -61,7 +61,8 @@ use crate::model::opaque::{LineageId, VersionToken};
 #[derive(Debug, Clone)]
 pub struct Strategy {
     /// The envelope is an operative node (§5.1 check 15), so an absent lineage
-    /// identity is `MISSING_OPERATIVE_PROVENANCE` as well as check 1's concern.
+    /// identity is `MISSING_OPERATIVE_PROVENANCE` under check 15 **exclusively**
+    /// (Slice Contract Revision 3 §C.1); check 1 reports nothing for it.
     pub lineage: Declared<LineageId>,
     /// The declared semantic-model version. Check 16 compares it against the
     /// contract-declared constant `SM-1` in Phase 5. Any token is
@@ -284,9 +285,11 @@ mod tests {
 
     #[test]
     fn check_1_and_check_15_envelope_absences_remain_representable() {
-        // §3.4 marks all seven properties required. Check 1 reports one defect
-        // per missing property; check 15 additionally owns the envelope's
-        // absent lineage identity.
+        // §3.4 marks all seven properties required. Their absences are owned by
+        // three checks (Revision 3 §C.3): the lineage identity by check 15
+        // exclusively, the semantic-model version by check 16 exclusively, and
+        // the five collections (positions 3-7) by check 1. All seven absences
+        // must be representable regardless of which check owns each.
         let bare = Strategy::wholly_undeclared();
 
         assert!(bare.lineage.is_absent());
