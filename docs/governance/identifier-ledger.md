@@ -152,7 +152,9 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0074** | **ALLOCATED** | **Slice-1 Phase-4 Defect / Result Model and Canonical Ordering Implementation authorization** → ER-0070 (2026-08-15) |
 | **PBA-0075** | **ALLOCATED** | **Slice-1 Phase-4 Independent Architecture and Implementation Review authorization** → ARR-0024 (2026-08-15) |
 | **PBA-0076** | **ALLOCATED** | **Slice-1 Phase-4 MINOR-1 Bounded Remediation authorization** → ER-0071 (2026-08-15) |
-| PBA-0077 and above | AVAILABLE-FUTURE | — |
+| **PBA-0077** | **ALLOCATED** | **Slice-1 Phase-4 MINOR-1 Independent Re-Review authorization** → ARR-0025 (2026-08-15) |
+| **PBA-0078** | **ALLOCATED** | **Slice-1 Phase-4 Formal Closure authorization** → ER-0072 (2026-08-15) |
+| PBA-0079 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -166,7 +168,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0077`.**
+**Next allocatable PBA: `PBA-0079`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -225,14 +227,15 @@ engineering substance untouched. Only the governance identifier is corrected.
 | **ARR-0022** | **ALLOCATED** | **Slice-1 Phase-3 Independent Implementation Review** (authority PBA-0068; 2026-08-15; verdict FAIL — REMEDIATION REQUIRED — one MAJOR finding M-1 (numeric containment not equivalent to §4.10 subset containment); observations O-A/O-B/O-C carried; remediated under PBA-0069 / ER-0066) |
 | **ARR-0023** | **ALLOCATED** | **Slice-1 Phase-3 M-1 Remediation Re-Review** (authority PBA-0070; 2026-08-15; verdict PASS — M-1 CLOSED; READY FOR PHASE-3 FORMAL CLOSURE; observations O-A/O-B carried unchanged) |
 | **ARR-0024** | **ALLOCATED** | **Slice-1 Phase-4 Independent Architecture and Implementation Review** (authority PBA-0075; 2026-08-15; verdict FAIL — REMEDIATION REQUIRED — one MINOR finding M-1 (§6.2 defect-set/verdict biconditional not enforced on the `unusable` path); observations OBS-1/OBS-2/OBS-3 carried; remediated under PBA-0076 / ER-0071) |
-| ARR-0025 and above | AVAILABLE-FUTURE | — |
+| **ARR-0025** | **ALLOCATED** | **Slice-1 Phase-4 MINOR-1 Remediation Re-Review** (authority PBA-0077; 2026-08-15; verdict PASS — M-1 CLOSED; READY FOR PHASE-4 FORMAL CLOSURE; observations OBS-1/OBS-2/OBS-3 carried) |
+| ARR-0026 and above | AVAILABLE-FUTURE | — |
 
 Two review reports were issued under **temporary, deliberately unnumbered**
 identifiers by Board instruction: the *Pre-Git Governance & Repository Integrity
 Audit* and the *Governance Identifier Collision Reconciliation Report*. Neither
 consumes an ARR number.
 
-**Next allocatable ARR: `ARR-0025`.**
+**Next allocatable ARR: `ARR-0026`.**
 
 ## 8. ER — Execution Reports
 
@@ -293,9 +296,10 @@ consumes an ARR number.
 | **ER-0069** | **ALLOCATED** | **Slice-1 Post-Phase-3 Implementation Plan Review** (authority PBA-0073; 2026-08-15; read-only; disposition NEXT PHASE IDENTIFIED — READY FOR IMPLEMENTATION AUTHORIZATION (Phase 4, §6.1–§6.4)) |
 | **ER-0070** | **ALLOCATED** | **Slice-1 Phase-4 Defect / Result Model and Canonical Ordering Implementation Report** (authority PBA-0074; 2026-08-15; implements §6.1–§6.4 result/defect model and canonical ordering in `src/result/`; no defect production, no check; independent review required before closure) |
 | **ER-0071** | **ALLOCATED** | **Slice-1 Phase-4 MINOR-1 Remediation Report** (authority PBA-0076; 2026-08-15; closes ARR-0024 MINOR-1 — makes the §6.2 `UNUSABLE`+empty state unrepresentable via a required first-defect argument on `WellFormednessResult::unusable`; independent re-review required before closure) |
-| ER-0072 and above | AVAILABLE-FUTURE | — |
+| **ER-0072** | **ALLOCATED** | **Slice-1 Phase-4 Formal Closure Report** (authority PBA-0078; 2026-08-15; records **Phase 4 CLOSED** in the Slice-1 implementation plan on the basis of ARR-0025; resolves observation OBS-2 (crate-doc currency in `src/lib.rs`); documentation-only — no source, test, dependency, toolchain, or accepted-document change) |
+| ER-0073 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0072`.**
+**Next allocatable ER: `ER-0073`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -336,10 +340,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0076 | **PBA-0077** |
+| PBA | PBA-0078 | **PBA-0079** |
 | PBR | PBR-0014 | **PBR-0015** |
-| ARR | ARR-0024 | **ARR-0025** |
-| ER | ER-0071 | **ER-0072** |
+| ARR | ARR-0025 | **ARR-0026** |
+| ER | ER-0072 | **ER-0073** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -409,6 +413,8 @@ identifiers were allocated in the same period:
 | Phase 4 implementation | PBA-0074 | ER-0070 | Record PBA-0073 / ER-0069 (pending from the read-only planning review, §12(6)) and this cycle's own identifiers; implement the §6.1–§6.4 defect/result model and canonical ordering in `src/result/`. No ARR or PBR allocated — implementation is not review or closure. Terminates under §12(7). |
 | Phase 4 review | PBA-0075 | ARR-0024 | Read-only independent architecture/implementation review (no ledger write; recorded by the cycle below, per §12(6)). Verdict FAIL — REMEDIATION REQUIRED (MINOR-1). |
 | Phase 4 MINOR-1 remediation | PBA-0076 | ER-0071 | Record PBA-0075 / ARR-0024 (pending from the read-only review, §12(6)) and this cycle's own identifiers; enforce the §6.2 defect-set/verdict biconditional on `WellFormednessResult::unusable` (ARR-0024 MINOR-1) in `src/result/mod.rs`. Source-writing cycle — not ledger-only; independent re-review required before closure. |
+| Phase 4 MINOR-1 re-review | PBA-0077 | ARR-0025 | Read-only independent re-review of the MINOR-1 remediation (no ledger write; recorded by the cycle below, per §12(6)). Verdict PASS — M-1 CLOSED. |
+| **Phase 4 formal closure** | **PBA-0078** | **ER-0072** | Record PBA-0077 / ARR-0025 (pending from the read-only re-review, §12(6)) and this cycle's own identifiers; record **Phase 4 CLOSED** in the Slice-1 implementation plan on the basis of ARR-0025, and resolve observation OBS-2 (crate-doc currency in `src/lib.rs`). Documentation-only write — no source, test, dependency, toolchain or accepted-document change. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their

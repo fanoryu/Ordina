@@ -9,15 +9,17 @@
 //! foundation is in place: the §3 construct model and the five opaque domains
 //! (`model`), the exact dimension-free numeric value layer (`numeric`), the
 //! dimension-aware equality, comparison and dimension primitives
-//! (`semantics::comparison`, `semantics::dimension`), and the §4.10
-//! per-reference constraint-domain algebra — contradiction, overlap and
-//! subsumption (`semantics::constraint`).
+//! (`semantics::comparison`, `semantics::dimension`), the §4.10 per-reference
+//! constraint-domain algebra — contradiction, overlap and subsumption
+//! (`semantics::constraint`), and the §6 result and defect model — the binary
+//! verdict, deterministic defect identity, and the total canonical defect
+//! ordering (`result`).
 //!
-//! These are **semantic primitives, not checks.** The mandatory Well-Formedness
-//! checks, the defect model, the canonical defect ordering, prerequisite
-//! gating, Direction logic, and the final verdict are **not implemented**;
-//! `checks` and `result` are deliberately empty until their phases. The
-//! authoritative, always-current phase status lives in
+//! These are **semantic primitives and data models, not a running checker.** No
+//! mandatory Well-Formedness check is implemented, no defect is produced, and
+//! nothing computes a verdict from a Strategy: prerequisite gating, Direction
+//! logic, and checker orchestration are absent, and `checks` is deliberately
+//! empty. The authoritative, always-current phase status lives in
 //! `docs/engineering/slice-1-implementation-plan.md`, not in this comment.
 
 // ADR-0005 §7.7 — no `unsafe` is authorized or required for Slice 1.

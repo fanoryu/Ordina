@@ -2,11 +2,11 @@
 
 - **Tier:** 3 (engineering)
 - **Status:** ACTIVE — Phase 0 complete, **Phase 1 CLOSED**, **Phase 2A CLOSED**,
-  **Phase 2B CLOSED**, **Phase 3 CLOSED**; Phases 4–8 not started and **not
-  authorized**
+  **Phase 2B CLOSED**, **Phase 3 CLOSED**, **Phase 4 CLOSED**; Phases 5–8 not
+  started and **not authorized**
 - **Authority:** PBA-0040 / PBA-0041; Phase-1 closure under PBA-0048; Phase-2A
   closure under PBA-0054; Phase-2B closure under PBA-0066; Phase-3 closure under
-  PBA-0072
+  PBA-0072; Phase-4 closure under PBA-0078
 - **Realizes:** First Runnable Slice Contract (ACCEPTED, PBR-0011) under ADR-0005
   (ACCEPTED, PBR-0013)
 - **Created:** 2026-08-13
@@ -476,6 +476,54 @@ N-25, F-8 remain OPEN. B-1 remains a future checker/harness caller obligation.
 | **Prerequisites** | Phases 1–3 |
 | **Exit criteria** | Binary verdict; deterministic defect identity; a **total** canonical order; **no `HashMap`/`HashSet` on any authoritative path** (ADR-0005 §7.6); verification green |
 | **Not in scope** | Producing defects — no check runs yet |
+
+### Closure record — Phase 4 is CLOSED
+
+**Closed 2026-08-15** by Product Board authorization **PBA-0078**, reported in
+**ER-0072**, at the post-remediation baseline `3310743`.
+
+**Lineage.** Implementation `PBA-0074 / ER-0070` → independent review
+`PBA-0075 / ARR-0024` (**FAIL — REMEDIATION REQUIRED**, one MINOR finding M-1:
+the §6.2 defect-set/verdict biconditional was not enforced on the `unusable`
+path) → bounded remediation `PBA-0076 / ER-0071` → independent re-review
+`PBA-0077 / ARR-0025` (**PASS — M-1 CLOSED**) → formal closure
+`PBA-0078 / ER-0072`.
+
+**What was closed — the §6.1–§6.4 result and defect model in `src/result/`, and
+nothing beyond it.** Data model and canonical ordering only; **no mandatory
+check runs and no defect is produced.**
+
+- **Verdict / result (`verdict.rs`, `mod.rs`)** — binary `WellFormed` /
+  `Unusable`; `WellFormednessResult` carries verdict, defect set, not-evaluated
+  set, and the bound checker-semantics token `WF-1`. The §6.2 invariant "defect
+  set empty **iff** `WellFormed`" is structural: `well_formed` yields an empty
+  set, `unusable` requires a first defect, so neither forbidden state is
+  constructible (M-1 fix).
+- **Defect model (`category.rs`, `discriminator.rs`, `identity.rs`)** — the 26
+  §6.4.1 categories with explicit ordinals and owning check numbers; the 6
+  §6.4.2 discriminator kinds; `DefectCore` with the total §6.4 order (check →
+  lineage → category → discriminator); optional caller-supplied
+  `RevisionIdentity`.
+- **§6.3 non-comparability** — `DefectIdentity` implements no `Eq`/`Ord`/`Hash`;
+  comparison is only `try_cmp`/`try_eq` (`None` across the qualification
+  boundary or across differing revisions) and `canonical_sort` (rejects a mixed
+  set). Verified independently by ARR-0024 §7 and ARR-0025 §5.
+- **§6.4.3 literal order** — numeric by exact value then supplied dimension
+  order; `false < true`; enum by supplied order — all delegating to supplied
+  opaque orders, never handle magnitude (ADR-0005 §7.5). No `HashMap`/`HashSet`
+  on any authoritative path (§7.6).
+
+**M-1 — CLOSED.** No safe public path constructs `UNUSABLE` + empty or
+`WELL-FORMED` + non-empty; a `compile_fail` doctest and runtime tests guard the
+boundary (ARR-0025 §5–§6).
+
+**What closure does not mean.** Slice 1 is **not** complete. No mandatory check,
+defect production, prerequisite gating, Direction logic, or verdict orchestration
+is implemented; `src/checks/**` remains empty. **Phase 5 is NOT STARTED and NOT
+AUTHORIZED.** O-1, O-2, O-3 remain unresolved (O-1 still gates check 6); Q-06,
+Q-08, N-22, N-24, N-25, F-8 remain OPEN. Carried observations OBS-1 (identity
+component accessors) and OBS-3 (`PropertyPosition` supplied ordinal) require no
+remediation; OBS-2 (crate-doc currency) was resolved in this closure cycle.
 
 ## Phase 5 — Mandatory Well-Formedness checks
 
