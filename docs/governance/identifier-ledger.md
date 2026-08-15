@@ -169,7 +169,9 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0091** | **ALLOCATED** | **Slice Contract Revision 4 Canonical Occurrence and Integrated Defect Identity Authoring authorization** → ER-0083 (2026-08-15; authors `first-runnable-slice-contract-r04.md` as PROPOSED and synchronizes PBA-0088–0091 / ER-0080–0083) |
 | **PBA-0092** | **ALLOCATED** | **Slice Contract Revision 4 Independent Architecture and Contract Review authorization** → ARR-0028 (2026-08-16; read-only; verdict FAIL — BOUNDED REMEDIATION REQUIRED, one MAJOR M-1 (check-11 pairwise anchor)) |
 | **PBA-0093** | **ALLOCATED** | **Slice Contract Revision 4 Check-11 Pairwise Anchor Bounded Remediation authorization** → ER-0084 (2026-08-16; corrects ARR-0028 M-1 in `first-runnable-slice-contract-r04.md`; Revision 4 remains PROPOSED; independent re-review required) |
-| PBA-0094 and above | AVAILABLE-FUTURE | — |
+| **PBA-0094** | **ALLOCATED** | **Slice Contract Revision 4 Independent Post-Remediation Re-Review authorization** → ARR-0029 (2026-08-16; read-only; verdict PASS — ARR-0028 M-1 CLOSED; ACCEPTANCE-READY) |
+| **PBA-0095** | **ALLOCATED** | **Slice Contract Revision 4 Product Board Acceptance authorization** → PBR-0016 / ER-0085 (2026-08-16; accepts Revision 4, supersedes Revision 3 in governance provenance) |
+| PBA-0096 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -183,7 +185,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0094`.**
+**Next allocatable PBA: `PBA-0096`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -204,7 +206,8 @@ evidence.
 | **PBR-0013** | **ALLOCATED** | **ADR-0005 acceptance** (2026-08-13; authorization PBA-0039) |
 | **PBR-0014** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 acceptance** (2026-08-14; authorization PBA-0063). Revision 2 becomes ACCEPTED and normative; Revision 1 SUPERSEDED in governance provenance, its file preserved immutable; closes F-3. |
 | **PBR-0015** | **ALLOCATED** | **First Runnable Slice Contract Revision 3 acceptance** (2026-08-15; authorization PBA-0086). Revision 3 becomes ACCEPTED and normative; Revision 2 SUPERSEDED in governance provenance, its file preserved immutable. Records the check-1/check-15/check-16 required-property ownership clarification. |
-| PBR-0016 and above | AVAILABLE-FUTURE | — |
+| **PBR-0016** | **ALLOCATED** | **First Runnable Slice Contract Revision 4 acceptance** (2026-08-16; authorization PBA-0095). Revision 4 becomes ACCEPTED and normative; Revision 3 SUPERSEDED in governance provenance, its file preserved immutable. Records the canonical construct-occurrence identity and integrated defect-identity design (OccurrenceId anchor, LINEAGE discriminator kind 7, COUNTERPART occurrence payload, symmetric check-9 / asymmetric check-11 anchors). Contract/design side of O-A resolved; Phase-1/Phase-4 implementation remediation still pending. |
+| PBR-0017 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §4).** `PBR-0010` was used twice: for the Slice
 Contract Final Review Authorization that produced ARR-0007, and later for the Slice
@@ -213,7 +216,7 @@ acceptance is reassigned **PBR-0011**. **The acceptance decision itself is
 unchanged** — decision date 2026-08-13, contract status ACCEPTED, architecture and
 engineering substance untouched. Only the governance identifier is corrected.
 
-**Next allocatable PBR: `PBR-0016`.**
+**Next allocatable PBR: `PBR-0017`.**
 
 ## 7. ARR — Architecture / Contract Review Reports
 
@@ -247,14 +250,15 @@ engineering substance untouched. Only the governance identifier is corrected.
 | **ARR-0026** | **ALLOCATED** | **Slice Contract Revision 3 Independent Review** (authority PBA-0083; 2026-08-15; verdict FAIL — BOUNDED REMEDIATION REQUIRED — one MINOR M-1 (Revision-3 §E model-comment currency list omitted `src/model/derivation.rs`); substantive §C ruling sound; remediated under PBA-0084 / ER-0077) |
 | **ARR-0027** | **ALLOCATED** | **Slice Contract Revision 3 M-1 Remediation Re-Review** (authority PBA-0085; 2026-08-15; verdict PASS — M-1 CLOSED; READY FOR ACCEPTANCE; observation O-B carried, resolved under ER-0079). *Row added under PBA-0093 (2026-08-16) to complete a pre-existing clerical omission: this identifier was already recorded as allocated in the Revision-3 header, the §11.1 administrative table, and ER-0079, and in the §11 high-water / next-allocatable values; no assignment is changed, displaced, or reused.* |
 | **ARR-0028** | **ALLOCATED** | **Slice Contract Revision 4 Independent Architecture and Contract Review** (authority PBA-0092; 2026-08-16; read-only; verdict FAIL — BOUNDED REMEDIATION REQUIRED — one MAJOR M-1 (§C.7 applied symmetric occurrence-order offender selection to the asymmetric check-11 `UNREACHABLE_SUBSUMED_RULE`); occurrence-identity architecture otherwise independently verified; remediated under PBA-0093 / ER-0084) |
-| ARR-0029 and above | AVAILABLE-FUTURE | — |
+| **ARR-0029** | **ALLOCATED** | **Slice Contract Revision 4 Independent Post-Remediation Re-Review** (authority PBA-0094; 2026-08-16; read-only; verdict PASS — ACCEPTANCE-READY; ARR-0028 M-1 CLOSED; zero BLOCKER/MAJOR/MINOR; check-9 symmetric and check-11 asymmetric anchors, OccurrenceId/LINEAGE/COUNTERPART, §6.4 totality, and Revision-3 preservation all independently re-verified) |
+| ARR-0030 and above | AVAILABLE-FUTURE | — |
 
 Two review reports were issued under **temporary, deliberately unnumbered**
 identifiers by Board instruction: the *Pre-Git Governance & Repository Integrity
 Audit* and the *Governance Identifier Collision Reconciliation Report*. Neither
 consumes an ARR number.
 
-**Next allocatable ARR: `ARR-0029`.**
+**Next allocatable ARR: `ARR-0030`.**
 
 ## 8. ER — Execution Reports
 
@@ -328,9 +332,10 @@ consumes an ARR number.
 | **ER-0082** | **ALLOCATED** | **Slice-1 Class-Level and Counterpart Defect Identity Determination** (authority PBA-0090; 2026-08-15; read-only; integrated design — envelope anchor + new `LINEAGE` discriminator for `DUPLICATE_LINEAGE_IDENTITY`, COUNTERPART payload → `OccurrenceId`, first-occurrence pairwise selection — REVISION 4 SUFFICIENT; no source/ledger change) |
 | **ER-0083** | **ALLOCATED** | **Slice Contract Revision 4 Canonical Occurrence and Integrated Defect Identity Authoring Report** (authority PBA-0091; 2026-08-15; authors `first-runnable-slice-contract-r04.md` as **PROPOSED** and synchronizes PBA-0088–0091 / ER-0080–0083; Revision 3 remains authoritative; independent review and Product Board acceptance required before Phase-1/Phase-4 remediation) |
 | **ER-0084** | **ALLOCATED** | **Slice Contract Revision 4 Check-11 Anchor Remediation Report** (authority PBA-0093; 2026-08-16; splits §C.7 into symmetric check-9 occurrence-order selection and asymmetric check-11 subsumed-rule anchor per ARR-0028 M-1; closes ARR-0028 O-1 editorially (NONE for Strategy-level defects); COUNTERPART/OccurrenceId/LINEAGE architecture unchanged; Revision 4 remains PROPOSED; independent re-review required) |
-| ER-0085 and above | AVAILABLE-FUTURE | — |
+| **ER-0085** | **ALLOCATED** | **Slice Contract Revision 4 Acceptance Report** (authority PBA-0095; 2026-08-16; records **PBR-0016** — Revision 4 ACCEPTED and authoritative, Revision 3 SUPERSEDED; clerical status/metadata transition only, substantive §C byte-frozen from the ARR-0029-reviewed version; contract/design O-A resolved; Phase-1/Phase-4 implementation remediation pending; Phase 5A remains blocked) |
+| ER-0086 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0085`.**
+**Next allocatable ER: `ER-0086`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -371,10 +376,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0093 | **PBA-0094** |
-| PBR | PBR-0015 | **PBR-0016** |
-| ARR | ARR-0028 | **ARR-0029** |
-| ER | ER-0084 | **ER-0085** |
+| PBA | PBA-0095 | **PBA-0096** |
+| PBR | PBR-0016 | **PBR-0017** |
+| ARR | ARR-0029 | **ARR-0030** |
+| ER | ER-0085 | **ER-0086** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -461,6 +466,8 @@ identifiers were allocated in the same period:
 | **Slice Contract Revision 4 authoring** | **PBA-0091** | **ER-0083** | Record PBA-0088/ER-0080, PBA-0089/ER-0081, PBA-0090/ER-0082 (pending from the read-only/stopped cycles, §12(6)) and this cycle's own identifiers; author `first-runnable-slice-contract-r04.md` as **PROPOSED** under PBD-0006 (canonical occurrence and integrated defect identity). Revision 3 remains authoritative; no ARR or PBR allocated — no review or acceptance occurred. Terminates under §12(7). |
 | Slice Contract Revision 4 review | PBA-0092 | ARR-0028 | Read-only independent review of proposed Revision 4 (no ledger write; recorded by the cycle below, per §12(6)). Verdict FAIL — BOUNDED REMEDIATION REQUIRED (MAJOR M-1, check-11 pairwise anchor). |
 | **Slice Contract Revision 4 M-1 remediation** | **PBA-0093** | **ER-0084** | Record PBA-0092 / ARR-0028 (pending from the read-only review, §12(6)) and this cycle's own identifiers; correct the ARR-0028 M-1 check-11 pairwise anchor in `first-runnable-slice-contract-r04.md`, and complete the pre-existing ARR-0027 §7 clerical omission (§3 currency, no assignment changed). Revision 4 remains PROPOSED; independent re-review required before acceptance. Terminates under §12(7). |
+| Slice Contract Revision 4 re-review | PBA-0094 | ARR-0029 | Read-only independent post-remediation re-review (no ledger write; recorded by the cycle below, per §12(6)). Verdict PASS — ARR-0028 M-1 CLOSED; ACCEPTANCE-READY. |
+| **Slice Contract Revision 4 acceptance** | **PBA-0095** | **PBR-0016 / ER-0085** | Record PBA-0094 / ARR-0029 (pending from the read-only re-review, §12(6)) and this cycle's own identifiers; **accept Revision 4 under PBR-0016**, superseding Revision 3 in governance provenance (predecessor file preserved immutable). Clerical status/metadata transition of `first-runnable-slice-contract-r04.md` only — no substantive §C change, no source/test/dependency/toolchain change. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their

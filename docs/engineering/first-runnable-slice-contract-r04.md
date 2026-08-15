@@ -3,14 +3,13 @@
 - **Title:** First Runnable Slice — Implementation Contract
 - **Contract family:** First Runnable Slice Contract
 - **Revision:** 4
-- **Status:** **PROPOSED** — Product Board review required. **No normative force.**
+- **Status:** **ACCEPTED** — normative.
 - **Predecessor:** `first-runnable-slice-contract-r03.md` — Revision 3, accepted
-  under PBR-0015 (2026-08-15). Revision 3 **remains authoritative** until and
-  unless the Product Board accepts this revision under a future PBR. This revision
-  does not edit it.
-- **Authority:** PBA-0091 (authoring). No acceptance authority allocated.
+  under PBR-0015 (2026-08-15); **SUPERSEDED** by this revision on acceptance
+  (2026-08-16) in governance provenance, its file preserved immutable.
+- **Authority:** PBA-0091 (authoring); PBA-0095 (acceptance).
 - **Author:** Principal Engineer
-- **Tier:** 3 (engineering, normative once accepted)
+- **Tier:** 3 (engineering, normative)
 - **Governed by:** PBD-0006 — Normative Engineering Contract Revision Convention
   (`workflow.md`); Product Constitution v1.0 — ACTIVE — RATIFIED
 - **Determination basis:** authored under PBA-0091 encoding the integrated
@@ -19,16 +18,21 @@
   **PBA-0089 / ER-0081** (Revision-4 authoring STOP identifying the class-level
   and COUNTERPART blockers), and **PBA-0090 / ER-0082** (integrated class-level
   and counterpart defect-identity determination — *REVISION 4 SUFFICIENT*).
-- **Review history:** authored under PBA-0091. **No independent review (ARR) and
-  no acceptance (PBR) has occurred.** PBD-0006 requires independent review →
-  remediation if necessary → independent re-review if remediated → Product Board
-  acceptance before this revision can become authoritative.
+- **Review history:** authored under PBA-0091 / ER-0083 → independent review
+  PBA-0092 / **ARR-0028** (FAIL — BOUNDED REMEDIATION REQUIRED, one MAJOR M-1:
+  check-11 asymmetric subsumption anchor incorrectly generalized from the
+  symmetric check-9 rule) → remediation PBA-0093 / **ER-0084** → independent
+  re-review PBA-0094 / **ARR-0029** (PASS — ARR-0028 M-1 CLOSED; ACCEPTANCE-READY).
+- **Accepted by:** Product Board, **PBR-0016**
+- **Decision date:** 2026-08-16
 
-> ## This revision is PROPOSED. It has no normative force.
+> ## This revision is ACCEPTED and is the authoritative First Runnable Slice Contract.
 >
-> Nothing in this file is authoritative. **Revision 3
-> (`first-runnable-slice-contract-r03.md`) is the contract** until the Product
-> Board accepts this revision under a future PBR. This revision changes **only**
+> Accepted by the Product Board under **PBR-0016** on 2026-08-16 (acceptance
+> authorization PBA-0095), following the review path PBD-0006 requires
+> (ARR-0028 FAIL → ER-0084 remediation → ARR-0029 PASS). It **supersedes
+> Revision 3**, whose file (`first-runnable-slice-contract-r03.md`) remains an
+> immutable historical artifact. This revision changes **only**
 > the explicitly enumerated surfaces in §C and **incorporates the whole of
 > Revision 3 unchanged** otherwise (§D). It introduces a **canonical
 > construct-occurrence identity** and migrates defect anchoring and canonical
