@@ -133,7 +133,7 @@ ARR-0016 (PBA-0047) → closure ER-0051 (PBA-0048).
 
 | Ref | Observation | Status |
 |---|---|---|
-| **O-1** | `EvidenceDeclaration.declared_values` is represented through a sequence whose derived equality is **sequence-sensitive**, although the Slice Contract §3.5 describes the domain as a **set**. | **DEFERRED — MUST BE SETTLED BEFORE CHECK 6 CONSUMES THE REPRESENTATION** (check 6 lands in Phase 5). |
+| **O-1** | `EvidenceDeclaration.declared_values` is represented through a `Vec<EnumValue>` whose derived equality is sequence-sensitive. This is **deliberately permissive**, not a contract violation: the accepted contract (§3.5 "a finite, non-empty set of **distinct** opaque categorical values"; §5.1.1 the "value set is empty" and "value set contains duplicate values" violations) treats the value set as a **set** — order is meaningless and duplicates are a *fault to detect*, not a multiplicity to preserve. The model comment in `src/model/evidence.rs` confirms the sequence is intentional so check 6 can observe empty/duplicate states. | **RESOLVED-BY-DETERMINATION (PBA-0118 / ER-0099) — NOT a model defect; the O-1 gate is discharged.** Revision 4 already uniquely fixes the semantics as a set. Check 6 must apply set semantics (membership / empty / duplicate detection) and must **not** use order or duplicate multiplicity. **The earlier "describes a set … MUST BE SETTLED BEFORE CHECK 6" framing misstated the contract** and has been corrected; no `src/model` change, no shared helper, no Revision 5. Check 6 is eligible for separate authorization under DETERMINATION B. |
 | **O-2** | Check 13A's prohibited-operator defect population is structurally constrained as reviewed; its non-`NUMERIC`-leaf population remains representable, so the check is not vacuous. | **BOARD-NOTED — non-blocking.** Check 13A is not implemented. |
 | **O-3** | Check 5's structural guarantee is narrower than some source prose implies; a real representable population remains through lineage resolution. | **BOARD-NOTED — non-blocking.** The accepted Slice Contract is not amended. |
 | **O-4** | `Guard.atoms` is represented through a sequence, although Slice Contract §3.6/§4.5 give a guard **set** semantics ("two guards with the same atom set are the same guard"), so a content-identical duplicate atom is representable. Same class as O-1. Reachable through check 5 and, prospectively, accepted check 2. | **BOARD-NOTED (PBA-0115 / ER-0097) — OPEN, prospective.** ER-0097 RULING 2 settles the semantics: one defect per **distinct** atom. Check 5 was conformed locally at its evaluation layer by PBA-0116 / ER-0098; **the `Guard` representation is unchanged and O-4 is not resolved.** Check 2's parallel divergence is frozen until separately authorized. |
@@ -797,6 +797,32 @@ check, `Cargo`/toolchain, and Revision 4 unchanged; **check 2 not modified**; no
 machinery. **O-4 remains OPEN and prospective** — `Guard` representation untouched.
 Independent read-only re-review of the remediation required. Remaining: O-1 gate,
 F (6), G (9+11+12), H (13A/B+14A/B).
+
+**O-1 representation-settlement determination (PBA-0118 / ER-0099, 2026-08-17).**
+Product Board determination under the ER-0092 precedent, adopted by the Product
+Owner. Reconstructing from first principles, Revision 4 **already uniquely fixes**
+`declared_values` semantics as a **set**: §3.5 specifies a "finite, non-empty set of
+**distinct** opaque categorical values" (distinct is normative), §5.1.1 lists the
+"value set is empty" and "value set contains duplicate values" violations (so
+duplicates are a *fault*, not a multiplicity), and `src/model/evidence.rs` states
+the `Vec<EnumValue>` is "deliberately so: §5.1 check 6 must be able to detect an
+**empty** set and **duplicate** values." Therefore member order is meaningless and
+duplicate-identical members have no multiplicity: `[A,B] ≡ [B,A]` and `[A,A] ≡ [A]`.
+**DETERMINATION B — existing contract sufficient; Check 6 implementation must apply
+set semantics.** Check 6 is structurally per-member / set-level: a present-and-non-
+empty test (absent/empty → one `INVALID_EVIDENCE_DECLARATION`, PROPERTY 4), a
+duplicate detection over members (duplicate → one defect, PROPERTY 4), and a
+per-member membership test for each guard-atom value (`ENUM_VALUE_NOT_DECLARED`,
+ATOM discriminator). It requires neither collection-identity comparison nor sequence
+semantics; order and duplicate multiplicity must be **ignored**, never deduplicated
+post-hoc. **No `src/model` change, no shared helper, no Revision 5.** The prior
+plan framing ("sequence-sensitive derived equality … §3.5 describes a set … MUST BE
+SETTLED BEFORE CHECK 6") **misstated the contract** and is corrected above; O-1 is
+reclassified from DEFERRED-gate to **RESOLVED-BY-DETERMINATION**. The O-1 gate is
+**discharged**; **Check 6 is eligible for separate authorization.** O-4 remains
+OPEN/prospective and independent (analogous pattern, different domain — not settled
+by this determination); check 2 frozen. ARR-0038's single non-blocking MINOR carried
+forward. Remaining: **F (6), G (9+11+12), H (13A/B+14A/B)**.
 
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
 
