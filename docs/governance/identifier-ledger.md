@@ -430,10 +430,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | **PBA-0122** | **PBA-0123** |
+| PBA | **PBA-0123** | **PBA-0124** |
 | PBR | PBR-0016 | **PBR-0017** |
 | ARR | **ARR-0040** | **ARR-0041** |
-| ER | ER-0101 | **ER-0102** |
+| ER | **ER-0102** | **ER-0103** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
