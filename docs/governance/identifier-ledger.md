@@ -189,7 +189,9 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0111** | **ALLOCATED** | **Slice-D Commit Attribution Trailer Removal and Bounded History Remediation authorization** → ER-0095 (2026-08-17; removes the prohibited `Co-Authored-By` trailer from the Slice-D implementation commit via metadata-only `--amend`; tree identity preserved; independent review of Slice D against the clean commit required) |
 | **PBA-0112** | **ALLOCATED** | **Slice-1 Phase-5 Slice-D Independent Implementation Review authorization** → ARR-0036 (2026-08-17; read-only; verdict PASS — SLICE D CHECKS 8/10 VERIFIED; populations/multiplicities/anchors/discriminators contract-faithful, check-8 co-occurrence independently justified, check-10 ownership exact, no prior-check regression, no Phase-6 leakage; two non-blocking OBSERVATIONs) |
 | **PBA-0113** | **ALLOCATED** | **Phase-5 Slice-E (Checks 3, 4, 5) Implementation authorization** → ER-0096 (2026-08-17; implements check 3 `INVALID_CONDITION_CLASSIFICATION`, check 4 `INVERTED_CONFIGURATION_BOUNDS`/`CONFIGURATION_BOUND_DIMENSION_MISMATCH`, check 5 `CONFIGURATION_IN_STRUCTURAL_POSITION` in `src/checks/{condition_classification,configuration_bounds,configuration_position}.rs`; defect production only; O-3 population implemented without resolving it; no other check/gating/verdict; `src/model`/`src/result` unchanged; independent review required) |
-| PBA-0114 and above | AVAILABLE-FUTURE | — |
+| **PBA-0114** | **ALLOCATED** | **Slice-1 Phase-5 Slice-E Independent Implementation Review authorization** → ARR-0037 (2026-08-17; read-only; verdict FAIL — BOUNDED REMEDIATION OR BOARD DETERMINATION REQUIRED; checks 3 and 4 verified with zero findings; two BLOCKERs against check 5 (B-1 ATOM discriminator authority, B-2 identity totality on content-identical guard atoms) and two MINORs (m-1, m-2)) |
+| **PBA-0115** | **ALLOCATED** | **ARR-0037 B-1 / B-2 Discriminator-Authority and Atom-Identity Determination authorization** → ER-0097 (2026-08-17; Product Board determination under the ER-0092 precedent, adopted by the Product Owner; RULING 1 — §6.4.2 `Used by` entries are descriptive under §6.3's "for example", check 5 authorized to use `ATOM`; RULING 2 — §3.6/§4.5 guard set semantics, content-identical atoms are one semantic atom, `ATOM` total over the semantic atom set; no successor revision; B-1 CLOSED — NOT A DEFECT, B-2 reclassified MAJOR; also synchronizes PBA-0114 / ARR-0037 and this cycle's own identifiers) |
+| PBA-0116 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -203,7 +205,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0114`.**
+**Next allocatable PBA: `PBA-0116`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -276,14 +278,15 @@ engineering substance untouched. Only the governance identifier is corrected.
 | **ARR-0034** | **ALLOCATED** | **Phase-5 Slice-C Independent Implementation Review** (authority PBA-0106; 2026-08-16; read-only; verdict FAIL — one MAJOR M-1: check-2 ENUM atom overlap (inadmissible operator + undeclared value) resolved by implementation-selected precedence; all other check-2 surfaces independently verified PASS; resolved by ER-0092 RULING A / ER-0093) |
 | **ARR-0035** | **ALLOCATED** | **Slice-1 Phase-5 Slice-C M-1 Remediation Re-Review** (authority PBA-0109; 2026-08-17; read-only; verdict PASS — SLICE-C M-1 CLOSED; CHECK 2 VERIFIED; ER-0092 RULING-A co-occurrence faithfully implemented, TYPE_MISMATCH one-per-atom preserved, O-1 isolation and all ARR-0034 PASS surfaces independently re-verified; zero findings) |
 | **ARR-0036** | **ALLOCATED** | **Slice-1 Phase-5 Slice-D Independent Implementation Review** (authority PBA-0112; 2026-08-17; read-only; verdict PASS — SLICE D CHECKS 8/10 VERIFIED; check-8 populations/multiplicities/anchors/discriminators and precedence-order use, check-8 co-occurrence (independently justified from §5.1 + §3.7 Prohibited list, not resting on ER-0092), check-10 sole outcome-validity ownership, occurrence anchors, NONE discriminators, check-2/prior-check freeze, and Phase-6 boundary all independently verified; two non-blocking OBSERVATIONs (O-1: §3.7 prose vs §5.1 population; O-2: absent-lineage anchoring test coverage)) |
-| ARR-0037 and above | AVAILABLE-FUTURE | — |
+| **ARR-0037** | **ALLOCATED** | **Slice-1 Phase-5 Slice-E Independent Implementation Review** (authority PBA-0114; 2026-08-17; read-only; verdict **FAIL — SLICE E REQUIRES BOUNDED REMEDIATION OR BOARD DETERMINATION**. Checks 3 and 4 independently verified with zero findings — check-3 population/ownership/NONE identity, check-4 two categories, `lower > upper` by exact `ExactNumber` order, independent conjuncts, PROPERTY 4/5, intrinsic computability, no float. Two BLOCKERs against check 5: **B-1** ATOM used where §6.4.2's `Used by` cell lists checks 2 and 12; **B-2** two content-identical offending guard atoms produced defects equal on all four §6.4 keys, the same ATOM gap being reachable through accepted check 2. Two MINORs: **m-1** no content-identical-atom test, **m-2** check-2/check-5 co-occurrence unasserted. Check-5 population, resolution semantics, and occurrence anchoring independently verified correct; prior checks frozen; no Phase-6 leakage; O-1/O-2/O-3 preserved OPEN. Dispositioned by PBA-0115 / ER-0097) |
+| ARR-0038 and above | AVAILABLE-FUTURE | — |
 
 Two review reports were issued under **temporary, deliberately unnumbered**
 identifiers by Board instruction: the *Pre-Git Governance & Repository Integrity
 Audit* and the *Governance Identifier Collision Reconciliation Report*. Neither
 consumes an ARR number.
 
-**Next allocatable ARR: `ARR-0037`.**
+**Next allocatable ARR: `ARR-0038`.**
 
 ## 8. ER — Execution Reports
 
@@ -369,9 +372,10 @@ consumes an ARR number.
 | **ER-0094** | **ALLOCATED** | **Slice-1 Phase-5 Slice-D Checks 8/10 Implementation Report** (authority PBA-0110; 2026-08-17; implements check 8 in `src/checks/direction_coverage.rs` (`DIRECTION_COVERAGE_INCOMPLETE`/`MULTIPLE_TOTAL_DIRECTION_RULES`/`TOTAL_RULE_NOT_LOWEST_PRECEDENCE`, envelope/member occurrence anchors, `NONE` discriminator, independent populations, supplied precedence order, no check-2/6 dependency) and check 10 in `src/checks/direction_determinism.rs` (`INVALID_DIRECTION_OUTCOME`, one per rule, rule-occurrence anchor, `NONE`, sole outcome-validity ownership); defect production only; no new discriminator; `src/model`/`src/result` unchanged; checks 1/2/15/16 unchanged; no Phase-6 orchestration; O-1/O-2/O-3 OPEN; independent review required) |
 | **ER-0095** | **ALLOCATED** | **Slice-D Commit Attribution Trailer Removal Report** (authority PBA-0111; 2026-08-17; removes a prohibited `Co-Authored-By: Claude Opus 4.8` trailer from the Slice-D implementation commit via metadata-only history rewrite — tree identity preserved; `f592bb9` → `b704949`; no source, test, dependency, toolchain, or accepted-document change; Slice-D semantics under ER-0094 unchanged) |
 | **ER-0096** | **ALLOCATED** | **Slice-1 Phase-5 Slice-E Checks 3/4/5 Implementation Report** (authority PBA-0113; 2026-08-17; implements check 3 in `src/checks/condition_classification.rs` (`INVALID_CONDITION_CLASSIFICATION`, condition-occurrence anchor, NONE, sole classification-validity owner), check 4 in `src/checks/configuration_bounds.rs` (`INVERTED_CONFIGURATION_BOUNDS` NONE + `CONFIGURATION_BOUND_DIMENSION_MISMATCH` PROPERTY 4/5, parameter-occurrence anchor, exact numeric/dimension primitives, intrinsic computability), check 5 in `src/checks/configuration_position.rs` (`CONFIGURATION_IN_STRUCTURAL_POSITION`, guard-atom-resolves-to-config-parameter O-3 population, enclosing-construct anchor, ATOM discriminator, exactly-one §4.7 resolution); defect production only; no new discriminator/category; `src/model`/`src/result`/`src/numeric`/`src/semantics` unchanged; O-1/O-2/O-3 remain OPEN (O-3 preserved, not resolved); independent review required) |
-| ER-0097 and above | AVAILABLE-FUTURE | — |
+| **ER-0097** | **ALLOCATED** | **ARR-0037 B-1 / B-2 Discriminator-Authority and Atom-Identity Determination** (authority PBA-0115; 2026-08-17; Product Board determination adopted by the Product Owner, recorded under the ER-0092 precedent; confirms accepted text, **no successor revision**. **RULING 1** — §6.4.2's `Used by` entries are **descriptive applicability guidance, not exhaustive assignments**: §6.3 component 3 introduces the same check lists with "**for example**", states the governing entitlement structurally ("where one construct can produce multiple defects of the same category"), and delegates only *kinds and their values* to §6.4.2; each §6.4.2 row additionally carries its own structural applicability clause. **Check 5 is therefore normatively authorized to use `ATOM`** for guard-atom offenders. **RULING 2** — under §3.6 (`guard ::= a finite (possibly empty) conjunction of atoms`) and §4.5 ("Atom order within a guard carries **no meaning**… Two guards with the same atom set are the same guard"), a guard has **set semantics**; content-identical atoms within one guard are **one semantic atom** (`A ∧ A ≡ A`). "One per atom" / "one per offending reference" therefore means **one per distinct atom**: exactly one defect is required, `ATOM(lineage, operator, literal)` **is total** over the semantic atom set, the Revision-4 §C.9 totality proof **stands as written**, and **no positional, ordinal, traversal, or occurrence-based component may enter defect identity** (§6.4, §C.1, §4.5). Duplicate-identical atoms collapse as **canonical-input set semantics before predicate evaluation**, never by deduplicating emitted defect identities, which §6.3 forbids across the qualification boundary. **Dispositions:** ARR-0037 **B-1 CLOSED — NOT A DEFECT** (no code change; the authority is §6.3, which ARR-0037 under-weighted); **B-2 reclassified BLOCKER → MAJOR** incorrect-multiplicity implementation divergence, requiring bounded remediation of `src/checks/configuration_position.rs` only; **m-1 and m-2 carried as test obligations** of that remediation. B-1 and B-2 are logically independent; `src/result/**` is **not** touched; **no Revision 5 required**. Accepted check 2 exhibits the same duplicate-atom divergence prospectively — its acceptance and ARR-0035 **stand**, and it is **explicitly out of scope** and frozen until separately authorized. New observation **O-4** recorded in the Slice-1 implementation plan's existing carried-observations register. Determination-only cycle: no source, test, `Cargo`/toolchain, or accepted-contract change) |
+| ER-0098 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0097`.**
+**Next allocatable ER: `ER-0098`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -412,10 +416,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0113 | **PBA-0114** |
+| PBA | PBA-0115 | **PBA-0116** |
 | PBR | PBR-0016 | **PBR-0017** |
-| ARR | ARR-0036 | **ARR-0037** |
-| ER | ER-0096 | **ER-0097** |
+| ARR | ARR-0037 | **ARR-0038** |
+| ER | ER-0097 | **ER-0098** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -522,6 +526,8 @@ identifiers were allocated in the same period:
 | **Slice-D attribution-trailer removal** | **PBA-0111** | **ER-0095** | Record this cycle's own identifiers; remove the prohibited `Co-Authored-By` trailer from the Slice-D implementation commit via metadata-only `git commit --amend` (`f592bb9` → `b704949`), tree and parent identity preserved, then `git push --force-with-lease`. Metadata/history remediation only — no source, test, or accepted-document change; ER-0094 Slice-D semantics unchanged. This governance-synchronization commit is itself trailer-free. Terminates under §12(7). |
 | Phase-5 Slice-D review | PBA-0112 | ARR-0036 | Read-only independent review of checks 8/10 (no ledger write; recorded by the cycle below, per §12(6)). Verdict PASS — SLICE D CHECKS 8/10 VERIFIED. |
 | **Phase-5 Slice E implementation (checks 3, 4, 5)** | **PBA-0113** | **ER-0096** | Record PBA-0112 / ARR-0036 (pending from the read-only review, §12(6)) and this cycle's own identifiers; implement checks 3, 4, 5 in `src/checks/{condition_classification,configuration_bounds,configuration_position}.rs`, with focused tests. Source-writing cycle; defect production only — no other check, gating, verdict, or `src/model`/`src/result` change. Independent review required. Terminates under §12(7). |
+| Phase-5 Slice-E review | PBA-0114 | ARR-0037 | Read-only independent review of checks 3/4/5 (no ledger write; recorded by the cycle below, per §12(6)). Verdict FAIL — checks 3 and 4 verified; two BLOCKERs against check 5 (B-1 ATOM authority, B-2 content-identical atom identity). |
+| ARR-0037 B-1/B-2 determination | PBA-0115 | ER-0097 | Read-only Product Board determination of the check-5 discriminator-authority and atom-identity questions, adopted by the Product Owner (ER-0092 precedent). RULING 1 — §6.4.2 `Used by` descriptive, check 5 may use `ATOM`; RULING 2 — §4.5 guard set semantics, one defect per distinct atom, `ATOM` total, §C.9 intact. B-1 CLOSED — NOT A DEFECT; B-2 reclassified MAJOR. No successor revision. **This governance-synchronization cycle records PBA-0114 / ARR-0037 (pending from the read-only review, §12(6)) and its own identifiers**; docs-only — no `src/**`, `Cargo`, toolchain, or accepted-contract change. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their
