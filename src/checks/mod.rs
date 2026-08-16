@@ -19,7 +19,12 @@
 //!   in the typed model and is not produced here.
 //! - [`reference_integrity`] — **check 2** (`DUPLICATE_LINEAGE_IDENTITY`,
 //!   `UNRESOLVED_REFERENCE`, `TYPE_MISMATCH`, `ENUM_VALUE_NOT_DECLARED`).
+//! - [`direction_coverage`] — **check 8** (`DIRECTION_COVERAGE_INCOMPLETE`,
+//!   `MULTIPLE_TOTAL_DIRECTION_RULES`, `TOTAL_RULE_NOT_LOWEST_PRECEDENCE`).
+//! - [`direction_determinism`] — **check 10** (`INVALID_DIRECTION_OUTCOME`).
 
+pub mod direction_coverage;
+pub mod direction_determinism;
 pub mod operative_provenance;
 pub mod reference_integrity;
 pub mod required_property;

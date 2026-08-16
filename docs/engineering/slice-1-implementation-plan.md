@@ -691,6 +691,28 @@ operator and membership predicates independently; TYPE_MISMATCH stays one-per-at
 O-1 isolation and all other check-2 surfaces are preserved. Independent re-review of
 M-1 required before Slice D.
 
+**Slice D — checks 8 and 10 (PBA-0110 / ER-0094, 2026-08-17).** Implements Direction
+coverage and Direction determinism on the reconciled Revision-4 model, defect
+production only. **Check 8** (`src/checks/direction_coverage.rs`, `check_8`): three
+independent §5.1 populations — `DIRECTION_COVERAGE_INCOMPLETE` (no always-applicable
+rule, incl. zero rules; Strategy-level → **envelope** occurrence, `NONE`, one per
+Strategy), `MULTIPLE_TOTAL_DIRECTION_RULES` (>1 always-applicable; envelope, `NONE`,
+one per Strategy), `TOTAL_RULE_NOT_LOWEST_PRECEDENCE` (an always-applicable rule with
+a strictly-lower present precedence; anchored on **that rule's** occurrence, `NONE`,
+one per offending rule). Multiple-total and not-lowest are evaluated **independently**
+(ER-0092 RULING-A independence). "Always-applicable" = present-and-syntactically-empty
+guard; "not lowest" uses the **supplied** §3.3.1 precedence order, never container /
+traversal / occurrence order. Reads guards only for emptiness — **no** check-2/check-6
+dependency. **Check 10** (`src/checks/direction_determinism.rs`, `check_10`):
+`INVALID_DIRECTION_OUTCOME`, one per rule whose outcome is zero/multiple/out-of-domain,
+anchored on the rule occurrence, `NONE`. Outcome validity is check 10's sole ownership
+(R3 §3.7 table — outcome absence owned by check 10, not check 1), so no check-1
+duplication. Collection *presence* stays check 1's: both checks evaluate only over a
+**present** `direction_rules` collection (predicate computability, not §5.2 gating).
+No new discriminator; `src/model`/`src/result` unchanged; checks 1/2/15/16 unchanged;
+no Phase-6 orchestration. O-1/O-2/O-3 OPEN. Independent read-only review required.
+Remaining: E (3+4+5), O-1 gate, F (6), G (9+11+12), H (13A/B+14A/B).
+
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
 
 | | |

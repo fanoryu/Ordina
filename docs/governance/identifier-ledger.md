@@ -184,7 +184,9 @@ Numbers below a namespace's high-water mark that are absent from the evidence se
 | **PBA-0106** | **ALLOCATED** | **Phase-5 Slice-C Independent Implementation Review authorization** → ARR-0034 (2026-08-16; read-only; verdict FAIL — BOUNDED REMEDIATION / BOARD DETERMINATION REQUIRED, one MAJOR M-1 (ENUM atom overlap defect-population precedence)) |
 | **PBA-0107** | **ALLOCATED** | **Check-2 ENUM Atom Overlap Defect-Population Determination authorization** → ER-0092 (2026-08-16; read-only Product Board determination; RULING A — co-occurrence; determination sufficient, no successor revision) |
 | **PBA-0108** | **ALLOCATED** | **Phase-5 Slice-C M-1 Bounded Remediation authorization** → ER-0093 (2026-08-17; implements ER-0092 RULING A co-occurrence in `src/checks/reference_integrity.rs`; independent re-review required) |
-| PBA-0109 and above | AVAILABLE-FUTURE | — |
+| **PBA-0109** | **ALLOCATED** | **Slice-1 Phase-5 Slice-C M-1 Independent Re-Review authorization** → ARR-0035 (2026-08-17; read-only; verdict PASS — SLICE-C M-1 CLOSED; CHECK 2 VERIFIED; RULING-A co-occurrence faithfully implemented, TYPE_MISMATCH one-per-atom preserved, O-1 isolation and all ARR-0034 PASS surfaces intact; zero findings) |
+| **PBA-0110** | **ALLOCATED** | **Phase-5 Slice-D (Checks 8 and 10) Implementation authorization** → ER-0094 (2026-08-17; implements check 8 `DIRECTION_COVERAGE_INCOMPLETE`/`MULTIPLE_TOTAL_DIRECTION_RULES`/`TOTAL_RULE_NOT_LOWEST_PRECEDENCE` and check 10 `INVALID_DIRECTION_OUTCOME` in `src/checks/{direction_coverage,direction_determinism}.rs`; defect production only; no other check/gating/verdict; `src/model`/`src/result` unchanged; independent review required) |
+| PBA-0111 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §2).** `PBA-0016` was used twice: for the ADR-0003
 authorization, and later for the bounded Slice Contract remediation that produced
@@ -198,7 +200,7 @@ PBA-0014…PBA-0020. PBD-0005 §3 accepts this as historical numbering irregular
 and forbids inventing collisions for those identifiers without affirmative
 evidence.
 
-**Next allocatable PBA: `PBA-0109`.**
+**Next allocatable PBA: `PBA-0111`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -269,14 +271,15 @@ engineering substance untouched. Only the governance identifier is corrected.
 | **ARR-0032** | **ALLOCATED** | **Slice-1 Phase-5A Check-1 Independent Implementation Review** (authority PBA-0101; 2026-08-16; read-only; verdict PASS — CHECK 1 IMPLEMENTATION VERIFIED; ownership matrix, PROPERTY positions, occurrence anchoring, O-1 isolation, and Phase-4/Phase-6 boundaries all independently verified; zero findings) |
 | **ARR-0033** | **ALLOCATED** | **Phase-5 Slice-B Independent Implementation Review** (authority PBA-0104; 2026-08-16; read-only; verdict PASS — SLICE B CHECKS 15/16 VERIFIED; population/exclusions/anchors, NONE discriminator, contract-faithful SM-1 binding, and UNKNOWN_CONSTRUCT unrepresentability all independently verified; zero findings) |
 | **ARR-0034** | **ALLOCATED** | **Phase-5 Slice-C Independent Implementation Review** (authority PBA-0106; 2026-08-16; read-only; verdict FAIL — one MAJOR M-1: check-2 ENUM atom overlap (inadmissible operator + undeclared value) resolved by implementation-selected precedence; all other check-2 surfaces independently verified PASS; resolved by ER-0092 RULING A / ER-0093) |
-| ARR-0035 and above | AVAILABLE-FUTURE | — |
+| **ARR-0035** | **ALLOCATED** | **Slice-1 Phase-5 Slice-C M-1 Remediation Re-Review** (authority PBA-0109; 2026-08-17; read-only; verdict PASS — SLICE-C M-1 CLOSED; CHECK 2 VERIFIED; ER-0092 RULING-A co-occurrence faithfully implemented, TYPE_MISMATCH one-per-atom preserved, O-1 isolation and all ARR-0034 PASS surfaces independently re-verified; zero findings) |
+| ARR-0036 and above | AVAILABLE-FUTURE | — |
 
 Two review reports were issued under **temporary, deliberately unnumbered**
 identifiers by Board instruction: the *Pre-Git Governance & Repository Integrity
 Audit* and the *Governance Identifier Collision Reconciliation Report*. Neither
 consumes an ARR number.
 
-**Next allocatable ARR: `ARR-0035`.**
+**Next allocatable ARR: `ARR-0036`.**
 
 ## 8. ER — Execution Reports
 
@@ -359,9 +362,10 @@ consumes an ARR number.
 | **ER-0091** | **ALLOCATED** | **Slice-1 Phase-5 Slice-C Check-2 Implementation Report** (authority PBA-0105; 2026-08-16; implements check 2 in `src/checks/reference_integrity.rs` — `DUPLICATE_LINEAGE_IDENTITY` (envelope anchor + LINEAGE, one per duplicated value), `UNRESOLVED_REFERENCE` (exactly-one resolution; ambiguous→unresolved), `TYPE_MISMATCH` (atoms + derivation leaves), `ENUM_VALUE_NOT_DECLARED` (membership only); ATOM/NODE-PATH/LINEAGE discriminators; O-1 isolated and OPEN; no other check/gating/verdict; `src/model`/`src/result` unchanged; independent review required) |
 | **ER-0092** | **ALLOCATED** | **Check-2 ENUM Atom Overlap Defect-Population Determination** (authority PBA-0107; 2026-08-16; read-only Product Board determination; **RULING A — co-occurrence**: an ENUM atom failing both operator admissibility and value membership emits both `TYPE_MISMATCH` and `ENUM_VALUE_NOT_DECLARED`, distinct at §6.4 category ordinal; "one per atom" limits TYPE_MISMATCH only; confirms accepted text, no successor revision) |
 | **ER-0093** | **ALLOCATED** | **Slice-1 Phase-5 Slice-C M-1 Remediation Report** (authority PBA-0108; 2026-08-17; implements ER-0092 RULING A in `src/checks/reference_integrity.rs` — the ENUM arm now evaluates operator admissibility and value membership independently and emits both defects when both hold; TYPE_MISMATCH stays one-per-atom; O-1 isolation and all ARR-0034 PASS surfaces preserved; `src/model`/`src/result` unchanged; independent re-review required) |
-| ER-0094 and above | AVAILABLE-FUTURE | — |
+| **ER-0094** | **ALLOCATED** | **Slice-1 Phase-5 Slice-D Checks 8/10 Implementation Report** (authority PBA-0110; 2026-08-17; implements check 8 in `src/checks/direction_coverage.rs` (`DIRECTION_COVERAGE_INCOMPLETE`/`MULTIPLE_TOTAL_DIRECTION_RULES`/`TOTAL_RULE_NOT_LOWEST_PRECEDENCE`, envelope/member occurrence anchors, `NONE` discriminator, independent populations, supplied precedence order, no check-2/6 dependency) and check 10 in `src/checks/direction_determinism.rs` (`INVALID_DIRECTION_OUTCOME`, one per rule, rule-occurrence anchor, `NONE`, sole outcome-validity ownership); defect production only; no new discriminator; `src/model`/`src/result` unchanged; checks 1/2/15/16 unchanged; no Phase-6 orchestration; O-1/O-2/O-3 OPEN; independent review required) |
+| ER-0095 and above | AVAILABLE-FUTURE | — |
 
-**Next allocatable ER: `ER-0094`.**
+**Next allocatable ER: `ER-0095`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -402,10 +406,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | PBA-0108 | **PBA-0109** |
+| PBA | PBA-0110 | **PBA-0111** |
 | PBR | PBR-0016 | **PBR-0017** |
-| ARR | ARR-0034 | **ARR-0035** |
-| ER | ER-0093 | **ER-0094** |
+| ARR | ARR-0035 | **ARR-0036** |
+| ER | ER-0094 | **ER-0095** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
@@ -507,6 +511,8 @@ identifiers were allocated in the same period:
 | Phase-5 Slice-C review | PBA-0106 | ARR-0034 | Read-only independent review of check 2 (no ledger write; recorded by the cycle below, per §12(6)). Verdict FAIL — one MAJOR M-1 (ENUM atom overlap population). |
 | Check-2 ENUM overlap determination | PBA-0107 | ER-0092 | Read-only Product Board determination of the M-1 overlap population (no ledger write; recorded by the cycle below, per §12(6)). RULING A — co-occurrence; determination sufficient. |
 | **Phase-5 Slice-C M-1 remediation** | **PBA-0108** | **ER-0093** | Record PBA-0106 / ARR-0034 and PBA-0107 / ER-0092 (pending from the read-only cycles, §12(6)) and this cycle's own identifiers; implement ER-0092 RULING A (ENUM atom co-occurrence) in `src/checks/reference_integrity.rs`, with regression tests. Source-writing cycle; local to M-1 — no other check-2 semantic, no `src/model`/`src/result` change. Independent re-review required. Terminates under §12(7). |
+| Phase-5 Slice-C M-1 re-review | PBA-0109 | ARR-0035 | Read-only independent re-review of the ER-0093 M-1 remediation (no ledger write; recorded by the cycle below, per §12(6)). Verdict PASS — SLICE-C M-1 CLOSED; CHECK 2 VERIFIED. |
+| **Phase-5 Slice D implementation (checks 8, 10)** | **PBA-0110** | **ER-0094** | Record PBA-0109 / ARR-0035 (pending from the read-only re-review, §12(6)) and this cycle's own identifiers; implement checks 8 and 10 in `src/checks/{direction_coverage,direction_determinism}.rs`, with focused tests. Source-writing cycle; defect production only — no other check, gating, verdict, or `src/model`/`src/result` change. Independent review required. Terminates under §12(7). |
 
 **Every identifier in the table above is recorded as an ordinary ALLOCATED entry in
 §5 and §8**, including each cycle's own. They are additionally listed here so their
