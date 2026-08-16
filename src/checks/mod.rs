@@ -26,12 +26,14 @@
 //! - [`configuration_bounds`] — **check 4** (`INVERTED_CONFIGURATION_BOUNDS`,
 //!   `CONFIGURATION_BOUND_DIMENSION_MISMATCH`).
 //! - [`configuration_position`] — **check 5** (`CONFIGURATION_IN_STRUCTURAL_POSITION`).
+//! - [`evidence_integrity`] — **check 6** (`INVALID_EVIDENCE_DECLARATION`).
 
 pub mod condition_classification;
 pub mod configuration_bounds;
 pub mod configuration_position;
 pub mod direction_coverage;
 pub mod direction_determinism;
+pub mod evidence_integrity;
 pub mod operative_provenance;
 pub mod reference_integrity;
 pub mod required_property;

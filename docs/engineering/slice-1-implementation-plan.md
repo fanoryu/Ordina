@@ -824,6 +824,31 @@ OPEN/prospective and independent (analogous pattern, different domain — not se
 by this determination); check 2 frozen. ARR-0038's single non-blocking MINOR carried
 forward. Remaining: **F (6), G (9+11+12), H (13A/B+14A/B)**.
 
+**Check 6 implementation (PBA-0119 / ER-0100, 2026-08-17).** Implements check 6
+`INVALID_EVIDENCE_DECLARATION` in `src/checks/evidence_integrity.rs` (module
+registered in `src/checks/mod.rs`). Check 6 is the **exclusive owner of
+type-dependent evidence-declaration validity** (§3.5 M-1): it assumes check 1
+passed for the declaration's unconditional properties (lineage identity, declared
+type presence) and judges only dimension/value-set validity. Each violation → one
+`INVALID_EVIDENCE_DECLARATION`, anchored on the declaration's `OccurrenceId`,
+discriminated by the **PROPERTY** kind (§6.4.2 kind 2) carrying the §3.5 property
+position — declared type = 2, declared dimension = 3, declared value set = 4 — per
+§5.1.1 m-3. **O-1 set semantics (ER-0099 DETERMINATION B)** are applied: duplicate
+detection returns exactly one defect per declaration regardless of repetition
+(`[A,A]`, `[A,A,A]`, `[A,B,A]`, `[A,A,B,B]` each → one value-set defect); order is
+irrelevant (`[A,B] ≡ [B,A]` both clean); an empty set and a duplicate set are
+distinct single defects; duplicate representation does **not** inflate an unrelated
+dimension defect; **no** emitted-`DefectCore` deduplication and **no** collection
+index / traversal / serialization / host-language order enters identity. A
+non-semantic `PropertyPosition::position()` read accessor was added to
+`src/result/discriminator.rs` (to assert exact discriminator values in tests); no
+other `src/model`/`src/result` logic changed. Baseline 318 unit (was 300) + 1
+integration + 5 doctests + 14 compile-fail, 0 failures; fmt/check/clippy clean.
+Prior checks byte-identical; **check 2 frozen and unchanged**; **O-4 remains OPEN
+and prospective** (`Guard.atoms` untouched); no Phase-6 machinery. **Governing
+determination ER-0099 (DETERMINATION B) consumed.** Independent read-only re-review
+required. Remaining: **G (9+11+12), H (13A/B+14A/B)**.
+
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
 
 | | |
