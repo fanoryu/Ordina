@@ -682,6 +682,15 @@ Defect production only; deterministic; no prerequisite gating, verdict, or sort.
 Checks 1/15/16 unchanged; `src/model`/`src/result` unchanged. O-1/O-2/O-3 OPEN.
 Remaining: D (checks 8+10), E (3+4+5), O-1 gate, F (6), G (9+11+12), H (13A/B+14A/B).
 
+**M-1 remediation (PBA-0108 / ER-0093, 2026-08-17).** ARR-0034 FAIL / ER-0092
+**RULING A**: an ENUM atom that both uses an operator inadmissible for ENUM **and**
+carries a value outside the declared set emits **both** `TYPE_MISMATCH` and
+`ENUM_VALUE_NOT_DECLARED` (distinct at the §6.4 category ordinal; "one per atom"
+bounds `TYPE_MISMATCH` only). The ENUM arm of `check_typed_atom` now evaluates the
+operator and membership predicates independently; TYPE_MISMATCH stays one-per-atom;
+O-1 isolation and all other check-2 surfaces are preserved. Independent re-review of
+M-1 required before Slice D.
+
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
 
 | | |

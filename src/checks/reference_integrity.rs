@@ -212,23 +212,30 @@ fn check_typed_atom(
                 type_mismatch()
             }
         }
-        // Matching ENUM: ordering operators are a type defect; otherwise the value
-        // must be a member of a *present* declared value set (membership only).
+        // Matching ENUM: operator admissibility and value membership are two
+        // INDEPENDENT §4.1 predicates (ER-0092 RULING A). Both may hold on one
+        // atom, and then both defects are emitted — the "one per atom" limit binds
+        // TYPE_MISMATCH multiplicity only, not the ENUM_VALUE_NOT_DECLARED category.
+        // Emitted in §6.4-compatible category order (ordinal 4 before 5).
         (Literal::Enum(value), EvidenceTypeTag::Enum) => {
+            let mut defects = Vec::new();
+            // Predicate A — an ordering operator is inadmissible on ENUM (§4.4).
             if !operator_admitted_on_unordered(atom.operator) {
-                type_mismatch()
-            } else {
-                match &referent.declared_values {
-                    Declared::Present(set) if !set.contains(value) => {
-                        vec![DefectCore::new(
-                            anchor,
-                            DefectCategory::EnumValueNotDeclared,
-                            atom_discriminator(atom),
-                        )]
-                    }
-                    Declared::Present(_) | Declared::Absent => Vec::new(),
-                }
+                defects.extend(type_mismatch());
             }
+            // Predicate B — the value must be a member of a *present* declared set
+            // (membership only; O-1-independent). An absent set is check 6's.
+            match &referent.declared_values {
+                Declared::Present(set) if !set.contains(value) => {
+                    defects.push(DefectCore::new(
+                        anchor,
+                        DefectCategory::EnumValueNotDeclared,
+                        atom_discriminator(atom),
+                    ));
+                }
+                Declared::Present(_) | Declared::Absent => {}
+            }
+            defects
         }
         // Type-tag mismatch — the literal's type differs from the referent's.
         (Literal::Numeric { .. }, EvidenceTypeTag::Boolean | EvidenceTypeTag::Enum)
@@ -761,6 +768,78 @@ mod tests {
             // The value IS a member in every arrangement ⇒ no defect.
             assert!(check_2(&strategy).is_empty());
         }
+    }
+
+    #[test]
+    fn a_bad_operator_and_an_undeclared_value_co_occur_as_two_defects() {
+        // ER-0092 RULING A: an ENUM atom that both uses an inadmissible ordering
+        // operator AND carries an undeclared value emits BOTH categories — one
+        // TYPE_MISMATCH and one ENUM_VALUE_NOT_DECLARED — on the same atom.
+        let mut strategy = base();
+        strategy.evidence_declarations =
+            Declared::Present(vec![enum_evidence(10, 4, vec![enum_val(1)])]);
+        strategy.conditions = Declared::Present(vec![guarded_condition(
+            20,
+            Atom::new(
+                lineage(4),
+                ComparisonOperator::Less,
+                Literal::Enum(enum_val(9)),
+            ),
+        )]);
+        let defects = check_2(&strategy);
+        // §6.4 category order: TYPE_MISMATCH (ord 4) before ENUM_VALUE_NOT_DECLARED
+        // (ord 5).
+        assert_eq!(
+            categories(&defects),
+            vec![
+                DefectCategory::TypeMismatch,
+                DefectCategory::EnumValueNotDeclared,
+            ]
+        );
+        // Both anchor on the condition and share the ATOM discriminator; only the
+        // category ordinal (§6.4 key 3) separates them, and it does.
+        assert_eq!(defects[0].offending(), occ(20));
+        assert_eq!(defects[1].offending(), occ(20));
+        assert!(matches!(defects[0].discriminator(), Discriminator::Atom(_)));
+        assert!(matches!(defects[1].discriminator(), Discriminator::Atom(_)));
+        assert_ne!(defects[0].cmp(&defects[1]), core::cmp::Ordering::Equal);
+    }
+
+    #[test]
+    fn a_bad_operator_with_a_declared_value_is_type_mismatch_only() {
+        let mut strategy = base();
+        strategy.evidence_declarations =
+            Declared::Present(vec![enum_evidence(10, 4, vec![enum_val(1)])]);
+        strategy.conditions = Declared::Present(vec![guarded_condition(
+            20,
+            // Ordering operator (bad) but the value IS declared.
+            Atom::new(
+                lineage(4),
+                ComparisonOperator::Less,
+                Literal::Enum(enum_val(1)),
+            ),
+        )]);
+        assert_eq!(
+            categories(&check_2(&strategy)),
+            vec![DefectCategory::TypeMismatch]
+        );
+    }
+
+    #[test]
+    fn a_non_enum_literal_on_an_enum_referent_is_type_mismatch_without_a_membership_defect() {
+        let mut strategy = base();
+        strategy.evidence_declarations =
+            Declared::Present(vec![enum_evidence(10, 4, vec![enum_val(1)])]);
+        strategy.conditions = Declared::Present(vec![guarded_condition(
+            20,
+            // A NUMERIC literal on an ENUM referent: a type-tag mismatch, and no
+            // EnumValue exists to test membership against.
+            Atom::new(lineage(4), ComparisonOperator::Equal, numeric_literal(5, 1)),
+        )]);
+        assert_eq!(
+            categories(&check_2(&strategy)),
+            vec![DefectCategory::TypeMismatch]
+        );
     }
 
     // -- Derivation nodes (NODE-PATH) --------------------------------------
