@@ -27,14 +27,24 @@
 //!   `CONFIGURATION_BOUND_DIMENSION_MISMATCH`).
 //! - [`configuration_position`] — **check 5** (`CONFIGURATION_IN_STRUCTURAL_POSITION`).
 //! - [`evidence_integrity`] — **check 6** (`INVALID_EVIDENCE_DECLARATION`).
+//! - [`guard_analysis`] — shared §4.10 guard-analysis helper, consumed directly
+//!   by checks 9, 11, and 12 only.
+//! - [`direction_conflict`] — **check 9** (`DIRECTION_PRECEDENCE_TIE`).
+//! - [`unreachable_rules`] — **check 11** (`UNREACHABLE_CONTRADICTORY_GUARD`,
+//!   `UNREACHABLE_SUBSUMED_RULE`).
+//! - [`contradictory_rules`] — **check 12** (`CONTRADICTORY_CONDITION_GUARD`).
 
 pub mod condition_classification;
 pub mod configuration_bounds;
 pub mod configuration_position;
+pub mod contradictory_rules;
+pub mod direction_conflict;
 pub mod direction_coverage;
 pub mod direction_determinism;
 pub mod evidence_integrity;
+pub mod guard_analysis;
 pub mod operative_provenance;
 pub mod reference_integrity;
 pub mod required_property;
 pub mod semantic_model_version;
+pub mod unreachable_rules;
