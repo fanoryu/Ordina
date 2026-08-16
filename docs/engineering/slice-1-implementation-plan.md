@@ -850,10 +850,10 @@ determination ER-0099 (DETERMINATION B) consumed.** **Reviewed by ARR-0039
 (FAIL):** G-1 — the `PropertyPosition::position()` accessor lay outside PBA-0119's
 authorized surface (`src/result/**` forbidden) and was not required; S-1 — the
 `declared type = 2` arm over-reported `Absent`, double-reporting check 1's
-PROPERTY(2). Both findings remediated by PBA-0120 / ER-0101 (below). Remaining:
+PROPERTY(2). Both findings remediated by **PBA-0121** / ER-0101 (below; the remediation was mis-recorded as PBA-0120 in commit `1a1a978` and corrected under PBD-0005 §2 — PBA-0120 belongs to the ARR-0039 review). Remaining:
 **G (9+11+12), H (13A/B+14A/B)**.
 
-**Check 6 bounded remediation (PBA-0120 / ER-0101, 2026-08-17).** Remediates both
+**Check 6 bounded remediation (PBA-0121 / ER-0101, 2026-08-17).** Remediates both
 ARR-0039 findings. **G-1:** the unauthorized `PropertyPosition::position()` accessor
 was removed from `src/result/discriminator.rs`; the file is restored **byte-identical**
 to its pre-ER-0100 state. The one `.position()` call site in the check-6 test helper
