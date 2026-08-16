@@ -630,6 +630,31 @@ mandatory check exists. **Independent review of check 1 is required** before the
 next check increment. This is a per-check increment of Phase 5, not Phase-5
 completion.
 
+### Phase 5 Slice B — checks 15 and 16 IMPLEMENTED (independent review pending)
+
+**Implemented 2026-08-16** under **PBA-0103**, reported in **ER-0090**, at baseline
+`b494a27`, per the ER-0089 roadmap.
+
+- `checks::operative_provenance` — **check 15** (`MISSING_OPERATIVE_PROVENANCE`):
+  one defect per operative node (envelope, condition, Direction rule, candidate
+  derivation) whose lineage is absent, anchored on the node's occurrence identity,
+  NONE discriminator. EvidenceDeclaration/ConfigurationParameter lineage absence is
+  **not** reported (check 1's, Revision 3 §C.3); duplicate present lineage is not
+  reported (check 2's). No dual reporting.
+- `checks::semantic_model_version` — **check 16** version half
+  (`UNSUPPORTED_SEMANTIC_MODEL_VERSION`): absent or non-`SM-1` envelope version →
+  one envelope-anchored defect, NONE discriminator. The contract-declared supported
+  token is a **caller-supplied parameter** (§3.4.1 forbids the implementation
+  selecting it; the Phase-1 model does not encode it), compared by exact equality
+  (§3.3.1). `UNKNOWN_CONSTRUCT` is **structurally unrepresentable** in the typed
+  model (§3.4) and is not produced; no unknown-construct state is invented, and the
+  category remains defined for a future external-shape-admission boundary.
+
+Both are defect production only (`Vec<DefectCore>`); no gating, verdict, or sort.
+Check 1 (ER-0088) is unchanged. O-1/O-2/O-3 remain OPEN. Remaining slices per
+ER-0089: C (check 2), D (checks 8+10), E (checks 3+4+5), O-1 gate, F (check 6),
+G (checks 9+11+12), H (checks 13A/B+14A/B).
+
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
 
 | | |
