@@ -104,12 +104,6 @@ impl PropertyPosition {
     pub const fn new(position: u32) -> Self {
         Self(position)
     }
-
-    /// The property's §3 table position, for equality and test inspection.
-    #[must_use]
-    pub const fn position(self) -> u32 {
-        self.0
-    }
 }
 
 /// One step of a derivation-node path — §6.4.2 kind 5. `LeftOperand` (1) <

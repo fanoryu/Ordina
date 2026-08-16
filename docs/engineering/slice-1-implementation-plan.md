@@ -846,8 +846,31 @@ other `src/model`/`src/result` logic changed. Baseline 318 unit (was 300) + 1
 integration + 5 doctests + 14 compile-fail, 0 failures; fmt/check/clippy clean.
 Prior checks byte-identical; **check 2 frozen and unchanged**; **O-4 remains OPEN
 and prospective** (`Guard.atoms` untouched); no Phase-6 machinery. **Governing
-determination ER-0099 (DETERMINATION B) consumed.** Independent read-only re-review
-required. Remaining: **G (9+11+12), H (13A/B+14A/B)**.
+determination ER-0099 (DETERMINATION B) consumed.** **Reviewed by ARR-0039
+(FAIL):** G-1 — the `PropertyPosition::position()` accessor lay outside PBA-0119's
+authorized surface (`src/result/**` forbidden) and was not required; S-1 — the
+`declared type = 2` arm over-reported `Absent`, double-reporting check 1's
+PROPERTY(2). Both findings remediated by PBA-0120 / ER-0101 (below). Remaining:
+**G (9+11+12), H (13A/B+14A/B)**.
+
+**Check 6 bounded remediation (PBA-0120 / ER-0101, 2026-08-17).** Remediates both
+ARR-0039 findings. **G-1:** the unauthorized `PropertyPosition::position()` accessor
+was removed from `src/result/discriminator.rs`; the file is restored **byte-identical**
+to its pre-ER-0100 state. The one `.position()` call site in the check-6 test helper
+was rewritten to compare whole `PropertyPosition` values (`new(3)` / `new(4)`).
+**S-1:** `check_declaration`'s declared-type handling corrected so `Absent` → **no**
+check-6 defect (it is check 1's `MISSING_REQUIRED_PROPERTY`/PROPERTY(2)), and
+`Multiple | OutOfDomain` → exactly one `INVALID_EVIDENCE_DECLARATION`/PROPERTY(2); the
+`match` remains exhaustive (`Absent` is an explicit empty arm). All other Check-6
+semantics preserved (NUMERIC/BOOLEAN/ENUM rules, O-1 set semantics, duplicate
+detection/multiplicity, order independence, occurrence anchors, PROPERTY(3)/(4),
+population traversal, check-2 / checks 15-16 ownership). **T-1 discharged:** four new
+tests prove the ownership split (`Absent` → no check-6 PROPERTY(2); check 1 owns
+`Absent`; `Multiple`/`OutOfDomain` → one check-6 PROPERTY(2), check 1 not duplicating).
+Baseline 322 unit (was 318) + 1 integration + 5 doctests + 14 compile-fail, 0 failures;
+fmt/check/clippy clean. Prior checks byte-identical; **check 2 frozen and unchanged**;
+**O-4 remains OPEN and prospective**; no Phase-6 machinery. **Check 6 remains pending
+independent re-review.** Remaining: **G (9+11+12), H (13A/B+14A/B)**.
 
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
 

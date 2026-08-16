@@ -142,12 +142,17 @@ fn check_declaration(declaration: &EvidenceDeclaration) -> Vec<DefectCore> {
                 }
             }
         }
-        // An out-of-domain type is check 6's "declared type is not one of the
-        // three admitted" violation, mapped to the declared-type property
-        // (position 2) — also owned exclusively by check 6 under §3.5.
-        DeclaredCategory::Absent
-        | DeclaredCategory::Multiple { .. }
-        | DeclaredCategory::OutOfDomain => {
+        // A malformed-present declared type (more than one, or outside the three
+        // admitted types) is check 6's "declared type is not one of the three
+        // admitted" violation, mapped to the declared-type property (position 2)
+        // and owned exclusively by check 6 under §5.1.1 row 1. A *missing*
+        // declared type (`Absent`) is check 1's unconditional property (§3.5
+        // positions 1 and 2) and is never reported here — check 1 owns it.
+        DeclaredCategory::Absent => {
+            // No check-6 defect: an absent declared type is check 1's
+            // MISSING_REQUIRED_PROPERTY(PROPERTY(2)), never check 6's.
+        }
+        DeclaredCategory::Multiple { .. } | DeclaredCategory::OutOfDomain => {
             defects.push(violation(occurrence, 2));
         }
     }
@@ -177,6 +182,7 @@ pub fn check_6(strategy: &Strategy) -> Vec<DefectCore> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::checks::required_property;
     use crate::model::declared::DeclaredCategory;
     use crate::model::evidence::EvidenceDeclaration;
     use crate::model::opaque::{DimensionSymbol, EnumValue, LineageId, OccurrenceId, OpaqueValue};
@@ -518,15 +524,18 @@ mod tests {
         let s = strategy_with(vec![declaration]);
         let defects = check_6(&s);
         assert_eq!(defects.len(), 2);
-        let mut props: Vec<u32> = defects
+        let mut props: Vec<PropertyPosition> = defects
             .iter()
-            .map(|d| match d.discriminator() {
-                Discriminator::Property(p) => p.position(),
-                _ => panic!(),
+            .filter_map(|d| match d.discriminator() {
+                Discriminator::Property(p) => Some(*p),
+                _ => None,
             })
             .collect();
         props.sort_unstable();
-        assert_eq!(props, vec![3, 4]);
+        assert_eq!(
+            props,
+            vec![PropertyPosition::new(3), PropertyPosition::new(4)]
+        );
     }
 
     #[test]
@@ -550,5 +559,135 @@ mod tests {
         for d in check_6(&s) {
             assert!(matches!(d.discriminator(), Discriminator::Property(_)));
         }
+    }
+
+    // ---- T-1 / S-1: declared-type ownership split (ARR-0039 §3, r03 §C.3) ----
+    //
+    // The declared type is a check-1 unconditional property (§3.5 positions 1
+    // and 2). Its *absence* belongs to check 1; a *malformed present* declared
+    // type (multiple / out-of-domain) belongs to check 6 (§5.1.1 row 1). The
+    // tests below pin that split and discharge ARR-0039 T-1 plus the subsequent
+    // S-1 semantic finding (live Check 6 had over-reported `Absent` at
+    // PROPERTY(2), colliding with check 1).
+
+    /// A declaration whose declared type is `Absent`: the only representable
+    /// shape for "no declared type at all".
+    fn absent_type_decl(occ_id: u64) -> EvidenceDeclaration {
+        EvidenceDeclaration {
+            occurrence: occ(occ_id),
+            lineage: Declared::Present(lin(occ_id)),
+            declared_type: DeclaredCategory::Absent,
+            declared_dimension: Declared::Absent,
+            declared_values: Declared::Absent,
+        }
+    }
+
+    /// A declaration whose declared type is `Multiple` (more than one admission).
+    fn multiple_type_decl(occ_id: u64) -> EvidenceDeclaration {
+        EvidenceDeclaration {
+            occurrence: occ(occ_id),
+            lineage: Declared::Present(lin(occ_id)),
+            declared_type: DeclaredCategory::multiple(
+                EvidenceTypeTag::Boolean,
+                EvidenceTypeTag::Boolean,
+                vec![],
+            ),
+            declared_dimension: Declared::Absent,
+            declared_values: Declared::Absent,
+        }
+    }
+
+    /// A declaration whose declared type is `OutOfDomain` (outside the three
+    /// admitted types).
+    fn out_of_domain_type_decl(occ_id: u64) -> EvidenceDeclaration {
+        EvidenceDeclaration {
+            occurrence: occ(occ_id),
+            lineage: Declared::Present(lin(occ_id)),
+            declared_type: DeclaredCategory::OutOfDomain,
+            declared_dimension: Declared::Absent,
+            declared_values: Declared::Absent,
+        }
+    }
+
+    /// Asserts that `check_6` raises exactly one `INVALID_EVIDENCE_DECLARATION`
+    /// at PROPERTY(2) and nothing else, for a malformed-present declared type.
+    fn assert_check_6_single_type_defect_2(defects: &[DefectCore]) {
+        assert_eq!(defects.len(), 1);
+        let d = &defects[0];
+        assert_eq!(d.category(), DefectCategory::InvalidEvidenceDeclaration);
+        assert!(
+            matches!(d.discriminator(), Discriminator::Property(p) if *p == PropertyPosition::new(2))
+        );
+    }
+
+    #[test]
+    fn an_absent_declared_type_is_not_check_6s_property_two() {
+        // S-1 / T-1: absence of the declared type is check 1's unconditional
+        // property. Check 6 must not raise PROPERTY(2) for it — doing so would
+        // double-report with check 1's MISSING_REQUIRED_PROPERTY(PROPERTY(2)).
+        let s = strategy_with(vec![absent_type_decl(10)]);
+        let defects = check_6(&s);
+        assert!(
+            defects
+                .iter()
+                .all(|d| { !matches!(d.discriminator(), Discriminator::Property(p) if *p == PropertyPosition::new(2)) }),
+            "check 6 must not report the absent declared type at PROPERTY(2)"
+        );
+        assert!(
+            defects.is_empty(),
+            "check 6 raises no defect for Absent type"
+        );
+    }
+
+    #[test]
+    fn check_1_owns_the_absent_declared_type() {
+        // Cross-check (T-1): check 1 emits MISSING_REQUIRED_PROPERTY(PROPERTY(2))
+        // for the absent declared type, and check 6 does not duplicate it.
+        let declaration = absent_type_decl(10);
+        let c1 = required_property::check_evidence_declaration(&declaration);
+        assert_eq!(c1.len(), 1);
+        assert_eq!(c1[0].category(), DefectCategory::MissingRequiredProperty);
+        assert!(matches!(
+            c1[0].discriminator(),
+            Discriminator::Property(p) if *p == PropertyPosition::new(2)
+        ));
+
+        let c6 = check_6(&strategy_with(vec![declaration]));
+        assert!(c6.is_empty());
+    }
+
+    #[test]
+    fn a_multiple_declared_type_is_check_6s_property_two() {
+        // T-1 / S-1: multiple declared types is check 6's PROPERTY(2) defect.
+        let s = strategy_with(vec![multiple_type_decl(10)]);
+        let c6 = check_6(&s);
+        assert_check_6_single_type_defect_2(&c6);
+        assert_eq!(c6[0].offending(), occ(10));
+
+        // And check 1 must not duplicate that ownership as an absent-type defect.
+        let c1 = required_property::check_evidence_declaration(&multiple_type_decl(10));
+        assert!(
+            c1.iter()
+                .all(|d| { !matches!(d.discriminator(), Discriminator::Property(p) if *p == PropertyPosition::new(2)) }),
+            "check 1 must not report a Multiple declared type"
+        );
+    }
+
+    #[test]
+    fn an_out_of_domain_declared_type_is_check_6s_property_two() {
+        // T-1 / S-1: an out-of-domain declared type is check 6's PROPERTY(2)
+        // defect.
+        let s = strategy_with(vec![out_of_domain_type_decl(10)]);
+        let c6 = check_6(&s);
+        assert_check_6_single_type_defect_2(&c6);
+        assert_eq!(c6[0].offending(), occ(10));
+
+        // And check 1 must not duplicate that ownership.
+        let c1 = required_property::check_evidence_declaration(&out_of_domain_type_decl(10));
+        assert!(
+            c1.iter()
+                .all(|d| { !matches!(d.discriminator(), Discriminator::Property(p) if *p == PropertyPosition::new(2)) }),
+            "check 1 must not report an OutOfDomain declared type"
+        );
     }
 }
