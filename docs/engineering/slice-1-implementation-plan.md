@@ -136,7 +136,7 @@ ARR-0016 (PBA-0047) → closure ER-0051 (PBA-0048).
 | **O-1** | `EvidenceDeclaration.declared_values` is represented through a sequence whose derived equality is **sequence-sensitive**, although the Slice Contract §3.5 describes the domain as a **set**. | **DEFERRED — MUST BE SETTLED BEFORE CHECK 6 CONSUMES THE REPRESENTATION** (check 6 lands in Phase 5). |
 | **O-2** | Check 13A's prohibited-operator defect population is structurally constrained as reviewed; its non-`NUMERIC`-leaf population remains representable, so the check is not vacuous. | **BOARD-NOTED — non-blocking.** Check 13A is not implemented. |
 | **O-3** | Check 5's structural guarantee is narrower than some source prose implies; a real representable population remains through lineage resolution. | **BOARD-NOTED — non-blocking.** The accepted Slice Contract is not amended. |
-| **O-4** | `Guard.atoms` is represented through a sequence, although Slice Contract §3.6/§4.5 give a guard **set** semantics ("two guards with the same atom set are the same guard"), so a content-identical duplicate atom is representable. Same class as O-1. Reachable through check 5 and, prospectively, accepted check 2. | **BOARD-NOTED (PBA-0115 / ER-0097) — prospective.** ER-0097 RULING 2 settles the semantics: one defect per **distinct** atom. Remediation is at the check layer; **no `src/model` or `src/result` change is authorized by that determination.** Check-5 remediation pending authorization; check 2 frozen until separately authorized. |
+| **O-4** | `Guard.atoms` is represented through a sequence, although Slice Contract §3.6/§4.5 give a guard **set** semantics ("two guards with the same atom set are the same guard"), so a content-identical duplicate atom is representable. Same class as O-1. Reachable through check 5 and, prospectively, accepted check 2. | **BOARD-NOTED (PBA-0115 / ER-0097) — OPEN, prospective.** ER-0097 RULING 2 settles the semantics: one defect per **distinct** atom. Check 5 was conformed locally at its evaluation layer by PBA-0116 / ER-0098; **the `Guard` representation is unchanged and O-4 is not resolved.** Check 2's parallel divergence is frozen until separately authorized. |
 
 ### Post-closure remediation — canonical occurrence identity (Revision 4)
 
@@ -774,6 +774,29 @@ prospectively — its acceptance and ARR-0035 **stand**, and it is **out of scop
 frozen** until separately authorized. New observation **O-4** records the underlying
 `Guard.atoms` sequence-vs-set representation issue. Check-5 bounded remediation and its
 independent re-review remain **pending authorization**; O-1 gate, F, G, H unchanged.
+
+**B-2 bounded remediation (PBA-0116 / ER-0098, 2026-08-17).** Implements ER-0097
+RULING 2 in `src/checks/configuration_position.rs` — the only file changed. A
+`distinct_atoms` helper applies §3.6/§4.5 guard-**set** semantics at the check-5
+evaluation layer: the predicate is evaluated once per **distinct** atom, keyed on the
+same `(referenced lineage, operator, literal)` content the `ATOM` discriminator uses, so
+two content-identical offending atoms in one guard now emit **exactly one**
+`CONFIGURATION_IN_STRUCTURAL_POSITION` defect. The collapse is input-level and happens
+**before** predicate evaluation; no emitted `DefectCore` is deduplicated (§6.3), and no
+collection index, traversal order, or source position participates (§6.4, §C.1, §4.5).
+Unchanged: the O-3 guard-atom population, exactly-one §4.7 resolution, condition and
+Direction-rule guard coverage, the enclosing-construct occurrence anchor, the existing
+`ATOM` discriminator (no new kind), and legitimate check-2/check-5 co-occurrence.
+Distinct atoms still yield distinct defects. Tests added: **m-1** in both enclosing
+forms, a content-scope guard (atoms differing only by operator stay two defects), a
+duplicated non-offending atom case, and **m-2** (check-2 `UNRESOLVED_REFERENCE` and
+check-5 co-occurring, neither suppressing the other). Baseline 300 unit + 1 integration
++ 5 doctests + 14 compile-fail, 0 failures; fmt/check/clippy clean. **B-1 remains CLOSED
+— NOT A DEFECT.** `src/model`/`src/result`/`src/numeric`/`src/semantics`, every other
+check, `Cargo`/toolchain, and Revision 4 unchanged; **check 2 not modified**; no Phase-6
+machinery. **O-4 remains OPEN and prospective** — `Guard` representation untouched.
+Independent read-only re-review of the remediation required. Remaining: O-1 gate,
+F (6), G (9+11+12), H (13A/B+14A/B).
 
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
 
