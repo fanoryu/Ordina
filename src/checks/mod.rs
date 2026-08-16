@@ -17,7 +17,10 @@
 //! - [`semantic_model_version`] — **check 16** semantic-model version half
 //!   (`UNSUPPORTED_SEMANTIC_MODEL_VERSION`); `UNKNOWN_CONSTRUCT` is unrepresentable
 //!   in the typed model and is not produced here.
+//! - [`reference_integrity`] — **check 2** (`DUPLICATE_LINEAGE_IDENTITY`,
+//!   `UNRESOLVED_REFERENCE`, `TYPE_MISMATCH`, `ENUM_VALUE_NOT_DECLARED`).
 
 pub mod operative_provenance;
+pub mod reference_integrity;
 pub mod required_property;
 pub mod semantic_model_version;

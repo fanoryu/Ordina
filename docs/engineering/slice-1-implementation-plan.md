@@ -655,6 +655,33 @@ Check 1 (ER-0088) is unchanged. O-1/O-2/O-3 remain OPEN. Remaining slices per
 ER-0089: C (check 2), D (checks 8+10), E (checks 3+4+5), O-1 gate, F (check 6),
 G (checks 9+11+12), H (checks 13A/B+14A/B).
 
+### Phase 5 Slice C — check 2 IMPLEMENTED (independent review pending)
+
+**Implemented 2026-08-16** under **PBA-0105**, reported in **ER-0091**, at baseline
+`d32f402`, per the ER-0089 roadmap.
+
+`checks::reference_integrity` implements **check 2** — all four categories:
+
+- `DUPLICATE_LINEAGE_IDENTITY` — one defect per duplicated lineage **value** (not
+  per occurrence) over every lineage-bearing construct Strategy-wide; **envelope
+  occurrence anchor + `LINEAGE` discriminator** (Revision 4 §C.5); absent lineage
+  never participates.
+- `UNRESOLVED_REFERENCE` — a reference (guard-atom evidence, derivation evidence /
+  configuration leaf) that does not resolve to **exactly one** declared item;
+  duplicate targets are ambiguous → unresolved (§4.7, the checker never picks one).
+- `TYPE_MISMATCH` — an ill-typed guard atom (type tag, operator admissibility, or
+  NUMERIC dimension identity, §4.1/§4.4/§4.6) or a non-`NUMERIC` derivation leaf.
+- `ENUM_VALUE_NOT_DECLARED` — an `ENUM` atom whose value is not a **member** of the
+  referent's declared value set — membership only, so **O-1 stays OPEN**.
+
+Discriminators: guard-atom defects use `ATOM`, derivation-node defects use
+`NODE-PATH`, duplicate-lineage uses `LINEAGE` (§6.4.2). Anchors are occurrence
+identities. Typing is computed only against a determinate declared type / present
+dimension / present value set (intrinsic defect definition, **not** §5.2 gating).
+Defect production only; deterministic; no prerequisite gating, verdict, or sort.
+Checks 1/15/16 unchanged; `src/model`/`src/result` unchanged. O-1/O-2/O-3 OPEN.
+Remaining: D (checks 8+10), E (3+4+5), O-1 gate, F (6), G (9+11+12), H (13A/B+14A/B).
+
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
 
 | | |
