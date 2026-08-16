@@ -22,7 +22,14 @@
 //! - [`direction_coverage`] — **check 8** (`DIRECTION_COVERAGE_INCOMPLETE`,
 //!   `MULTIPLE_TOTAL_DIRECTION_RULES`, `TOTAL_RULE_NOT_LOWEST_PRECEDENCE`).
 //! - [`direction_determinism`] — **check 10** (`INVALID_DIRECTION_OUTCOME`).
+//! - [`condition_classification`] — **check 3** (`INVALID_CONDITION_CLASSIFICATION`).
+//! - [`configuration_bounds`] — **check 4** (`INVERTED_CONFIGURATION_BOUNDS`,
+//!   `CONFIGURATION_BOUND_DIMENSION_MISMATCH`).
+//! - [`configuration_position`] — **check 5** (`CONFIGURATION_IN_STRUCTURAL_POSITION`).
 
+pub mod condition_classification;
+pub mod configuration_bounds;
+pub mod configuration_position;
 pub mod direction_coverage;
 pub mod direction_determinism;
 pub mod operative_provenance;

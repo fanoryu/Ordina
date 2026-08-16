@@ -713,6 +713,35 @@ No new discriminator; `src/model`/`src/result` unchanged; checks 1/2/15/16 uncha
 no Phase-6 orchestration. O-1/O-2/O-3 OPEN. Independent read-only review required.
 Remaining: E (3+4+5), O-1 gate, F (6), G (9+11+12), H (13A/B+14A/B).
 
+**Slice E — checks 3, 4, 5 (PBA-0113 / ER-0096, 2026-08-17).** Defect production
+only, on the reconciled Revision-4 model. **Check 3** (`condition_classification.rs`,
+`check_3`): `INVALID_CONDITION_CLASSIFICATION`, one per condition whose classification
+is zero/multiple/out-of-domain, anchored on the condition occurrence, `NONE`. Sole
+owner of classification validity (guard absence stays check 1's, lineage absence check
+15's) — no duplication. **Check 4** (`configuration_bounds.rs`, `check_4`): the two
+§4.11 conjuncts as independent categories — `INVERTED_CONFIGURATION_BOUNDS`
+(`lower > upper` by exact `ExactNumber` value; one per parameter; envelope-free —
+parameter-occurrence anchor, `NONE`) and `CONFIGURATION_BOUND_DIMENSION_MISMATCH` (a
+NUMERIC bound whose `DimensionSymbol` ≠ the parameter's; one per offending bound;
+parameter-occurrence anchor, **`PROPERTY`** position 4=lower/5=upper — the §6.4.2
+discriminator that keeps two same-parameter dimension defects distinct). Bound
+absence stays check 1's; a non-numeric/absent operand leaves the predicate
+intrinsically undefined (no manufactured defect, no §5.2 gating). No numeric/dimension
+algebra reimplemented — reuses `ExactNumber: Ord` and `DimensionSymbol: Eq`. **Check 5**
+(`configuration_position.rs`, `check_5`): `CONFIGURATION_IN_STRUCTURAL_POSITION`. Under
+the accepted typed model the only reachable structural position is a **guard atom**
+(condition or Direction-rule guard) whose `evidence` lineage resolves — by the same
+exactly-one §4.7 resolution as check 2 — to a declared configuration parameter; that is
+the **O-3** population that "remains through lineage resolution", implemented without
+amending the contract or resolving O-3. Anchored on the enclosing construct occurrence
+with the existing **`ATOM`** discriminator (required for §6.4 totality; mirrors check 2's
+guard-atom faults); one per offending reference. Never emits a check-2 category; a
+guard atom resolving to a config parameter is independently check 2's
+`UNRESOLVED_REFERENCE`, produced by check 2 alone. No new discriminator/category;
+`src/model`/`src/result`/`src/numeric`/`src/semantics` unchanged; checks 1/2/8/10/15/16
+unchanged; no Phase-6 orchestration. O-1/O-2/O-3 remain OPEN (O-3 BOARD-NOTED). Independent
+read-only review required. Remaining: O-1 gate, F (6), G (9+11+12), H (13A/B+14A/B).
+
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
 
 | | |
