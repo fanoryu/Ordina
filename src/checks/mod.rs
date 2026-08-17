@@ -1,17 +1,17 @@
 //! The mandatory Well-Formedness checks — Slice Contract §5.
-//!
+//! !
 //! Phase 5 implements the 15 applicable mandatory checks in dependency order;
 //! Phase 6 adds per-unit-of-work prerequisite gating and `not-evaluated`
 //! metadata (Slice Contract §5.2). Checks 7 and 17 are out of Slice-1 scope
 //! because their constructs are not admitted.
-//!
+//! !
 //! **Phase 5 is built one slice per authorization.** Each implemented check is
 //! pure defect production over the reconciled Revision-4 model: it anchors each
 //! defect on the offending construct's occurrence identity, reports **only** its
 //! own accepted population, and returns a deterministic `Vec<DefectCore>`. No
 //! prerequisite gating, not-evaluated record, verdict, or canonical sorting is
 //! implemented yet (those are Phase 6).
-//!
+//! !
 //! - [`required_property`] — **check 1** (`MISSING_REQUIRED_PROPERTY`).
 //! - [`operative_provenance`] — **check 15** (`MISSING_OPERATIVE_PROVENANCE`).
 //! - [`semantic_model_version`] — **check 16** semantic-model version half
@@ -37,7 +37,13 @@
 //!   population is structurally zero under the closed `DerivationExpression` model
 //!   (PBA-0126 / ER-0104), and the check is realized explicitly and exhaustively so
 //!   a future grammar extension is forced through its match.
+//! - [`candidate_derivation_presence`] — **check 13B** (`MISSING_CANDIDATE_DERIVATION`,
+//!   `DUPLICATE_CANDIDATE_DERIVATION`); Strategy-level candidate-role completeness and
+//!   uniqueness — counts occurrences of each closed [`CandidateRole`] and emits one
+//!   defect per missing or duplicated role, anchored on the envelope occurrence
+//!   identity with the ROLE discriminator (§6.4.2 kind 3). One check per increment.
 
+pub mod candidate_derivation_presence;
 pub mod condition_classification;
 pub mod configuration_bounds;
 pub mod configuration_position;

@@ -875,7 +875,9 @@ tests prove the ownership split (`Absent` → no check-6 PROPERTY(2); check 1 ow
 Baseline 322 unit (was 318) + 1 integration + 5 doctests + 14 compile-fail, 0 failures;
 fmt/check/clippy clean. Prior checks byte-identical; **check 2 frozen and unchanged**;
 **O-4 remains OPEN and prospective**; no Phase-6 machinery. **Check 6 remains pending
-independent re-review.** Remaining: **G (9+11+12) CLOSED, H (13B+14A+14B)**.
+**Check 13B implemented (PBA-0128 / ER-0106, 2026-08-17).** New `src/checks/candidate_derivation_presence.rs`
++ `src/checks/mod.rs` registration. **Check 13B IMPLEMENTED (pending independent review under ARR-0043).**
+**Check 13A CLOSED** (independently verified under ARR-0042). Remaining: **H (14A+14B)**. Do not start 14A or 14B.
 
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
 
