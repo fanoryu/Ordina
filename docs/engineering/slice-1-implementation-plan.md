@@ -3,8 +3,8 @@
 - **Tier:** 3 (engineering)
 - **Status:** ACTIVE — Phase 0 complete, **Phase 1 CLOSED**, **Phase 2A CLOSED**,
   **Phase 2B CLOSED**, **Phase 3 CLOSED**, **Phase 4 CLOSED**; **Phase 5 Slice E
-  CLOSED**, **Phase 5 Slice F CLOSED**, **Phase 5 Slice G IMPLEMENTED (pending
-  independent review)**, Phases 6–8 not started and **not authorized**
+  CLOSED**, **Phase 5 Slice F CLOSED**, **Phase 5 Slice G CLOSED (independently
+  verified under ARR-0041)**, Phases 6–8 not started and **not authorized**
 - **Authority:** PBA-0040 / PBA-0041; Phase-1 closure under PBA-0048; Phase-2A
   closure under PBA-0054; Phase-2B closure under PBA-0066; Phase-3 closure under
   PBA-0072; Phase-4 closure under PBA-0078
