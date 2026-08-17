@@ -503,7 +503,7 @@ N-25, F-8 remain OPEN. B-1 remains a future checker/harness caller obligation.
 | **Modules** | `result` |
 | **Tests** | total ordering — no two distinct defects compare equal; each of the 26 categories orderable; each discriminator kind; the §6.3 revision-qualification boundary |
 | **Prerequisites** | Phases 1–3 |
-| **Exit criteria** | Binary verdict; deterministic defect identity; a **total** canonical order; **no `HashMap`/`HashSet` on any authoritative path** (ADR-0005 §7.6); verification green |
+|| **Exit criteria** | Binary verdict; deterministic defect identity; a **total** canonical order; **`HashMap`/`HashSet` iteration order must not influence authoritative or conformance-visible results; use deterministic ordered structures or explicitly sort under the contract's declared orders before an authoritative result is produced** (ADR-0005 §7.6); verification green |
 | **Not in scope** | Producing defects — no check runs yet |
 
 ### Closure record — Phase 4 is CLOSED
@@ -539,8 +539,11 @@ check runs and no defect is produced.**
   set). Verified independently by ARR-0024 §7 and ARR-0025 §5.
 - **§6.4.3 literal order** — numeric by exact value then supplied dimension
   order; `false < true`; enum by supplied order — all delegating to supplied
-  opaque orders, never handle magnitude (ADR-0005 §7.5). No `HashMap`/`HashSet`
-  on any authoritative path (§7.6).
+  opaque orders, never handle magnitude (ADR-0005 §7.5). `HashMap`/`HashSet`
+  iteration order must not influence authoritative or conformance-visible
+  results; use deterministic ordered structures or explicitly sort under the
+  contract's declared orders before an authoritative result is produced
+  (ADR-0005 §7.6).
 
 **M-1 — CLOSED.** No safe public path constructs `UNUSABLE` + empty or
 `WELL-FORMED` + non-empty; a `compile_fail` doctest and runtime tests guard the
