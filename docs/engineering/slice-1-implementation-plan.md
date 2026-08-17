@@ -4,7 +4,8 @@
 - **Status:** ACTIVE — Phase 0 complete, **Phase 1 CLOSED**, **Phase 2A CLOSED**,
   **Phase 2B CLOSED**, **Phase 3 CLOSED**, **Phase 4 CLOSED**; **Phase 5 Slice E
   CLOSED**, **Phase 5 Slice F CLOSED**, **Phase 5 Slice G CLOSED (independently
-  verified under ARR-0041)**, Phases 6–8 not started and **not authorized**
+  verified under ARR-0041)**, **Phase 5 Check 13A CLOSED (independently verified
+  under ARR-0042)**, Phases 6–8 not started and **not authorized**
 - **Authority:** PBA-0040 / PBA-0041; Phase-1 closure under PBA-0048; Phase-2A
   closure under PBA-0054; Phase-2B closure under PBA-0066; Phase-3 closure under
   PBA-0072; Phase-4 closure under PBA-0078
@@ -874,7 +875,7 @@ tests prove the ownership split (`Absent` → no check-6 PROPERTY(2); check 1 ow
 Baseline 322 unit (was 318) + 1 integration + 5 doctests + 14 compile-fail, 0 failures;
 fmt/check/clippy clean. Prior checks byte-identical; **check 2 frozen and unchanged**;
 **O-4 remains OPEN and prospective**; no Phase-6 machinery. **Check 6 remains pending
-independent re-review.** Remaining: **G (9+11+12), H (13A/B+14A/B)**.
+independent re-review.** Remaining: **G (9+11+12) CLOSED, H (13B+14A+14B)**.
 
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
 
