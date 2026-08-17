@@ -33,11 +33,16 @@
 //! - [`unreachable_rules`] — **check 11** (`UNREACHABLE_CONTRADICTORY_GUARD`,
 //!   `UNREACHABLE_SUBSUMED_RULE`).
 //! - [`contradictory_rules`] — **check 12** (`CONTRADICTORY_CONDITION_GUARD`).
+//! - [`derivation_form`] — **check 13A** (`INVALID_DERIVATION_FORM`); its runtime
+//!   population is structurally zero under the closed `DerivationExpression` model
+//!   (PBA-0126 / ER-0104), and the check is realized explicitly and exhaustively so
+//!   a future grammar extension is forced through its match.
 
 pub mod condition_classification;
 pub mod configuration_bounds;
 pub mod configuration_position;
 pub mod contradictory_rules;
+pub mod derivation_form;
 pub mod direction_conflict;
 pub mod direction_coverage;
 pub mod direction_determinism;
