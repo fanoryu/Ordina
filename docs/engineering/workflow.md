@@ -212,3 +212,35 @@ OPEN / BLOCKED** and **Slice-1 Phase 2B remains blocked**.
 This section establishes only *how* such a revision becomes an artifact and
 acquires authority. It does not restate, reconsider, or supply the substantive
 semantics PBA-0057 already directed.
+
+## 7. Commit Subject Convention (prospective only)
+
+**Historical commits are grandfathered and must not be renamed, amended,
+rebased, or otherwise rewritten.** Every existing SHA is preserved exactly as
+written. The convention below applies only to *future* Ordina commits created
+after this section was added.
+
+A future commit subject should name a single primary purpose using one of:
+
+- `FEAT:` — source implementation
+- `FIX:` — bounded remediation
+- `GOV:` — governance determination, review synchronization, closure
+- `DOCS:` — non-governance documentation reconciliation
+- `TEST:` — test-only change
+- `BUILD:` — build/toolchain work
+- `CHORE:` — repository administration not covered above
+
+Guidance:
+
+- One primary purpose per subject. Keep the subject concise.
+- Where applicable, the identifier tuple goes near the end:
+  `(PBA-xxxx / ER-xxxx)` or `(PBA-xxxx / ARR-xxxx)`.
+- Detailed rationale, allocator movement, verification counts, and historical
+  explanation belong in the commit body or the governance ledger, not the
+  subject.
+- Do not use `CHORE:` as a discharge/pass-through to avoid a more specific class.
+
+Historical commits are grandfathered: they must not be renamed, amended,
+rebased, or otherwise rewritten. Every existing SHA is preserved exactly
+as written. The convention below applies only to *future* Ordina commits
+created after this section was added.
