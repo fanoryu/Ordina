@@ -915,7 +915,18 @@ Do not begin Phase 6 without explicit authorization.
 | 6C | fixed-sequence orchestration / check execution (calls all 17 existing check functions once each) |
 | 6D | defect aggregation via the existing `canonical_sort`, `NotEvaluatedRecord` collection via Rulings A/B, verdict assembly via the existing `WellFormednessResult` constructors |
 
-Each slice is independently authorizable and independently reviewable, one check/slice per increment per established Phase-5 convention. Next Phase-6 implementation authorization requires its own PBA/ER pair (PBA-0135 / ER-0110, reserved, not allocated). Independent review requires its own ARR (ARR-0046, reserved, not allocated). **Phase 6 source implementation not begun.**
+Each slice is independently authorizable and independently reviewable, one check/slice per increment per established Phase-5 convention.
+
+**Slice 6A implemented (PBA-0135 / ER-0110, 2026-08-18).** New `src/checks/dependency_enumeration.rs` + `src/checks/mod.rs` registration. `guard_dependencies(&Guard) -> Vec<LineageId>` and `derivation_dependencies(&DerivationExpression) -> Vec<LineageId>` perform pure structural enumeration only — no reference resolution, no type/dimension validation, no guard-analysis, no derivation-form/role-completeness validation, no call to any prior check; both sort (§3.3.1) then dedup, mirroring the existing `guard_analysis::every_reference` determinism pattern. No `NotEvaluatedRecord`, `WellFormednessResult`, `Verdict`, blocker-selection, or `canonical_sort` logic — Phase-6-leakage grep-audited clean. O-4 remains OPEN/prospective, not closed; `Guard.atoms` read structurally only, permutation-invariance proven by test. Verification: 468 unit (was 450) + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. **Slice 6A IMPLEMENTED, awaiting independent review under ARR-0046 (reserved, not allocated).** Do not mark Slice 6A CLOSED before ARR-0046.
+
+| Slice | Status |
+|---|---|
+| 6A | **IMPLEMENTED — awaiting independent review (ARR-0046)** |
+| 6B | NOT STARTED |
+| 6C | NOT STARTED |
+| 6D | NOT STARTED |
+
+**Phase 6 is not complete.** Next Phase-6 implementation authorization (Slice 6B) requires its own PBA/ER pair (PBA-0136 / ER-0111, reserved, not allocated). Independent review of Slice 6A requires its own ARR (ARR-0046, reserved, not allocated).
 
 | | |
 |---|---|

@@ -55,6 +55,14 @@
 //!   role completeness, 14A on all three derivations) is reconstructed locally; a
 //!   prerequisite failure suppresses 14B entirely, never co-emitting with the 14A
 //!   defect that caused it.
+//!
+//! Phase 6 — Slice 6A (PBA-0135 / ER-0110):
+//!
+//! - [`dependency_enumeration`] — pure structural enumeration of the
+//!   declaration lineages a [`guard_analysis`]-adjacent `Guard` or a candidate
+//!   derivation's `DerivationExpression` references, canonically ordered and
+//!   deduplicated. No resolution, no validation, no defect production —
+//!   raw material for a later slice's §5.2 prerequisite correlation.
 
 pub mod candidate_derivation_presence;
 pub mod candidate_dimension_divergence;
@@ -62,6 +70,7 @@ pub mod condition_classification;
 pub mod configuration_bounds;
 pub mod configuration_position;
 pub mod contradictory_rules;
+pub mod dependency_enumeration;
 pub mod derivation_dimension;
 pub mod derivation_form;
 pub mod direction_conflict;
