@@ -235,7 +235,9 @@ evidence.
 
 | **PBA-0141** | **ALLOCATED** | **First Runnable Slice Contract Revision 5 — formal independent-review authorization** → ARR-0047 (2026-08-18; per PBD-0006's review path step 3, separately authorizes an independent, read-only review of `first-runnable-slice-contract-r05.md` (as remediated under PBA-0140 / ER-0115). This authorization formally satisfies PBD-0006 step 3, which two earlier informal review cycles (conducted without PBA commissioning or ARR recording) did not — those cycles' substantive conclusions are superseded procedurally, not their content, by this formal review. Terminates under §12(7).) |
 
-**Next allocatable PBA: `PBA-0142`.**
+| **PBA-0142** | **ALLOCATED** | **First Runnable Slice Contract Revision 5 Product Board Acceptance authorization** → PBR-0017 / ER-0116 (2026-08-18; accepts Revision 5, supersedes Revision 4 in governance provenance for the `NotEvaluatedRecord` unit-identity surface) |
+
+**Next allocatable PBA: `PBA-0143`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -257,7 +259,8 @@ evidence.
 | **PBR-0014** | **ALLOCATED** | **First Runnable Slice Contract Revision 2 acceptance** (2026-08-14; authorization PBA-0063). Revision 2 becomes ACCEPTED and normative; Revision 1 SUPERSEDED in governance provenance, its file preserved immutable; closes F-3. |
 | **PBR-0015** | **ALLOCATED** | **First Runnable Slice Contract Revision 3 acceptance** (2026-08-15; authorization PBA-0086). Revision 3 becomes ACCEPTED and normative; Revision 2 SUPERSEDED in governance provenance, its file preserved immutable. Records the check-1/check-15/check-16 required-property ownership clarification. |
 | **PBR-0016** | **ALLOCATED** | **First Runnable Slice Contract Revision 4 acceptance** (2026-08-16; authorization PBA-0095). Revision 4 becomes ACCEPTED and normative; Revision 3 SUPERSEDED in governance provenance, its file preserved immutable. Records the canonical construct-occurrence identity and integrated defect-identity design (OccurrenceId anchor, LINEAGE discriminator kind 7, COUNTERPART occurrence payload, symmetric check-9 / asymmetric check-11 anchors). Contract/design side of O-A resolved; Phase-1/Phase-4 implementation remediation still pending. |
-| PBR-0017 and above | AVAILABLE-FUTURE | — |
+| **PBR-0017** | **ALLOCATED** | **First Runnable Slice Contract Revision 5 acceptance** (2026-08-18; authorization PBA-0142). Revision 5 becomes ACCEPTED and normative for the `NotEvaluatedRecord` unit-identity surface; Revision 4 SUPERSEDED in governance provenance, its file preserved immutable. Records the `construct: OccurrenceId` / `counterpart: Option<OccurrenceId>` amendment (§A), reusing r04 §C.7's pair orientation for pairwise-gated units (checks 9, 11-subsumption) with `counterpart = None` for every single-unit suppressed evaluation. Cardinality (§6.2), blocker/root-blocker semantics, and PBA-0134/ER-0109 Rulings A and B all explicitly preserved. Contract/design side of the Phase-6 MAJOR-001 gap resolved; bounded `src/result/**` implementation remediation still pending, to be separately authorized. |
+| PBR-0018 and above | AVAILABLE-FUTURE | — |
 
 **Collision resolved (PBD-0005 §4).** `PBR-0010` was used twice: for the Slice
 Contract Final Review Authorization that produced ARR-0007, and later for the Slice
@@ -266,7 +269,7 @@ acceptance is reassigned **PBR-0011**. **The acceptance decision itself is
 unchanged** — decision date 2026-08-13, contract status ACCEPTED, architecture and
 engineering substance untouched. Only the governance identifier is corrected.
 
-**Next allocatable PBR: `PBR-0017`.**
+**Next allocatable PBR: `PBR-0018`.**
 
 ## 7. ARR — Architecture / Contract Review Reports
 
@@ -436,7 +439,9 @@ consumes an ARR number.
 
 | **ER-0115** | **ALLOCATED** | **First Runnable Slice Contract Revision 5 — Bounded Review-Remediation Report** (authority **PBA-0140**; 2026-08-18; docs-only remediation of `first-runnable-slice-contract-r05.md`'s two independent-review findings. **MAJOR remediated:** the "Determination basis" metadata field's false `ARR-0047` citation (asserting an already-allocated review identifier for the historical Slice-6B read-only review) replaced with an identifier-free description confirming that review was strictly read-only, made no repository mutation, and had no `ARR` allocated. **MINOR remediated:** §F/§G relettered to §A/§B (r05 is its own self-contained successor document, so restarting at §A — rather than continuing r04's internal A–E sequence, which belongs to r04's own file — is the minimum correct structural fix); all four subsection labels (§F.1–§F.4 → §A.1–§A.4) and the one internal cross-reference (§F.3 → §A.3) updated consistently; grep-verified no stray `§F`/`§G` references remain. **Amendment semantics unchanged:** `construct: OccurrenceId`, `counterpart: Option<OccurrenceId>`, single-unit/pairwise semantics, §C.7 pair-orientation reuse (Revision 4's own lettering, unaffected by r05's renumbering), cardinality, and blocker-semantics preservation are byte-identical to the pre-remediation text apart from the two remediated findings. **No `src/**`, Cargo, or toolchain change.** r05 remains **PROPOSED** — not accepted by this cycle. ARR-0047 remains unallocated. Independent re-review of the remediated r05 remains the next permitted action, using the live next `ARR` identifier if/when governance-synchronized. Terminates under §12(7).) |
 
-**Next allocatable ER: `ER-0116`.**
+| **ER-0116** | **ALLOCATED** | **Slice Contract Revision 5 Acceptance Report** (authority PBA-0142; 2026-08-18; records **PBR-0017** — Revision 5 ACCEPTED and normative for the `NotEvaluatedRecord` unit-identity surface, Revision 4 SUPERSEDED in governance provenance; clerical status/metadata transition of `first-runnable-slice-contract-r05.md` only — `Status: PROPOSED → ACCEPTED`, `Accepted by`/`Decision date` filled, `§B`'s closing paragraph updated to reflect acceptance; the substantive §A amendment text is byte-frozen from the ARR-0047-reviewed version, unchanged by this cycle. Contract/design side of Phase-6 MAJOR-001 resolved; bounded `src/result/mod.rs` + `src/checks/prerequisite.rs` implementation remediation pending, to be separately authorized; Slice 6B remains open/HOLD; Slice 6C remains NOT STARTED/HOLD; Phase 6 not complete. No `src/**`, Cargo, or toolchain change. Terminates under §12(7).) |
+
+**Next allocatable ER: `ER-0117`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -477,10 +482,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | **PBA-0141** | **PBA-0142** |
-| PBR | PBR-0016 | **PBR-0017** |
+| PBA | **PBA-0142** | **PBA-0143** |
+| PBR | **PBR-0017** | **PBR-0018** |
 | ARR | **ARR-0047** | **ARR-0048** |
-| ER | **ER-0115** | **ER-0116** |
+| ER | **ER-0116** | **ER-0117** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace

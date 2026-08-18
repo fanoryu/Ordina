@@ -932,7 +932,7 @@ Each slice is independently authorizable and independently reviewable, one check
 | Slice | Status |
 |---|---|
 | 6A | **CLOSED (ARR-0046)** |
-| 6B | **IMPLEMENTED — MAJOR-001 unit-identity determined (PBA-0138/ER-0113), bounded `src/result/**` remediation pending, then re-review under ARR-0047** |
+| 6B | **IMPLEMENTED — MAJOR-001 resolved by accepted contract Revision 5 (PBR-0017), bounded `src/result/**` remediation pending, then re-review under its own separate ARR** |
 | 6C | NOT STARTED |
 | 6D | NOT STARTED |
 
@@ -940,9 +940,11 @@ Each slice is independently authorizable and independently reviewable, one check
 
 **r05 bounded review-remediation (PBA-0140 / ER-0115, 2026-08-18).** Corrected a false `ARR-0047` historical citation and relettered §F/§G to §A/§B for internal consistency; amendment semantics unchanged.
 
-**r05 formal independent review (PBA-0141 / ARR-0047, 2026-08-18).** PBD-0006's review-path step 3–4 formally satisfied (a separately authorized PBA commissioning a review recorded as an ARR — the gate two earlier informal review cycles did not meet). **Verdict: PASS — R05 READY FOR PRODUCT BOARD ACCEPTANCE.** Zero BLOCKER/MAJOR/MINOR/NOTE. **Status: PROPOSED — no normative force**; Revision 4 remains the accepted, authoritative contract. No `src/**` change in any of these cycles.
+**r05 formal independent review (PBA-0141 / ARR-0047, 2026-08-18).** PBD-0006's review-path step 3–4 formally satisfied (a separately authorized PBA commissioning a review recorded as an ARR — the gate two earlier informal review cycles did not meet). **Verdict: PASS — R05 READY FOR PRODUCT BOARD ACCEPTANCE.** Zero BLOCKER/MAJOR/MINOR/NOTE.
 
-**Phase 6 is not complete.** Next permitted action: a separate Product Board acceptance cycle for r05 under PBD-0006 (its own PBA, recorded as a PBR), leading — once accepted — to authorization of the bounded `NotEvaluatedRecord` result-model remediation (`src/result/mod.rs` + `src/checks/prerequisite.rs`), then independent re-review of Phase-6 Slice 6B under its own ARR.
+**r05 ACCEPTED (PBA-0142 / PBR-0017 / ER-0116, 2026-08-18).** `first-runnable-slice-contract-r05.md` is now **ACCEPTED and normative** for the `NotEvaluatedRecord` unit-identity surface; Revision 4 **SUPERSEDED** in governance provenance, its file preserved immutable. `NotEvaluatedRecord.construct: LineageId → OccurrenceId`, new `counterpart: Option<OccurrenceId>` is now accepted contract text — single-unit suppressed evaluations use `counterpart = None`; pairwise checks 9 and 11-subsumption reuse r04 §C.7's pair orientation verbatim. Cardinality (§6.2), blocker/root-blocker semantics, and PBA-0134/ER-0109 Rulings A and B remain explicitly unchanged. **No `src/**` change has occurred in any of these cycles** — the accepted contract text authorizes, but does not itself perform, the bounded `src/result/mod.rs` + `src/checks/prerequisite.rs` remediation.
+
+**Phase 6 is not complete.** Next permitted action: separate authorization of the bounded `NotEvaluatedRecord` result-model source remediation under accepted r05, then independent re-review of Phase-6 Slice 6B under its own ARR. Slice 6B remains open/HOLD; Slice 6C remains NOT STARTED/HOLD.
 
 | | |
 |---|---|

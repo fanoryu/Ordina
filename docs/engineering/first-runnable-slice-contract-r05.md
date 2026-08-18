@@ -3,14 +3,11 @@
 - **Title:** First Runnable Slice — Implementation Contract
 - **Contract family:** First Runnable Slice Contract
 - **Revision:** 5
-- **Status:** **PROPOSED.** No normative force. Revision 4
-  (`first-runnable-slice-contract-r04.md`) remains the accepted, authoritative
-  contract until this proposal completes the PBD-0006 review path and is
-  separately accepted under a `PBR`.
+- **Status:** **ACCEPTED** — normative.
 - **Predecessor:** `first-runnable-slice-contract-r04.md` — Revision 4, accepted
-  under **PBR-0016** (2026-08-16). Not superseded by this proposal until this
-  proposal itself is accepted.
-- **Authority:** PBA-0139 (authoring).
+  under **PBR-0016** (2026-08-16); **SUPERSEDED** by this revision on acceptance
+  (2026-08-18) in governance provenance, its file preserved immutable.
+- **Authority:** PBA-0139 (authoring); PBA-0142 (acceptance).
 - **Author:** Principal Engineer
 - **Tier:** 3 (engineering, normative)
 - **Governed by:** PBD-0006 — Normative Engineering Contract Revision Convention
@@ -22,20 +19,22 @@
   adversarial reconciliation confirmed against §6.2's unconditional text. That
   review was strictly read-only and made no repository mutation; no `ARR`
   identifier was allocated for it.
-- **Review history:** authored under PBA-0139 / ER-0114. Independent review not
-  yet commissioned — requires its own separately authorized `PBA` per PBD-0006
-  §"Review path" step 3, to be recorded as an `ARR`.
-- **Accepted by:** *(not yet — pending PBD-0006 review path completion and a
-  separate Product Board acceptance authorization, to be recorded as a `PBR`)*
-- **Decision date:** *(not yet — set on acceptance)*
+- **Review history:** authored under PBA-0139 / ER-0114 → bounded
+  review-remediation PBA-0140 / ER-0115 → formal independent review PBA-0141 /
+  **ARR-0047** (PASS — zero BLOCKER/MAJOR/MINOR/NOTE).
+- **Accepted by:** Product Board, **PBR-0017**
+- **Decision date:** 2026-08-18
 
-> ## This revision is PROPOSED. It is not yet normative.
+> ## This revision is ACCEPTED and is the authoritative First Runnable Slice
+> ## Contract for the `NotEvaluatedRecord` unit-identity surface.
 >
-> Revision 4 remains the accepted First Runnable Slice Contract until this
-> proposal completes independent review (its own `ARR`, under separate `PBA`
-> authorization) and Product Board acceptance (its own `PBR`). This revision
-> changes **only** the explicitly enumerated surface in §A and **incorporates
-> the whole of Revision 4 unchanged** otherwise (§B).
+> Accepted by the Product Board under **PBR-0017** on 2026-08-18 (acceptance
+> authorization PBA-0142), following the review path PBD-0006 requires
+> (PBA-0141 / ARR-0047 PASS, zero findings). It **supersedes Revision 4**,
+> whose file (`first-runnable-slice-contract-r04.md`) remains an immutable
+> historical artifact. This revision changes **only** the explicitly
+> enumerated surface in §A and **incorporates the whole of Revision 4
+> unchanged** otherwise (§B).
 
 ---
 
@@ -153,8 +152,7 @@ qualification (§6.3); `WF-1` and the result invariant; the deferral of checks
 7 and 17; every §3 and §4 semantic. O-1/O-2/O-3, O-4, and Q-06/Q-08/N-22/N-24/
 N-25/F-8 remain OPEN, untouched by this proposal.
 
-**Not decided here; not implemented here.** This proposal does not accept
-itself and makes no implementation change. `src/result/**` remains unmodified
-until a separately authorized bounded remediation follows this proposal's
-acceptance under the PBD-0006 review path (independent `ARR` review, then
-Product Board acceptance under a `PBR`).
+**Accepted; not yet implemented.** This revision is accepted and normative for
+the §A surface (PBR-0017), but makes **no implementation change itself**.
+`src/result/**` remains unmodified until a separately authorized bounded
+remediation follows this acceptance.
