@@ -885,9 +885,24 @@ fmt/check/clippy clean. Prior checks byte-identical; **check 2 frozen and unchan
 
 **Check-14B discovery-contradiction reconciliation (read-only, same cycle as PBA-0132/ER-0108).** Adjudicated a contradiction in the prior Check-14B discovery between §5.2's `check 14B → 13B + 14A on all three derivations` (a genuine semantic prerequisite) and a discovery sentence claiming a Strategy could carry both a 14A defect and an independently-emitted 14B defect. From accepted contract text alone (§5.2's dependency graph plus the worked missing-`TAKE_PROFIT`-suppresses-14B consequence), confirmed: a 13B or 14A prerequisite failure on any of the three derivations suppresses 14B entirely; the two never co-emit in one evaluation. The discovery sentence was corrected. No new authority; no contract revision; no repository mutation in the reconciliation itself.
 
-**Check 14B implemented (PBA-0132 / ER-0108, 2026-08-18).** New `src/checks/candidate_dimension_divergence.rs` + `src/checks/mod.rs` registration. `check_14b` reconstructs the 13B prerequisite (exact-one-per-role) and, per role, a local `result_dimension` mirroring 14A's per-node computability discipline; emits at most one `CandidateDimensionDivergence` (anchor = Strategy envelope occurrence, `Discriminator::None`) only when all three root dimensions are computable and not pairwise equal; any prerequisite failure suppresses 14B with no defect emitted. No production call to `check_13b`/`check_14a`/Check 2/any runner; no `not-evaluated` metadata. Verification: 450 unit (was 414) + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. **Check 14B IMPLEMENTED, pending independent review under ARR-0045.** Not CLOSED. **H (13A/B+14A/B) implementation complete; Phase 5 implementation complete.** Do not begin Phase 6 or ARR-0045 without explicit authorization.
+**Check 14B implemented (PBA-0132 / ER-0108, 2026-08-18).** New `src/checks/candidate_dimension_divergence.rs` + `src/checks/mod.rs` registration. `check_14b` reconstructs the 13B prerequisite (exact-one-per-role) and, per role, a local `result_dimension` mirroring 14A's per-node computability discipline; emits at most one `CandidateDimensionDivergence` (anchor = Strategy envelope occurrence, `Discriminator::None`) only when all three root dimensions are computable and not pairwise equal; any prerequisite failure suppresses 14B with no defect emitted. No production call to `check_13b`/`check_14a`/Check 2/any runner; no `not-evaluated` metadata. Verification: 450 unit (was 414) + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. **Check 14B CLOSED** (independently verified under ARR-0045 — verdict PASS; two non-blocking NOTEs (NOTE-001: `result_dimension`/`evaluate` intentional duplication is a maintainability risk, not a defect; NOTE-002: no dedicated duplicate-role-plus-differing-dimension test, subsumed by existing duplicate-role suppression logic); corrected suppression invariant independently confirmed across all 14A/Check-2 non-computability shapes; O-4 remains OPEN/prospective; no Phase-6 leakage; frozen surfaces clean).
+
+### Phase 5 status — current/canonical
+
+| Check | Status | Review |
+|---|---|---|
+| 13A | **CLOSED** | ARR-0042 |
+| 13B | **CLOSED** | ARR-0043 |
+| 14A | **CLOSED** | ARR-0044 |
+| 14B | **CLOSED** | ARR-0045 |
+
+**Phase 5 — COMPLETE / CLOSED.** All fifteen applicable mandatory Phase-5 checks (1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13A, 13B, 14A, 14B, 15, 16 — see `src/checks/mod.rs`) are implemented and independently verified. No Phase-5 check remains pending. The historical slice-by-slice implementation narrative above (Slices A–H) is preserved as-is; this status block is the canonical current-state summary and supersedes any "remaining: H (14B only)" language earlier in this document.
+
+Do not begin Phase 6 without explicit authorization.
 
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
+
+**Status: NOT STARTED / NOT AUTHORIZED.** Next permitted roadmap action: **Phase 6 read-only discovery / authorization preparation.**
 
 | | |
 |---|---|
