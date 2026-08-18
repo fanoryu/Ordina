@@ -56,13 +56,18 @@
 //!   prerequisite failure suppresses 14B entirely, never co-emitting with the 14A
 //!   defect that caused it.
 //!
-//! Phase 6 — Slice 6A (PBA-0135 / ER-0110):
+//! Phase 6 — Slice 6A (PBA-0135 / ER-0110; MAJOR-001 bounded remediation
+//! PBA-0136 / ER-0111):
 //!
 //! - [`dependency_enumeration`] — pure structural enumeration of the
 //!   declaration lineages a [`guard_analysis`]-adjacent `Guard` or a candidate
 //!   derivation's `DerivationExpression` references, canonically ordered and
-//!   deduplicated. No resolution, no validation, no defect production —
-//!   raw material for a later slice's §5.2 prerequisite correlation.
+//!   deduplicated, plus a semantics-free `LineageId` → `OccurrenceId`
+//!   resolver for the evidence and configuration declaration collections
+//!   (closing ARR-0046 MAJOR-001: Check-6/Check-1 correlation is anchored on
+//!   the referenced declaration's occurrence, not its lineage). No reference
+//!   resolution judgement, no validation, no defect production — raw
+//!   material for a later slice's §5.2 prerequisite correlation.
 
 pub mod candidate_derivation_presence;
 pub mod candidate_dimension_divergence;

@@ -53,10 +53,40 @@
 //! result (permutation changes traversal order only; the sorted, deduplicated
 //! output is identical — proven by test). This is not a new interpretation of
 //! guard semantics and does not touch O-4, which **remains OPEN/prospective**.
+//!
+//! # Lineage-to-occurrence resolution (bounded remediation, PBA-0136 / ER-0111)
+//!
+//! [`guard_dependencies`]/[`derivation_dependencies`] answer "which lineages
+//! does this structure mention" — but a later slice correlating against
+//! Check-6's or Check-1's already-produced defects needs the **occurrence**
+//! identity those checks anchor on, not the lineage alone: Check 6
+//! (`INVALID_EVIDENCE_DECLARATION`) and a malformed evidence/configuration
+//! declaration's Check-1 defect are both anchored on **the offending
+//! declaration's own occurrence** (§6.3), never on its lineage. [`evidence_occurrence`]
+//! and [`configuration_occurrence`] close that gap with a **semantics-free
+//! structural lookup**: given a target lineage and the declaration collection
+//! it names, they return the **unique** matching declaration's occurrence, or
+//! `None` if zero or more than one declaration shares that lineage.
+//!
+//! This is **not** Check 2's reference-resolution rule restated: it makes no
+//! judgement about whether a *reference* is well-formed, emits no defect, and
+//! answers a narrower question a later correlation step needs regardless of
+//! whether the reference itself is valid — "if exactly one declaration has
+//! this lineage, where is it." Zero or ambiguous matches both yield `None`,
+//! matching the exact-one shape §4.7 already establishes, but this module
+//! draws no conclusion from that shape — it neither reports a defect nor
+//! decides that a check should be suppressed. Evidence and configuration
+//! resolution are kept as two **separate** functions, each searching only its
+//! own declaration collection — `LineageId` values from the two domains are
+//! never compared across collections, and nothing here assumes a lineage
+//! naming an evidence item cannot coincidentally equal one naming a
+//! configuration parameter.
 
+use crate::model::declared::Declared;
 use crate::model::derivation::DerivationExpression;
 use crate::model::guard::Guard;
-use crate::model::opaque::LineageId;
+use crate::model::opaque::{LineageId, OccurrenceId};
+use crate::model::strategy::Strategy;
 
 /// The evidence-declaration lineages `guard` structurally references.
 ///
@@ -113,17 +143,108 @@ fn collect_derivation_dependencies(expression: &DerivationExpression, into: &mut
     }
 }
 
+/// The occurrence identity of the **unique** evidence declaration carrying
+/// `lineage`, or `None` if zero or more than one declaration in
+/// `strategy.evidence_declarations` shares it (including an absent
+/// collection).
+///
+/// A structural identity lookup only — it draws no conclusion from the
+/// zero/ambiguous case beyond `None`; it emits no defect and makes no
+/// prerequisite-satisfaction judgement. Searches only the evidence
+/// collection; a configuration parameter sharing the same lineage value is
+/// never considered.
+#[must_use]
+pub fn evidence_occurrence(strategy: &Strategy, lineage: LineageId) -> Option<OccurrenceId> {
+    let Declared::Present(items) = &strategy.evidence_declarations else {
+        return None;
+    };
+    let mut resolved = None;
+    for item in items {
+        if item.lineage == Declared::Present(lineage) {
+            if resolved.is_some() {
+                return None;
+            }
+            resolved = Some(item.occurrence);
+        }
+    }
+    resolved
+}
+
+/// The occurrence identity of the **unique** configuration parameter carrying
+/// `lineage`, or `None` if zero or more than one parameter in
+/// `strategy.configuration_parameters` shares it (including an absent
+/// collection).
+///
+/// A structural identity lookup only, mirroring [`evidence_occurrence`] over
+/// the separate configuration-parameter collection — never the evidence
+/// collection.
+#[must_use]
+pub fn configuration_occurrence(strategy: &Strategy, lineage: LineageId) -> Option<OccurrenceId> {
+    let Declared::Present(items) = &strategy.configuration_parameters else {
+        return None;
+    };
+    let mut resolved = None;
+    for item in items {
+        if item.lineage == Declared::Present(lineage) {
+            if resolved.is_some() {
+                return None;
+            }
+            resolved = Some(item.occurrence);
+        }
+    }
+    resolved
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::model::config::ConfigurationParameter;
     use crate::model::derivation::DerivationExpression;
+    use crate::model::evidence::EvidenceDeclaration;
     use crate::model::guard::{Atom, ComparisonOperator, Guard};
     use crate::model::literal::Literal;
-    use crate::model::opaque::{DimensionSymbol, LineageId, OpaqueValue};
+    use crate::model::opaque::{DimensionSymbol, LineageId, OccurrenceId, OpaqueValue};
     use crate::numeric::ExactNumber;
 
     fn lineage(handle: u64) -> LineageId {
         LineageId::new(OpaqueValue::new(handle))
+    }
+
+    fn occ(handle: u64) -> OccurrenceId {
+        OccurrenceId::new(OpaqueValue::new(handle))
+    }
+
+    fn dim(handle: u64) -> DimensionSymbol {
+        DimensionSymbol::new(OpaqueValue::new(handle))
+    }
+
+    fn strategy_with(
+        evidence: Vec<EvidenceDeclaration>,
+        configuration: Vec<ConfigurationParameter>,
+    ) -> Strategy {
+        Strategy {
+            occurrence: occ(1),
+            lineage: Declared::Present(lineage(1000)),
+            semantic_model_version: Declared::Absent,
+            evidence_declarations: Declared::Present(evidence),
+            configuration_parameters: Declared::Present(configuration),
+            conditions: Declared::Present(vec![]),
+            direction_rules: Declared::Present(vec![]),
+            candidate_derivations: Declared::Present(vec![]),
+        }
+    }
+
+    fn strategy_with_absent_collections() -> Strategy {
+        Strategy {
+            occurrence: occ(1),
+            lineage: Declared::Present(lineage(1000)),
+            semantic_model_version: Declared::Absent,
+            evidence_declarations: Declared::Absent,
+            configuration_parameters: Declared::Absent,
+            conditions: Declared::Present(vec![]),
+            direction_rules: Declared::Present(vec![]),
+            candidate_derivations: Declared::Present(vec![]),
+        }
     }
 
     fn numeric_literal(value: i64) -> Literal {
@@ -323,5 +444,229 @@ mod tests {
             derivation_dependencies(&DerivationExpression::Literal(numeric_literal(1)));
         assert!(guard_result.is_empty());
         assert!(derivation_result.is_empty());
+    }
+
+    // == evidence_occurrence =================================================
+
+    #[test]
+    fn evidence_absent_collection_resolves_to_none() {
+        let strategy = strategy_with_absent_collections();
+        assert_eq!(evidence_occurrence(&strategy, lineage(1)), None);
+    }
+
+    #[test]
+    fn evidence_zero_matching_lineage_resolves_to_none() {
+        let strategy = strategy_with(
+            vec![EvidenceDeclaration::numeric(occ(10), lineage(1), dim(1))],
+            vec![],
+        );
+        assert_eq!(evidence_occurrence(&strategy, lineage(999)), None);
+    }
+
+    #[test]
+    fn evidence_exactly_one_match_resolves_to_its_occurrence() {
+        let strategy = strategy_with(
+            vec![EvidenceDeclaration::numeric(occ(10), lineage(1), dim(1))],
+            vec![],
+        );
+        assert_eq!(evidence_occurrence(&strategy, lineage(1)), Some(occ(10)));
+    }
+
+    #[test]
+    fn evidence_duplicate_matching_lineage_resolves_to_none() {
+        let strategy = strategy_with(
+            vec![
+                EvidenceDeclaration::numeric(occ(10), lineage(1), dim(1)),
+                EvidenceDeclaration::numeric(occ(11), lineage(1), dim(2)),
+            ],
+            vec![],
+        );
+        assert_eq!(evidence_occurrence(&strategy, lineage(1)), None);
+    }
+
+    #[test]
+    fn evidence_unrelated_declarations_do_not_affect_the_result() {
+        let strategy = strategy_with(
+            vec![
+                EvidenceDeclaration::numeric(occ(9), lineage(0), dim(1)),
+                EvidenceDeclaration::numeric(occ(10), lineage(1), dim(1)),
+                EvidenceDeclaration::numeric(occ(12), lineage(2), dim(1)),
+            ],
+            vec![],
+        );
+        assert_eq!(evidence_occurrence(&strategy, lineage(1)), Some(occ(10)));
+    }
+
+    #[test]
+    fn evidence_collection_permutation_produces_an_identical_result() {
+        let forward = strategy_with(
+            vec![
+                EvidenceDeclaration::numeric(occ(9), lineage(0), dim(1)),
+                EvidenceDeclaration::numeric(occ(10), lineage(1), dim(1)),
+            ],
+            vec![],
+        );
+        let reversed = strategy_with(
+            vec![
+                EvidenceDeclaration::numeric(occ(10), lineage(1), dim(1)),
+                EvidenceDeclaration::numeric(occ(9), lineage(0), dim(1)),
+            ],
+            vec![],
+        );
+        assert_eq!(
+            evidence_occurrence(&forward, lineage(1)),
+            evidence_occurrence(&reversed, lineage(1))
+        );
+    }
+
+    #[test]
+    fn evidence_repeated_invocation_is_stable() {
+        let strategy = strategy_with(
+            vec![EvidenceDeclaration::numeric(occ(10), lineage(1), dim(1))],
+            vec![],
+        );
+        assert_eq!(
+            evidence_occurrence(&strategy, lineage(1)),
+            evidence_occurrence(&strategy, lineage(1))
+        );
+    }
+
+    #[test]
+    fn evidence_lineage_never_resolves_against_the_configuration_collection() {
+        // A configuration parameter shares the same underlying opaque handle as
+        // the target lineage; evidence_occurrence must not cross domains.
+        let param = ConfigurationParameter::new(
+            occ(20),
+            lineage(1),
+            dim(1),
+            Literal::Numeric {
+                value: ExactNumber::from_integer(0),
+                dimension: dim(1),
+            },
+            Literal::Numeric {
+                value: ExactNumber::from_integer(9),
+                dimension: dim(1),
+            },
+            true,
+        );
+        let strategy = strategy_with(vec![], vec![param]);
+        assert_eq!(evidence_occurrence(&strategy, lineage(1)), None);
+    }
+
+    // == configuration_occurrence =============================================
+
+    fn config_param(occurrence: u64, lin: u64) -> ConfigurationParameter {
+        ConfigurationParameter::new(
+            occ(occurrence),
+            lineage(lin),
+            dim(1),
+            Literal::Numeric {
+                value: ExactNumber::from_integer(0),
+                dimension: dim(1),
+            },
+            Literal::Numeric {
+                value: ExactNumber::from_integer(9),
+                dimension: dim(1),
+            },
+            true,
+        )
+    }
+
+    #[test]
+    fn configuration_absent_collection_resolves_to_none() {
+        let strategy = strategy_with_absent_collections();
+        assert_eq!(configuration_occurrence(&strategy, lineage(1)), None);
+    }
+
+    #[test]
+    fn configuration_zero_matching_lineage_resolves_to_none() {
+        let strategy = strategy_with(vec![], vec![config_param(20, 1)]);
+        assert_eq!(configuration_occurrence(&strategy, lineage(999)), None);
+    }
+
+    #[test]
+    fn configuration_exactly_one_match_resolves_to_its_occurrence() {
+        let strategy = strategy_with(vec![], vec![config_param(20, 1)]);
+        assert_eq!(
+            configuration_occurrence(&strategy, lineage(1)),
+            Some(occ(20))
+        );
+    }
+
+    #[test]
+    fn configuration_duplicate_matching_lineage_resolves_to_none() {
+        let strategy = strategy_with(vec![], vec![config_param(20, 1), config_param(21, 1)]);
+        assert_eq!(configuration_occurrence(&strategy, lineage(1)), None);
+    }
+
+    #[test]
+    fn configuration_unrelated_entries_do_not_affect_the_result() {
+        let strategy = strategy_with(
+            vec![],
+            vec![
+                config_param(19, 0),
+                config_param(20, 1),
+                config_param(22, 2),
+            ],
+        );
+        assert_eq!(
+            configuration_occurrence(&strategy, lineage(1)),
+            Some(occ(20))
+        );
+    }
+
+    #[test]
+    fn configuration_collection_permutation_produces_an_identical_result() {
+        let forward = strategy_with(vec![], vec![config_param(19, 0), config_param(20, 1)]);
+        let reversed = strategy_with(vec![], vec![config_param(20, 1), config_param(19, 0)]);
+        assert_eq!(
+            configuration_occurrence(&forward, lineage(1)),
+            configuration_occurrence(&reversed, lineage(1))
+        );
+    }
+
+    #[test]
+    fn configuration_repeated_invocation_is_stable() {
+        let strategy = strategy_with(vec![], vec![config_param(20, 1)]);
+        assert_eq!(
+            configuration_occurrence(&strategy, lineage(1)),
+            configuration_occurrence(&strategy, lineage(1))
+        );
+    }
+
+    #[test]
+    fn configuration_lineage_never_resolves_against_the_evidence_collection() {
+        let evidence = EvidenceDeclaration::numeric(occ(10), lineage(1), dim(1));
+        let strategy = strategy_with(vec![evidence], vec![]);
+        assert_eq!(configuration_occurrence(&strategy, lineage(1)), None);
+    }
+
+    // == integration with guard/derivation dependency enumeration ============
+
+    #[test]
+    fn guard_dependency_resolves_to_the_expected_evidence_occurrence() {
+        let strategy = strategy_with(
+            vec![EvidenceDeclaration::numeric(occ(10), lineage(1), dim(1))],
+            vec![],
+        );
+        let guard = Guard::from_atoms(vec![atom(1)]);
+        let dependencies = guard_dependencies(&guard);
+        assert_eq!(dependencies, vec![lineage(1)]);
+        assert_eq!(
+            evidence_occurrence(&strategy, dependencies[0]),
+            Some(occ(10))
+        );
+    }
+
+    #[test]
+    fn derivation_dependency_resolves_to_the_expected_configuration_occurrence() {
+        let strategy = strategy_with(vec![], vec![config_param(20, 1)]);
+        let expr = DerivationExpression::ConfigurationReference(lineage(1));
+        let dependencies = derivation_dependencies(&expr);
+        assert_eq!(dependencies, vec![lineage(1)]);
+        assert_eq!(
+            configuration_occurrence(&strategy, dependencies[0]),
+            Some(occ(20))
+        );
     }
 }
