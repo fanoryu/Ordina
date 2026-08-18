@@ -42,12 +42,19 @@
 //!   uniqueness — counts occurrences of each closed [`CandidateRole`] and emits one
 //!   defect per missing or duplicated role, anchored on the envelope occurrence
 //!   identity with the ROLE discriminator (§6.4.2 kind 3). One check per increment.
+//! - [`derivation_dimension`] — **check 14A** (`DIMENSION_MISMATCH`); per-present-
+//!   derivation §4.6 dimensional consistency — every `+`/`-` node's operands share a
+//!   dimension and every `*` node's scalar is a dimensionless literal — one defect per
+//!   offending node, anchored on the derivation occurrence with the NODE-PATH
+//!   discriminator (§6.4.2 kind 5). Prerequisite computability (13A on that derivation,
+//!   Check 2 on its leaves) is reconstructed locally; 14B is separate and not here.
 
 pub mod candidate_derivation_presence;
 pub mod condition_classification;
 pub mod configuration_bounds;
 pub mod configuration_position;
 pub mod contradictory_rules;
+pub mod derivation_dimension;
 pub mod derivation_form;
 pub mod direction_conflict;
 pub mod direction_coverage;
