@@ -18,8 +18,10 @@
 - **Determination basis:** authored under PBA-0139, encoding the unit-identity
   design determined by the read-only cycle **PBA-0138 / ER-0113** (Phase-6
   `NotEvaluatedRecord` unit-identity determination), itself responding to the
-  gap the independent review **ARR-0047** (Phase-6 Slice 6B) discovered and an
-  adversarial reconciliation confirmed against §6.2's unconditional text.
+  gap the independent read-only review of Phase-6 Slice 6B identified and an
+  adversarial reconciliation confirmed against §6.2's unconditional text. That
+  review was strictly read-only and made no repository mutation; no `ARR`
+  identifier was allocated for it.
 - **Review history:** authored under PBA-0139 / ER-0114. Independent review not
   yet commissioned — requires its own separately authorized `PBA` per PBD-0006
   §"Review path" step 3, to be recorded as an `ARR`.
@@ -32,14 +34,14 @@
 > Revision 4 remains the accepted First Runnable Slice Contract until this
 > proposal completes independent review (its own `ARR`, under separate `PBA`
 > authorization) and Product Board acceptance (its own `PBR`). This revision
-> changes **only** the explicitly enumerated surface in §F and **incorporates
-> the whole of Revision 4 unchanged** otherwise (§G).
+> changes **only** the explicitly enumerated surface in §A and **incorporates
+> the whole of Revision 4 unchanged** otherwise (§B).
 
 ---
 
-## F. Amendment — `NotEvaluatedRecord` unit identity (§6.2)
+## A. Amendment — `NotEvaluatedRecord` unit identity (§6.2)
 
-### F.1 Problem
+### A.1 Problem
 
 Revision 4 (§C.4–§C.7) migrated the **defect** anchor (`DefectCore.offending`)
 from lineage identity to occurrence identity specifically because a
@@ -66,7 +68,7 @@ check 11's subsumption part) — a bare occurrence field cannot distinguish
 "pair (A,B) suppressed" from "pair (A,C) suppressed" when both share the
 same first-sorted member.
 
-### F.2 Amended `NotEvaluatedRecord` shape
+### A.2 Amended `NotEvaluatedRecord` shape
 
 ```rust
 NotEvaluatedRecord {
@@ -79,7 +81,7 @@ NotEvaluatedRecord {
 
 `LineageId` is no longer used for `NotEvaluatedRecord`'s unit identity.
 
-### F.3 Normative semantics
+### A.3 Normative semantics
 
 **Single-unit suppressed evaluation** — every check whose §5.2 unit of work is
 one construct or the Strategy as a whole (checks 2 (reference/atom), 3, 4, 5,
@@ -125,7 +127,7 @@ one construct or the Strategy as a whole (checks 2 (reference/atom), 3, 4, 5,
 - **No new ordering rule.** Occurrence-identity comparison reuses the existing
   supplied occurrence total order (§C.1, §C.9) verbatim.
 
-### F.4 Adversarial cardinality proof (informative)
+### A.4 Adversarial cardinality proof (informative)
 
 For an occurrence order `A < B < C`, three pairs `(A,B)`, `(A,C)`, `(B,C)`
 under this amendment yield the distinct triples `(A, Some(B))`,
@@ -135,11 +137,11 @@ semantics §5.2 already assigns to checks 9 and 11's subsumption part.
 
 ---
 
-## G. What changed, and what did not
+## B. What changed, and what did not
 
 **Changed (enumerated).** `NotEvaluatedRecord`'s unit-identity fields only:
 `construct: LineageId → OccurrenceId`, plus a new `counterpart:
-Option<OccurrenceId>` field, with the normative semantics of §F.3.
+Option<OccurrenceId>` field, with the normative semantics of §A.3.
 
 **Deliberately unchanged — the whole of Revision 4 otherwise, incorporated in
 full**, including without limitation: every check's defect population and

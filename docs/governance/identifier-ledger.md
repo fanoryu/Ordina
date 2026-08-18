@@ -231,7 +231,9 @@ evidence.
 
 | **PBA-0139** | **ALLOCATED** | **First Runnable Slice Contract Revision 5 — authoring authorization** → ER-0114 (2026-08-18; authorizes the Principal Engineer to author a PROPOSED successor to `first-runnable-slice-contract-r04.md` under **PBD-0006**'s revision convention, encoding the PBA-0138 / ER-0113 `NotEvaluatedRecord` unit-identity determination as normative contract text. **This is authoring authorization only** — PBD-0006's review path step 1. It does **not** authorize independent review (a separate `PBA` is required, step 3) or acceptance (a separate Product Board authorization recorded as a `PBR`, steps 8–9). No `src/**` change; no ARR-0047 allocation; Slice 6B remains open; Slice 6C remains NOT STARTED. Terminates under §12(7).) |
 
-**Next allocatable PBA: `PBA-0140`.**
+| **PBA-0140** | **ALLOCATED** | **First Runnable Slice Contract Revision 5 — bounded review-remediation authorization** → ER-0115 (2026-08-18; authorizes a docs-only bounded remediation of `first-runnable-slice-contract-r05.md` responding to its own independent read-only review's two findings: **MAJOR** — r05 falsely cited `ARR-0047` as an already-allocated review identifier for the historical Phase-6 Slice 6B read-only review, when the ledger shows ARR-0047 with zero `ALLOCATED` rows; **MINOR** — r05's §F/§G section lettering did not follow the established successor-contract §A-onward convention. **Remediation performed:** the false `ARR-0047` attribution replaced with an identifier-free description of the review (noting explicitly that it was read-only, made no repository mutation, and had no `ARR` allocated); §F/§G relettered to §A/§B with all internal cross-references (§A.1–§A.4, §A.3) updated consistently. **The normative `NotEvaluatedRecord` unit-identity amendment itself is unchanged** — `OccurrenceId` unit identity, optional `counterpart`, §C.7 pair-orientation reuse, cardinality, and blocker-semantics preservation all passed the prior review substantively and are untouched by this remediation. No `src/**` change. r05 remains **PROPOSED** — this remediation does not accept it. ARR-0047 remains unallocated. Terminates under §12(7).) |
+
+**Next allocatable PBA: `PBA-0141`.**
 
 ## 6. PBR — Product Board Reviews / Acceptances
 
@@ -429,7 +431,9 @@ consumes an ARR number.
 
 | **ER-0114** | **ALLOCATED** | **First Runnable Slice Contract Revision 5 — Authoring Report** (authority **PBA-0139**; 2026-08-18; authors `docs/engineering/first-runnable-slice-contract-r05.md`, **Status: PROPOSED**, per PBD-0006's successor model — a separate file naming its predecessor (`first-runnable-slice-contract-r04.md`, accepted under PBR-0016), never rewriting it. **Enumerated change (§F of r05):** `NotEvaluatedRecord.construct: LineageId → OccurrenceId`, plus a new `counterpart: Option<OccurrenceId>` field. Single-unit suppressed evaluations use `counterpart = None`; pairwise suppressed evaluations (checks 9, 11-subsumption) reuse §C.7's existing, unmodified pair-orientation rule (first-sorted occurrence = `construct`, other = `counterpart`) — no new ordering rule, no `Discriminator` reuse, no synthetic identity. Cardinality (one record per suppressed evaluation, §6.2), blocker semantics (`blocking: DefectIdentity`, PBA-0134/ER-0109 Ruling A), and set-membership semantics (Ruling B) are explicitly stated unchanged. **§G of r05 proves, by explicit enumeration, that the whole of Revision 4 is incorporated unchanged** apart from the §F surface — no check population/ownership, no §5.1/§5.2/§5.3 text, no category/discriminator semantics, no revision-qualification rule is touched. **Process status:** r05 is **PROPOSED only** — no normative force per PBD-0006's status lifecycle. Independent review (its own separately authorized `PBA`, recorded as an `ARR`) has **not** been commissioned in this cycle; Product Board acceptance (a `PBR`) has **not** occurred. Revision 4 remains the accepted, authoritative contract. **No `src/**` change; no Cargo/toolchain change.** ARR-0047 remains unallocated; Slice 6B remains open (not closed, not remediated); Slice 6C remains NOT STARTED; Phase 6 not complete. Terminates under §12(7).) |
 
-**Next allocatable ER: `ER-0115`.**
+| **ER-0115** | **ALLOCATED** | **First Runnable Slice Contract Revision 5 — Bounded Review-Remediation Report** (authority **PBA-0140**; 2026-08-18; docs-only remediation of `first-runnable-slice-contract-r05.md`'s two independent-review findings. **MAJOR remediated:** the "Determination basis" metadata field's false `ARR-0047` citation (asserting an already-allocated review identifier for the historical Slice-6B read-only review) replaced with an identifier-free description confirming that review was strictly read-only, made no repository mutation, and had no `ARR` allocated. **MINOR remediated:** §F/§G relettered to §A/§B (r05 is its own self-contained successor document, so restarting at §A — rather than continuing r04's internal A–E sequence, which belongs to r04's own file — is the minimum correct structural fix); all four subsection labels (§F.1–§F.4 → §A.1–§A.4) and the one internal cross-reference (§F.3 → §A.3) updated consistently; grep-verified no stray `§F`/`§G` references remain. **Amendment semantics unchanged:** `construct: OccurrenceId`, `counterpart: Option<OccurrenceId>`, single-unit/pairwise semantics, §C.7 pair-orientation reuse (Revision 4's own lettering, unaffected by r05's renumbering), cardinality, and blocker-semantics preservation are byte-identical to the pre-remediation text apart from the two remediated findings. **No `src/**`, Cargo, or toolchain change.** r05 remains **PROPOSED** — not accepted by this cycle. ARR-0047 remains unallocated. Independent re-review of the remediated r05 remains the next permitted action, using the live next `ARR` identifier if/when governance-synchronized. Terminates under §12(7).) |
+
+**Next allocatable ER: `ER-0116`.**
 
 ## 9. PBD — Product Board Determinations, and other families
 
@@ -470,10 +474,10 @@ never vacated.
 
 | Namespace | High-water mark | Next allocatable |
 |---|---|---|
-| PBA | **PBA-0139** | **PBA-0140** |
+| PBA | **PBA-0140** | **PBA-0141** |
 | PBR | PBR-0016 | **PBR-0017** |
 | ARR | **ARR-0046** | **ARR-0047** |
-| ER | **ER-0114** | **ER-0115** |
+| ER | **ER-0115** | **ER-0116** |
 | PBD | PBD-0006 | **PBD-0007** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
