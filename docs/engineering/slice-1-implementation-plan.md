@@ -945,10 +945,12 @@ Each slice is independently authorizable and independently reviewable, one check
 |---|---|
 | 6A | **CLOSED (ARR-0046)** |
 | 6B | **CLOSED (ARR-0048)** |
-| 6C | **AUTHORIZED — NOT STARTED (PBA-0144)** |
+| 6C | **IMPLEMENTED — AWAITING INDEPENDENT REVIEW (PBA-0144/ER-0118)** |
 | 6D | NOT STARTED |
 
-**Phase 6 is not complete.** Next permitted action: implement Phase-6 Slice 6C under authorization PBA-0144.
+**Slice 6C implemented (PBA-0144 / ER-0118, 2026-08-18).** `src/checks/orchestration.rs`: `run_phase6` invokes all 17 Phase-5 checks in fixed §5.1 order, threading closed Slice 6A/6B primitives to suppress dependent units into `NotEvaluatedRecord`s instead of evaluating them. Produces a bounded internal `Phase6ExecutionState`, not a final `WellFormednessResult`. Verification: 515 unit (was 505) + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. No 6D leakage; frozen surfaces preserved.
+
+**Phase 6 is not complete.** Next permitted action: independent read-only review of Phase-6 Slice 6C under the live next ARR.
 
 | | |
 |---|---|

@@ -95,6 +95,7 @@ pub mod direction_determinism;
 pub mod evidence_integrity;
 pub mod guard_analysis;
 pub mod operative_provenance;
+pub mod orchestration;
 pub mod prerequisite;
 pub mod reference_integrity;
 pub mod required_property;
