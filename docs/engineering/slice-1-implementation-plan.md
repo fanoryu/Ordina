@@ -902,7 +902,20 @@ Do not begin Phase 6 without explicit authorization.
 
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
 
-**Status: NOT STARTED / NOT AUTHORIZED.** Next permitted roadmap action: **Phase 6 read-only discovery / authorization preparation.**
+**Status: NOT STARTED / NOT AUTHORIZED (source implementation).** Read-only discovery completed (same cycle as the Check-14B closure baseline `d2133f4`); verdict **V2 — PHASE 6 PARTIALLY UNBLOCKED**, identifying two narrow D-class governance questions (`NotEvaluatedRecord`'s single-blocker capacity under a conjunctive prerequisite; whether the not-evaluated set requires a canonical total order) as the only items accepted authority left unsettled.
+
+**Phase-6 NotEvaluated Blocker-Selection and Ordering-Scope Determination (PBA-0134 / ER-0109, 2026-08-18).** Product Board determination, read-only, no source-writing, adopted by the Product Owner. **RULING A:** one `NotEvaluatedRecord` per suppressed `(check, construct)` unit, `blocking: DefectIdentity` unchanged (singular); the root blocker propagates transitively through prerequisite chains (an immediate prerequisite's own not-evaluated blocker is inherited as a candidate), and where multiple independent root-blocker candidates exist for one unit, the existing §6.4 canonical `DefectIdentity`/`DefectCore` order selects the canonical-minimum one — no duplicate records, no `Vec<DefectIdentity>`. **RULING B:** the not-evaluated collection is set-membership semantics only; §6.4's canonical total order is textually scoped to defects, never extended to not-evaluated records; no new `Ord`/canonical-sort is introduced for `NotEvaluatedRecord`; emission order is an implementation convenience, never a conformance requirement. Both rulings verified realizable using only already-public `src/result/**` APIs (`DefectIdentity::try_cmp`, `DefectCore::Ord`) — **no `src/result/**` change required**, ARR-0039 G-1 intact, **no contract revision required** (both fill textual silences, not conflicts). **Classification: Phase 6 FULLY UNBLOCKED for bounded implementation slicing** — the discovery's contingent 6E (not-evaluated ordering) slice is no longer necessary.
+
+**Revised implementation slicing (supersedes the discovery's provisional 6A–6E list):**
+
+| Slice | Scope |
+|---|---|
+| 6A | reference/dependency enumeration (walk `Guard`/`DerivationExpression`, collect referenced lineages — reads `model/**` only) |
+| 6B | prerequisite evaluation-state + root-blocker propagation (realizes Ruling A) |
+| 6C | fixed-sequence orchestration / check execution (calls all 17 existing check functions once each) |
+| 6D | defect aggregation via the existing `canonical_sort`, `NotEvaluatedRecord` collection via Rulings A/B, verdict assembly via the existing `WellFormednessResult` constructors |
+
+Each slice is independently authorizable and independently reviewable, one check/slice per increment per established Phase-5 convention. Next Phase-6 implementation authorization requires its own PBA/ER pair (PBA-0135 / ER-0110, reserved, not allocated). Independent review requires its own ARR (ARR-0046, reserved, not allocated). **Phase 6 source implementation not begun.**
 
 | | |
 |---|---|
