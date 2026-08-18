@@ -68,6 +68,17 @@
 //!   the referenced declaration's occurrence, not its lineage). No reference
 //!   resolution judgement, no validation, no defect production — raw
 //!   material for a later slice's §5.2 prerequisite correlation.
+//!
+//! Phase 6 — Slice 6B (PBA-0137 / ER-0112), closed under 6A (ARR-0046):
+//!
+//! - [`prerequisite`] — §5.2 prerequisite-satisfaction correlation: given a
+//!   prerequisite check's already-produced `Vec<DefectCore>`, decide whether a
+//!   downstream `(check, construct)` unit is evaluable, and if not, its root
+//!   blocking `DefectIdentity` (PBA-0134 / ER-0109 Ruling A propagation and
+//!   canonical-minimum tie-break). Uses [`dependency_enumeration`]'s resolvers
+//!   for the Check-6 correlation edge; runs no check itself and builds no
+//!   final `WellFormednessResult` — orchestration and aggregation remain
+//!   Slice 6C/6D.
 
 pub mod candidate_derivation_presence;
 pub mod candidate_dimension_divergence;
@@ -84,6 +95,7 @@ pub mod direction_determinism;
 pub mod evidence_integrity;
 pub mod guard_analysis;
 pub mod operative_provenance;
+pub mod prerequisite;
 pub mod reference_integrity;
 pub mod required_property;
 pub mod semantic_model_version;
