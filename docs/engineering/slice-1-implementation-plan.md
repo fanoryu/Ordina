@@ -939,14 +939,16 @@ Each slice is independently authorizable and independently reviewable, one check
 
 **MAJOR-001 bounded source remediation implemented (PBA-0143 / ER-0117, 2026-08-18).** `src/result/mod.rs`: `NotEvaluatedRecord.construct: LineageId → OccurrenceId`, new `counterpart: Option<OccurrenceId>`; `new` (single-unit, `counterpart = None`) and new `pairwise` (canonicalizes an unordered pair by construction via `OccurrenceId`'s existing `Ord`, reusing r04 §C.7's orientation verbatim). `src/checks/prerequisite.rs`: `not_evaluated_record` retyped to `OccurrenceId`; new `not_evaluated_record_pairwise` wrapper. No synthetic identity, no `Discriminator` reuse, no new ordering rule; blocker semantics and Rulings A/B unchanged. Verification: 505 unit (was 502) + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. Frozen surfaces preserved — only the two authorized files changed; zero 6C/6D production leakage (grep-diff confirmed). **MAJOR-001 source remediation COMPLETE; r05 source conformance PASS.**
 
+**Slice 6B independently re-reviewed and CLOSED (ARR-0048, 2026-08-18).** Verdict PASS — Phase-6 Slice 6B independently verified incorporating accepted r05 (PBR-0017) and the bounded result-model remediation (PBA-0143/ER-0117). Prior MAJOR (construct: LineageId unrepresentable) CLOSED; prior MINOR (incomparable DefectIdentity in canonical-minimum) CLOSED, remains unreachable by construction. One non-blocking NOTE carried forward: no true end-to-end fixture wiring real check_1/check_2/check_6/check_13b/check_14a output through the correlation primitives — live-source anchor/discriminator alignment independently confirmed by direct inspection in lieu of such fixtures. Reproduced 505 unit + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. No source remediation remains.
+
 | Slice | Status |
 |---|---|
 | 6A | **CLOSED (ARR-0046)** |
-| 6B | **IMPLEMENTED — MAJOR-001 source-remediated (PBA-0143/ER-0117) under accepted r05 (PBR-0017), awaiting independent re-review under its own separate ARR** |
-| 6C | NOT STARTED |
+| 6B | **CLOSED (ARR-0048)** |
+| 6C | NOT STARTED — READY FOR SEPARATE AUTHORIZATION |
 | 6D | NOT STARTED |
 
-**Phase 6 is not complete.** Next permitted action: independent read-only re-review of Phase-6 Slice 6B incorporating accepted r05 and this bounded remediation, under its own separate ARR. Slice 6B remains open/HOLD; Slice 6C remains NOT STARTED/HOLD.
+**Phase 6 is not complete.** Next permitted action: separate authorization of Phase-6 Slice 6C.
 
 | | |
 |---|---|
