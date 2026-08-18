@@ -945,10 +945,10 @@ Each slice is independently authorizable and independently reviewable, one check
 |---|---|
 | 6A | **CLOSED (ARR-0046)** |
 | 6B | **CLOSED (ARR-0048)** |
-| 6C | NOT STARTED — READY FOR SEPARATE AUTHORIZATION |
+| 6C | **AUTHORIZED — NOT STARTED (PBA-0144)** |
 | 6D | NOT STARTED |
 
-**Phase 6 is not complete.** Next permitted action: separate authorization of Phase-6 Slice 6C.
+**Phase 6 is not complete.** Next permitted action: implement Phase-6 Slice 6C under authorization PBA-0144.
 
 | | |
 |---|---|
