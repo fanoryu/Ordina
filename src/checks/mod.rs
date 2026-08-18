@@ -48,8 +48,16 @@
 //!   offending node, anchored on the derivation occurrence with the NODE-PATH
 //!   discriminator (§6.4.2 kind 5). Prerequisite computability (13A on that derivation,
 //!   Check 2 on its leaves) is reconstructed locally; 14B is separate and not here.
+//! - [`candidate_dimension_divergence`] — **check 14B** (`CANDIDATE_DIMENSION_DIVERGENCE`);
+//!   Strategy-level cross-derivation §4.6 dimensional agreement across `ENTRY`,
+//!   `STOP_LOSS`, `TAKE_PROFIT` — at most one defect per Strategy, anchored on the
+//!   envelope occurrence with `Discriminator::None`. Prerequisite computability (13B
+//!   role completeness, 14A on all three derivations) is reconstructed locally; a
+//!   prerequisite failure suppresses 14B entirely, never co-emitting with the 14A
+//!   defect that caused it.
 
 pub mod candidate_derivation_presence;
+pub mod candidate_dimension_divergence;
 pub mod condition_classification;
 pub mod configuration_bounds;
 pub mod configuration_position;
