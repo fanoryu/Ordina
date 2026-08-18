@@ -214,21 +214,45 @@ pub fn guard_check6_outcome(
     )
 }
 
-/// Build the Phase-6 [`NotEvaluatedRecord`] for one `(check, construct)` unit
-/// from its resolved [`EvaluationState`] — `None` if the unit was evaluated
-/// (nothing to record). A small per-unit constructor bounded to Slice 6B;
+/// Build the Phase-6 [`NotEvaluatedRecord`] for one single-unit
+/// `(check, construct)` suppressed evaluation from its resolved
+/// [`EvaluationState`] — `None` if the unit was evaluated (nothing to
+/// record). `construct` is that unit's own occurrence identity (First
+/// Runnable Slice Contract Revision 5 §A, PBR-0017 — occurrence-based, never
+/// lineage-based). A small per-unit constructor bounded to Slice 6B;
 /// aggregating these into a `WellFormednessResult`'s not-evaluated set
 /// remains Slice 6C/6D.
 #[must_use]
 pub fn not_evaluated_record(
     check: CheckNumber,
-    construct: LineageId,
+    construct: OccurrenceId,
     state: &EvaluationState,
 ) -> Option<NotEvaluatedRecord> {
     match state {
         EvaluationState::Evaluated => None,
         EvaluationState::NotEvaluated(blocker) => {
             Some(NotEvaluatedRecord::new(check, construct, blocker.clone()))
+        }
+    }
+}
+
+/// Build the Phase-6 [`NotEvaluatedRecord`] for one pairwise `(check, {a, b})`
+/// suppressed evaluation (checks 9, 11-subsumption) from its resolved
+/// [`EvaluationState`] — `None` if the unit was evaluated. Canonicalizes the
+/// pair via [`NotEvaluatedRecord::pairwise`] (Revision 4 §C.7's existing
+/// orientation, reused verbatim) — identical regardless of `(a, b)` argument
+/// order.
+#[must_use]
+pub fn not_evaluated_record_pairwise(
+    check: CheckNumber,
+    a: OccurrenceId,
+    b: OccurrenceId,
+    state: &EvaluationState,
+) -> Option<NotEvaluatedRecord> {
+    match state {
+        EvaluationState::Evaluated => None,
+        EvaluationState::NotEvaluated(blocker) => {
+            Some(NotEvaluatedRecord::pairwise(check, a, b, blocker.clone()))
         }
     }
 }
@@ -401,18 +425,36 @@ mod tests {
     fn satisfied_outcome_yields_evaluated_state_and_no_record() {
         let state = evaluation_state(PrerequisiteOutcome::Satisfied);
         assert!(matches!(state, EvaluationState::Evaluated));
-        assert!(not_evaluated_record(CheckNumber::C14B, lineage(1), &state).is_none());
+        assert!(not_evaluated_record(CheckNumber::C14B, occ(1), &state).is_none());
     }
 
     #[test]
     fn failed_outcome_yields_not_evaluated_state_and_a_record_naming_the_root_blocker() {
         let root = DefectIdentity::unqualified(defect(occ(3), DefectCategory::UnresolvedReference));
         let state = evaluation_state(PrerequisiteOutcome::Failed(root.clone()));
-        let record = not_evaluated_record(CheckNumber::C14B, lineage(1), &state)
+        let record = not_evaluated_record(CheckNumber::C14B, occ(1), &state)
             .expect("Failed outcome must yield a record");
         assert!(matches!(record.check(), CheckNumber::C14B));
-        assert_eq!(record.construct(), lineage(1));
+        assert_eq!(record.construct(), occ(1));
+        assert_eq!(record.counterpart(), None);
         assert_eq!(record.blocking().try_eq(&root), Some(true));
+    }
+
+    #[test]
+    fn not_evaluated_record_pairwise_uses_canonical_orientation_and_absent_lineage_is_irrelevant() {
+        // The unit identity is occurrence-based; no LineageId is consulted or
+        // required, so a construct whose lineage would be absent is
+        // structurally irrelevant here.
+        let root = DefectIdentity::unqualified(defect(occ(9), DefectCategory::UnresolvedReference));
+        let state = evaluation_state(PrerequisiteOutcome::Failed(root.clone()));
+        let forward = not_evaluated_record_pairwise(CheckNumber::C9, occ(5), occ(2), &state)
+            .expect("Failed outcome must yield a record");
+        let backward = not_evaluated_record_pairwise(CheckNumber::C9, occ(2), occ(5), &state)
+            .expect("Failed outcome must yield a record");
+        assert_eq!(forward.construct(), occ(2));
+        assert_eq!(forward.counterpart(), Some(occ(5)));
+        assert_eq!(backward.construct(), forward.construct());
+        assert_eq!(backward.counterpart(), forward.counterpart());
     }
 
     // -- Check-6 lineage correlation (Slice 6A integration) --------------

@@ -929,13 +929,6 @@ Each slice is independently authorizable and independently reviewable, one check
 
 **Phase-6 NotEvaluatedRecord unit-identity determination (PBA-0138 / ER-0113, 2026-08-18).** Product Board determination, read-only, no source-writing. **Accepted identity shape:** `construct: OccurrenceId`, `counterpart: Option<OccurrenceId>` — `LineageId` no longer used for this field. Single-construct units: `counterpart = None`, `construct` = the unit's own mandatory, unique occurrence identity. Pairwise units (checks 9, 11-subsumption): reuses §C.7's existing pair-orientation rule verbatim (`construct` = first-sorted member, `counterpart = Some(other member)`) — proven collision-free across all §5.2 suppressible units by adversarial cardinality check. `Discriminator` reuse and synthetic/sentinel identities explicitly ruled out. `blocking: DefectIdentity` and Ruling A/B are unchanged and independent of this determination. **Minimal blast radius identified:** `src/result/mod.rs` (type definition) and `src/checks/prerequisite.rs` (`not_evaluated_record`'s parameter type + two tests) — no other production file affected. **Process status:** this determination states the required semantic amendment (mirroring `first-runnable-slice-contract-r04.md`'s own PROPOSED-stage bootstrap precedent); it does not itself constitute an accepted PBD-0006 contract revision, but is sufficient authority to unblock the bounded `src/result/**` remediation as a separately-authorized next cycle — exactly as PBA-0134/ER-0109 was for Slice 6A/6B. **No `src/**` change in this cycle.**
 
-| Slice | Status |
-|---|---|
-| 6A | **CLOSED (ARR-0046)** |
-| 6B | **IMPLEMENTED — MAJOR-001 resolved by accepted contract Revision 5 (PBR-0017), bounded `src/result/**` remediation pending, then re-review under its own separate ARR** |
-| 6C | NOT STARTED |
-| 6D | NOT STARTED |
-
 **First Runnable Slice Contract Revision 5 authored, PROPOSED (PBA-0139 / ER-0114, 2026-08-18).** New `docs/engineering/first-runnable-slice-contract-r05.md` under PBD-0006's successor model — names predecessor `first-runnable-slice-contract-r04.md` (accepted PBR-0016), never rewrites it. Enumerates only the §A surface (`NotEvaluatedRecord.construct: LineageId → OccurrenceId`, new `counterpart: Option<OccurrenceId>`, per the PBA-0138/ER-0113 determination) and states, with proof, that the whole of Revision 4 is incorporated unchanged otherwise (§B).
 
 **r05 bounded review-remediation (PBA-0140 / ER-0115, 2026-08-18).** Corrected a false `ARR-0047` historical citation and relettered §F/§G to §A/§B for internal consistency; amendment semantics unchanged.
@@ -944,7 +937,16 @@ Each slice is independently authorizable and independently reviewable, one check
 
 **r05 ACCEPTED (PBA-0142 / PBR-0017 / ER-0116, 2026-08-18).** `first-runnable-slice-contract-r05.md` is now **ACCEPTED and normative** for the `NotEvaluatedRecord` unit-identity surface; Revision 4 **SUPERSEDED** in governance provenance, its file preserved immutable. `NotEvaluatedRecord.construct: LineageId → OccurrenceId`, new `counterpart: Option<OccurrenceId>` is now accepted contract text — single-unit suppressed evaluations use `counterpart = None`; pairwise checks 9 and 11-subsumption reuse r04 §C.7's pair orientation verbatim. Cardinality (§6.2), blocker/root-blocker semantics, and PBA-0134/ER-0109 Rulings A and B remain explicitly unchanged. **No `src/**` change has occurred in any of these cycles** — the accepted contract text authorizes, but does not itself perform, the bounded `src/result/mod.rs` + `src/checks/prerequisite.rs` remediation.
 
-**Phase 6 is not complete.** Next permitted action: separate authorization of the bounded `NotEvaluatedRecord` result-model source remediation under accepted r05, then independent re-review of Phase-6 Slice 6B under its own ARR. Slice 6B remains open/HOLD; Slice 6C remains NOT STARTED/HOLD.
+**MAJOR-001 bounded source remediation implemented (PBA-0143 / ER-0117, 2026-08-18).** `src/result/mod.rs`: `NotEvaluatedRecord.construct: LineageId → OccurrenceId`, new `counterpart: Option<OccurrenceId>`; `new` (single-unit, `counterpart = None`) and new `pairwise` (canonicalizes an unordered pair by construction via `OccurrenceId`'s existing `Ord`, reusing r04 §C.7's orientation verbatim). `src/checks/prerequisite.rs`: `not_evaluated_record` retyped to `OccurrenceId`; new `not_evaluated_record_pairwise` wrapper. No synthetic identity, no `Discriminator` reuse, no new ordering rule; blocker semantics and Rulings A/B unchanged. Verification: 505 unit (was 502) + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. Frozen surfaces preserved — only the two authorized files changed; zero 6C/6D production leakage (grep-diff confirmed). **MAJOR-001 source remediation COMPLETE; r05 source conformance PASS.**
+
+| Slice | Status |
+|---|---|
+| 6A | **CLOSED (ARR-0046)** |
+| 6B | **IMPLEMENTED — MAJOR-001 source-remediated (PBA-0143/ER-0117) under accepted r05 (PBR-0017), awaiting independent re-review under its own separate ARR** |
+| 6C | NOT STARTED |
+| 6D | NOT STARTED |
+
+**Phase 6 is not complete.** Next permitted action: independent read-only re-review of Phase-6 Slice 6B incorporating accepted r05 and this bounded remediation, under its own separate ARR. Slice 6B remains open/HOLD; Slice 6C remains NOT STARTED/HOLD.
 
 | | |
 |---|---|

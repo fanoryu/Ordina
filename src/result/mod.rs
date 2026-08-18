@@ -28,7 +28,7 @@ pub use identity::{
 };
 pub use verdict::Verdict;
 
-use crate::model::opaque::LineageId;
+use crate::model::opaque::OccurrenceId;
 
 /// The Slice-1 checker-semantics version — Slice Contract §6.2 (ADR-0004 §8).
 ///
@@ -44,23 +44,64 @@ pub enum CheckerSemanticsVersion {
 }
 
 /// One §6.2 not-evaluated record: a check whose evaluation was suppressed for a
-/// construct, naming the blocking defect's identity.
+/// unit of work, naming that unit's identity and the blocking defect's
+/// identity.
+///
+/// Unit identity (First Runnable Slice Contract Revision 5, §A, PBR-0017) is
+/// occurrence-based, never lineage-based — mirroring the same reason Revision
+/// 4 migrated `DefectCore`'s own anchor (§C.4): a construct's lineage may be
+/// absent or duplicated, but its occurrence identity is mandatory and unique.
+/// `construct` names a single-unit suppressed evaluation's own occurrence, or
+/// (for a pairwise-gated unit — checks 9 and 11's subsumption part) the
+/// pair member whose occurrence identity sorts first under the supplied
+/// occurrence order (Revision 4 §C.7's existing canonical pair orientation,
+/// reused verbatim, unmodified). `counterpart` is `None` for a single-unit
+/// evaluation and `Some(other member)` for a pairwise one.
 ///
 /// Phase 4 defines the shape; Phase 6 prerequisite gating populates it. No
 /// suppression is computed here.
 #[derive(Debug, Clone)]
 pub struct NotEvaluatedRecord {
     check: CheckNumber,
-    construct: LineageId,
+    construct: OccurrenceId,
+    counterpart: Option<OccurrenceId>,
     blocking: DefectIdentity,
 }
 
 impl NotEvaluatedRecord {
+    /// A single-unit suppressed evaluation — `counterpart` is `None`.
     #[must_use]
-    pub const fn new(check: CheckNumber, construct: LineageId, blocking: DefectIdentity) -> Self {
+    pub const fn new(
+        check: CheckNumber,
+        construct: OccurrenceId,
+        blocking: DefectIdentity,
+    ) -> Self {
         Self {
             check,
             construct,
+            counterpart: None,
+            blocking,
+        }
+    }
+
+    /// A pairwise suppressed evaluation (checks 9, 11-subsumption) over the
+    /// unordered pair `{a, b}`. Canonicalizes by construction under the
+    /// existing supplied occurrence order (§C.7, unmodified): the member that
+    /// sorts first becomes `construct`, the other becomes `counterpart`, so
+    /// `pairwise(check, a, b, blocking)` and `pairwise(check, b, a, blocking)`
+    /// always produce an identical record.
+    #[must_use]
+    pub fn pairwise(
+        check: CheckNumber,
+        a: OccurrenceId,
+        b: OccurrenceId,
+        blocking: DefectIdentity,
+    ) -> Self {
+        let (construct, counterpart) = if a <= b { (a, b) } else { (b, a) };
+        Self {
+            check,
+            construct,
+            counterpart: Some(counterpart),
             blocking,
         }
     }
@@ -71,8 +112,13 @@ impl NotEvaluatedRecord {
     }
 
     #[must_use]
-    pub const fn construct(&self) -> LineageId {
+    pub const fn construct(&self) -> OccurrenceId {
         self.construct
+    }
+
+    #[must_use]
+    pub const fn counterpart(&self) -> Option<OccurrenceId> {
+        self.counterpart
     }
 
     #[must_use]
@@ -170,18 +216,14 @@ mod tests {
     use super::*;
     use crate::model::opaque::OpaqueValue;
 
-    fn lineage(handle: u64) -> LineageId {
-        LineageId::new(OpaqueValue::new(handle))
-    }
-
     fn occurrence(handle: u64) -> crate::model::opaque::OccurrenceId {
         crate::model::opaque::OccurrenceId::new(OpaqueValue::new(handle))
     }
 
     fn a_defect() -> DefectIdentity {
         // Defect identity anchors on an occurrence (Revision 4 §C.4); the
-        // not-evaluated record below still names its construct by lineage
-        // (Revision 4 §C.11 preserves the not-evaluated representation).
+        // not-evaluated record's own unit identity is occurrence-based too
+        // (Revision 5 §A, PBR-0017).
         DefectIdentity::unqualified(DefectCore::new(
             occurrence(1),
             DefectCategory::TypeMismatch,
@@ -229,10 +271,33 @@ mod tests {
 
     #[test]
     fn not_evaluated_record_names_check_construct_and_blocker() {
-        let record = NotEvaluatedRecord::new(CheckNumber::C11, lineage(3), a_defect());
+        let record = NotEvaluatedRecord::new(CheckNumber::C11, occurrence(3), a_defect());
         assert_eq!(record.check(), CheckNumber::C11);
-        assert_eq!(record.construct(), lineage(3));
+        assert_eq!(record.construct(), occurrence(3));
+        assert_eq!(record.counterpart(), None);
         assert!(matches!(record.blocking(), DefectIdentity::Unqualified(_)));
+    }
+
+    #[test]
+    fn not_evaluated_record_pairwise_canonicalizes_regardless_of_argument_order() {
+        let forward =
+            NotEvaluatedRecord::pairwise(CheckNumber::C9, occurrence(5), occurrence(9), a_defect());
+        let backward =
+            NotEvaluatedRecord::pairwise(CheckNumber::C9, occurrence(9), occurrence(5), a_defect());
+        assert_eq!(forward.construct(), occurrence(5));
+        assert_eq!(forward.counterpart(), Some(occurrence(9)));
+        assert_eq!(backward.construct(), forward.construct());
+        assert_eq!(backward.counterpart(), forward.counterpart());
+    }
+
+    #[test]
+    fn not_evaluated_record_pairwise_distinguishes_distinct_pairs_sharing_a_member() {
+        let ab =
+            NotEvaluatedRecord::pairwise(CheckNumber::C9, occurrence(1), occurrence(2), a_defect());
+        let ac =
+            NotEvaluatedRecord::pairwise(CheckNumber::C9, occurrence(1), occurrence(3), a_defect());
+        assert_eq!(ab.construct(), ac.construct());
+        assert_ne!(ab.counterpart(), ac.counterpart());
     }
 
     #[test]
