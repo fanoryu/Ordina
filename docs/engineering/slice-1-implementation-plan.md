@@ -6,7 +6,8 @@
   CLOSED**, **Phase 5 Slice F CLOSED**, **Phase 5 Slice G CLOSED (independently
   verified under ARR-0041)**, **Phase 5 Check 13A CLOSED (independently verified
   under ARR-0042)**, **Phase 5 Check 13B CLOSED (independently verified under
-  ARR-0043)**, Phases 6–8 not started and **not authorized**
+  ARR-0043)**, **Phase 5 Check 14A CLOSED (independently verified under
+  ARR-0044)**, Phases 6–8 not started and **not authorized**
 - **Authority:** PBA-0040 / PBA-0041; Phase-1 closure under PBA-0048; Phase-2A
   closure under PBA-0054; Phase-2B closure under PBA-0066; Phase-3 closure under
   PBA-0072; Phase-4 closure under PBA-0078
@@ -878,7 +879,9 @@ fmt/check/clippy clean. Prior checks byte-identical; **check 2 frozen and unchan
 **O-4 remains OPEN and prospective**; no Phase-6 machinery. **Check 6 remains pending
 **Check 13B implemented (PBA-0128 / ER-0106, 2026-08-17).** New `src/checks/candidate_derivation_presence.rs`
 + `src/checks/mod.rs` registration. **Check 13B IMPLEMENTED (pending independent review under ARR-0043).**
-**Check 13A CLOSED** (independently verified under ARR-0042). **Check 13B CLOSED** (independently verified under ARR-0043). Remaining: **H (14A+14B)**. Do not start 14A or 14B.
+**Check 13A CLOSED** (independently verified under ARR-0042). **Check 13B CLOSED** (independently verified under ARR-0043).
+
+**Check 14A implemented (PBA-0130 / ER-0107, 2026-08-18).** New `src/checks/derivation_dimension.rs` + `src/checks/mod.rs` registration. Verification: 414 unit + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. **Check 14A CLOSED** (independently verified under ARR-0044 — verdict PASS; one non-blocking MINOR-001, two non-blocking NOTEs; O-4 remains OPEN/prospective; no Phase-6 leakage; frozen surfaces clean). Remaining: **H (14B only)**. Do not start Check 14B without explicit authorization.
 
 ## Phase 6 — Prerequisite gating and not-evaluated metadata
 
