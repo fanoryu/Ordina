@@ -187,9 +187,19 @@ introduces, for Product Board adoption:
   state and invokes translation for a specific, bounded set of authored
   content. Distinct from Trader per-rule confirmation (§9 below), which
   happens *before* submission, per operative rule.
-- **Minted identity** — a lineage identity (ADR-0003 §4 layer 3) newly
-  assigned by translation to a construct that did not previously exist in
-  any prior Strategy revision.
+- **Minted identity** — an umbrella term covering two distinct domains
+  translation assigns, kept separate everywhere except this shared label:
+  - **Minted lineage identity** — a lineage identity (ADR-0003 §4 layer 3)
+    newly assigned by translation to a construct that did not previously
+    exist in any prior Strategy revision (§14.1).
+  - **Minted occurrence identity** — an `OccurrenceId` (Slice Contract
+    Revision 4 §C.1) newly assigned by translation to each construct
+    occurrence it emits (§14.2). Unlike lineage identity, occurrence
+    identity carries no cross-revision continuity and — per **ADR-0007,
+    ACCEPTED** — is categorically outside ADR-0003 §6's canonicalization
+    taxonomy and never participates in revision identity (§13, §14.3).
+  A bare "minted identity" reference elsewhere in this RFC means either or
+  both, as context requires; §14 and §17 always specify which domain applies.
 
 ## 7. Authoring-Input Boundaries
 
@@ -340,8 +350,24 @@ coexist. This RFC establishes the **convergence rule**:
 > Two authoring sessions — regardless of which authoring surface(s) they
 > used — that result in the Trader confirming the **same** set of operative
 > rule content MUST translate to canonical constructs with the **same**
-> canonical semantic form (and therefore, per ADR-0003 §7 I2, the same
-> revision identity).
+> **revision-identity-bearing canonical semantic form** (and therefore, per
+> ADR-0003 §7 I2, the same revision identity).
+
+**Convergence is defined over revision-identity-bearing canonical content
+only, not over checker/conformance-addressing artifacts.** Per **ADR-0007
+(ACCEPTED)**, `OccurrenceId` — the addressing identity §14.2 mints for every
+construct occurrence — is categorically outside ADR-0003 §6's taxonomy and
+never participates in ADR-0003 §7 revision-identity derivation, including its
+supplied opaque/numeric order (ADR-0007 rulings 2–4). The convergence rule
+above therefore does **not** require two sessions to produce identical
+`OccurrenceId` assignments or identical occurrence-handle order — only
+identical revision-identity-bearing content. §14.3's requirement that minted
+occurrence-handle order be a deterministic function of each session's own
+confirmed-submission structure is fully compatible with convergence for
+exactly this reason: two sessions confirming the same operative content in a
+different interaction order may legitimately mint different `OccurrenceId`
+assignments/order without that difference ever reaching, or being required to
+reach, the revision-identity computation this rule protects.
 
 **This is a conformance requirement translation must be architected to
 guarantee — it does not follow automatically from determinism (§12) plus
@@ -542,6 +568,20 @@ fix:
   independent installations (single-Trader, in-process, per PBD-0008)
   unless a later persistence/sync architecture requires it — that
   requirement, if any, is downstream (§24).
+- **Revision-identity consequence (settled by ADR-0007, ACCEPTED).**
+  `OccurrenceId`'s order-supply obligation above governs only the checker's
+  addressing/conformance layer — it has **no bearing on Strategy revision
+  identity**. ADR-0007 rules `OccurrenceId` categorically outside ADR-0003
+  §6's taxonomy and §7's revision-identity computation, including its
+  supplied order (ADR-0007 rulings 2–4). Consequently, this section's
+  submission-order-derivation requirement is a pure translation-fidelity/
+  conformance rule, not an identity rule: two Trader-confirmed sessions with
+  identical revision-identity-bearing content may legitimately mint
+  different `OccurrenceId` order under this section while remaining
+  revision-equivalent under §13. `LineageId`'s CX/cosmetic classification
+  (ADR-0003 §6, unchanged, unreopened by ADR-0007) already established the
+  analogous point for lineage order; ADR-0007 closes the same question for
+  occurrence order with citable, accepted architecture rather than analogy.
 
 ### 14.4 Trader-Invisible by Default
 
@@ -917,18 +957,20 @@ by this RFC:
   or can be composed entirely by a caller from existing public constructors
   plus the existing `run_phase6`/`finalize_phase6` orchestration is left to
   a future implementation-scoping determination.
-- **Whether ADR-0003 §9 already fully covers identity minting.** §14.1
-  (lineage identity) is written as an application of ADR-0003 §9's existing
-  table to the authoring moment specifically, not as new identity
-  architecture. §14.2–§14.3 (occurrence identity and opaque-handle order
-  validity) instead apply `src/model/opaque.rs`/the Slice Contract (a
-  distinct, already-accepted governing authority under PBD-0006's
-  normative-engineering-contract convention, not ADR-0003) to the same
-  moment. A future review should confirm §14 as a whole introduces no
-  identity concept that **neither** ADR-0003 §9 **nor** the Slice Contract
-  already contains — if it does, that would indicate an ADR amendment (via
-  supersession, never edit) or a Slice Contract revision (per PBD-0006) is
-  needed rather than this RFC's product-level restatement.
+- **Whether ADR-0003 §9 already fully covers identity minting — RESOLVED for
+  the revision-identity boundary by ADR-0007 (ACCEPTED).** §14.1 (lineage
+  identity) remains an application of ADR-0003 §9's existing table to the
+  authoring moment, not new identity architecture. §14.2–§14.3 (occurrence
+  identity and opaque-handle order validity) apply `src/model/opaque.rs`/the
+  Slice Contract to the same moment; the question of whether that
+  classification is durable against ADR-0003's own taxonomy — flagged open in
+  earlier drafts of this RFC — is now settled: **ADR-0007** explicitly rules
+  `OccurrenceId` categorically outside ADR-0003 §6/§7, closing the gap via a
+  proper narrow supersession rather than this RFC's own product-level
+  assertion. What remains genuinely open (unaffected by ADR-0007, which
+  decided only the classification question): whether a new intermediate
+  draft/view-model type or new public `ordina` API is required — see the
+  two bullets above, unchanged.
 - **Whether a downstream ADR becomes necessary.** This RFC's own
   determination (§25) is that no new persistent data shape, field, ordering
   rule, or `src/**` change is proposed — but see §25 for the explicit
@@ -959,10 +1001,13 @@ silently decided this without showing its work would itself violate the
   already-accepted architecture; §14.2–§14.3's occurrence-identity and
   order-validity contract is expressed entirely in terms of
   `src/model/opaque.rs`/the Slice Contract's already-accepted, already-
-  existing `OccurrenceId` domain and order-supply requirement. Neither adds
-  a new identity *layer* or *domain* — both apply existing, accepted
-  authority (from two distinct governing documents) to the authoring/
-  translation moment specifically.
+  existing `OccurrenceId` domain and order-supply requirement, with its
+  revision-identity boundary now formally confirmed by **ADR-0007
+  (ACCEPTED)** rather than resting on this RFC's own product-level reading.
+  Neither adds a new identity *layer* or *domain* — both apply existing,
+  accepted authority (from three distinct governing documents — ADR-0003 §9,
+  the Slice Contract, and now ADR-0007) to the authoring/translation moment
+  specifically.
 - §17's hydration contract likewise proposes no new persistent shape: it
   operates entirely on data an already-accepted translation + Well-
   Formedness + canonicalization cycle already produced, read back through
@@ -987,8 +1032,9 @@ silently decided this without showing its work would itself violate the
   §14.1's lineage-minting contract, §14.2's occurrence-minting contract,
   §14.3's order-validity requirement, or §17's hydration contract, in
   practice, require a *new* public `ordina` entry point with its own
-  invariants beyond what ADR-0003 §9 and `src/model/opaque.rs`/the Slice
-  Contract already state, that addition may itself cross the ADR-grade
+  invariants beyond what ADR-0003 §9, `src/model/opaque.rs`/the Slice
+  Contract, and ADR-0007 already state, that addition may itself cross the
+  ADR-grade
   threshold (new production-dependency-free but new normative architecture
   surface) — mirroring how ADR-0006 was required for the desktop toolkit
   despite ADR-0005 §6.2's existing dependency set. This RFC does not
@@ -1008,7 +1054,11 @@ For a future implementation to be judged faithful to this RFC:
    every authoring surface invokes it rather than independently
    reimplementing translation semantics (§13); that implementation is
    deterministic per §12, making §13's convergence rule a direct,
-   testable consequence rather than an assumed one.
+   testable consequence rather than an assumed one; convergence is
+   verified over revision-identity-bearing canonical content — two
+   sessions confirming equivalent operative content in different
+   interaction orders may mint different `OccurrenceId` assignments/order
+   without failing convergence, per **ADR-0007 (ACCEPTED)**.
 2. No authoring draft is ever presented, stored as, or treated as a
    checked, canonical, identity-bearing Strategy (§8).
 3. Every RFC-0001 §7 minimum-contract element reaches an explicit
