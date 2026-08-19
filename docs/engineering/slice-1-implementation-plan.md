@@ -1020,7 +1020,11 @@ algebraic properties, under ADR-0005 §8 and §8.1. Property tests may express
 
 **Phase 8 implemented (PBA-0151 / ER-0125, 2026-08-18).** Panic-safety audit performed first, independently: all four production `.expect()`/`unreachable!()` sites named by the boundary determination confirmed unreachable by any Strategy-constructible input — no source defect found, no `src/**` change. `tests/conformance/main.rs` extended with three new tests: `wholly_undeclared_strategy_yields_unusable_without_panicking`, `absent_evidence_with_populated_referencing_constructs_never_panics`, `all_collections_present_but_empty_never_panics` — each a distinct malformation shape run end-to-end, asserting `Unusable`, never a panic. Determinism reused from Phase 7; `proptest` not added. Verification: 525 unit (unchanged) + 11 integration (was 8) + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean.
 
-**Phase 8: IMPLEMENTED — awaiting independent review (PBA-0151/ER-0125).**
+**Phase 8 independently re-reviewed and CLOSED (ARR-0052, 2026-08-18).** Verdict PASS — Phase 8 independently verified. Panic-safety audit re-verified from source: all four production sites confirmed unreachable, no reachable production panic found. Zero BLOCKER, zero MAJOR, zero MINOR, zero NOTE. Reproduced 525 unit + 11 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. No source or test remediation remains.
+
+**Phase 8: COMPLETE / CLOSED — independently verified under ARR-0052.**
+
+**First Runnable Slice / Slice 1: COMPLETE / CLOSED.** All eight phases (0-8) are independently verified and closed. All §8 conformance obligations demonstrably met; totality and purity confirmed; verification green. No further Slice-1 source or test remediation required.
 
 ---
 
