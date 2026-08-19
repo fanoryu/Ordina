@@ -995,6 +995,10 @@ a slice defined as having none (Slice Contract §2, §7.4).
 
 **Phase 7: REMEDIATED — awaiting independent re-review (PBA-0149/ER-0123).** `permuted_input_order_yields_identical_result` reworked to use two defects whose raw insertion order is opposite their canonical order, with explicit exact-sequence assertions in both directions. New `defect_identity_includes_the_correct_discriminator` asserts the exact `Discriminator::Property(PropertyPosition::new(4))` via the real pipeline. Verification: 525 unit (unchanged) + 8 integration (was 7) + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. No `src/**` change; no API gap.
 
+**Phase 7 independently re-reviewed and CLOSED (ARR-0051, 2026-08-18).** Verdict PASS — Phase-7 independently verified incorporating the bounded remediation. MAJOR-001 and MAJOR-002 both independently confirmed CLOSED (counterexamples hand-traced, not assumed). Full fifteen-dimension re-audit from scratch: all PASS. Obligation 8 satisfied. Zero BLOCKER, zero MAJOR, zero MINOR, zero NOTE. Reproduced 525 unit + 8 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. No source or test remediation remains.
+
+**Phase 7: COMPLETE / CLOSED — independently verified under ARR-0051.** Phase 6 remains COMPLETE.
+
 ## Phase 8 — Acceptance and hardening
 
 | | |
