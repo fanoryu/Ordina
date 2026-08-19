@@ -946,7 +946,7 @@ Each slice is independently authorizable and independently reviewable, one check
 | 6A | **CLOSED (ARR-0046)** |
 | 6B | **CLOSED (ARR-0048)** |
 | 6C | **CLOSED — independently verified under ARR-0049** |
-| 6D | **IMPLEMENTED — AWAITING INDEPENDENT REVIEW (PBA-0146/ER-0120)** |
+| 6D | **CLOSED — independently verified under ARR-0050** |
 
 **Slice 6C implemented (PBA-0144 / ER-0118, 2026-08-18).** `src/checks/orchestration.rs`: `run_phase6` invokes all 17 Phase-5 checks in fixed §5.1 order, threading closed Slice 6A/6B primitives to suppress dependent units into `NotEvaluatedRecord`s instead of evaluating them. Produces a bounded internal `Phase6ExecutionState`, not a final `WellFormednessResult`. Verification: 515 unit (was 505) + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. No 6D leakage; frozen surfaces preserved.
 
@@ -958,7 +958,9 @@ Each slice is independently authorizable and independently reviewable, one check
 
 **Slice 6D implemented (PBA-0146 / ER-0120, 2026-08-18).** `src/checks/finalize.rs`: `finalize_phase6` consumes closed Slice 6C's `Phase6ExecutionState`, applies the existing `canonical_sort` exactly once to the wrapped defects, and constructs `WellFormednessResult::well_formed`/`::unusable` via the existing, unmodified constructors — empty sorted set is WellFormed, non-empty is Unusable with the canonical-first defect split from the remainder. `not_evaluated` carried through byte-identical; not-evaluated presence alone never forces Unusable. No `src/result/**` change. Verification: 525 unit (was 516) + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. No serialization/I/O; frozen surfaces preserved.
 
-**Phase 6 is not complete.** Next permitted action: independent read-only review of Phase-6 Slice 6D under the live next ARR.
+**Slice 6D independently reviewed and CLOSED (ARR-0050, 2026-08-18).** Verdict PASS — Phase-6 Slice 6D independently verified. Zero BLOCKER, zero MAJOR, zero MINOR, zero NOTE. No source remediation remains.
+
+**Phase 6: COMPLETE / CLOSED.** All four defined slices — 6A (fixed-sequence dependency enumeration), 6B (prerequisite evaluation-state and root-blocker propagation), 6C (fixed-sequence orchestration invoking all 17 Phase-5 checks), 6D (final canonical defect aggregation, not-evaluated collection, and `WellFormednessResult`/`Verdict` assembly) — are each independently verified and CLOSED (ARR-0046, ARR-0048, ARR-0049, ARR-0050 respectively). This is the plan's own complete slice table (§903-916) — no other Phase-6 slice or obligation remains open. No further Phase-6 source work required.
 
 | | |
 |---|---|
