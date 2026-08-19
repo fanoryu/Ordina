@@ -945,12 +945,16 @@ Each slice is independently authorizable and independently reviewable, one check
 |---|---|
 | 6A | **CLOSED (ARR-0046)** |
 | 6B | **CLOSED (ARR-0048)** |
-| 6C | **IMPLEMENTED — AWAITING INDEPENDENT REVIEW (PBA-0144/ER-0118)** |
+| 6C | **IMPLEMENTED — MAJOR-001 REMEDIATED — AWAITING INDEPENDENT RE-REVIEW (PBA-0144/ER-0118, PBA-0145/ER-0119)** |
 | 6D | NOT STARTED |
 
 **Slice 6C implemented (PBA-0144 / ER-0118, 2026-08-18).** `src/checks/orchestration.rs`: `run_phase6` invokes all 17 Phase-5 checks in fixed §5.1 order, threading closed Slice 6A/6B primitives to suppress dependent units into `NotEvaluatedRecord`s instead of evaluating them. Produces a bounded internal `Phase6ExecutionState`, not a final `WellFormednessResult`. Verification: 515 unit (was 505) + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. No 6D leakage; frozen surfaces preserved.
 
-**Phase 6 is not complete.** Next permitted action: independent read-only review of Phase-6 Slice 6C under the live next ARR.
+**Slice 6C independently reviewed — FAIL, bounded remediation required.** MAJOR-001: Check 13A's own §5.2 prerequisite edge (check 2 on that derivation) was not represented in the not-evaluated set.
+
+**MAJOR-001 remediated (PBA-0145 / ER-0119, 2026-08-18).** `src/checks/orchestration.rs::check_14a_with_states` now also returns the per-derivation check-2 `EvaluationState` it already computes for 14A's own gate, and a new `push_derivation_13a_not_evaluated` emits the corresponding `NotEvaluatedRecord` for `CheckNumber::C13A`. No new correlation logic; blocker identity and r05 single-unit shape reused verbatim from the same `outcome_2` 14A already inherits. Verification: 516 unit (was 515) + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. Frozen surfaces preserved; no 6D leakage.
+
+**Phase 6 is not complete.** Next permitted action: independent read-only re-review of remediated Phase-6 Slice 6C under the live next ARR.
 
 | | |
 |---|---|

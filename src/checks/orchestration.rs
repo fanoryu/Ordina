@@ -59,7 +59,7 @@ use crate::checks::semantic_model_version::check_16;
 use crate::model::declared::Declared;
 use crate::model::derivation::CandidateRole;
 use crate::model::guard::Guard;
-use crate::model::opaque::VersionToken;
+use crate::model::opaque::{OccurrenceId, VersionToken};
 use crate::model::strategy::Strategy;
 use crate::result::NotEvaluatedRecord;
 use crate::result::category::CheckNumber;
@@ -155,10 +155,14 @@ pub fn run_phase6(
     state.push_defects(check13b.clone());
 
     // Check 14A — per-derivation dimensional consistency. §5.2: 13A on that
-    // derivation + check 2 on its leaves.
-    let (check14a, derivation_states) =
+    // derivation + check 2 on its leaves. This also realizes 13A's own §5.2
+    // prerequisite edge (check 2 on that derivation): `check13a_states`,
+    // computed from the same already-computed `outcome_2` used for 14A's
+    // gate, is recorded below via `push_derivation_13a_not_evaluated`.
+    let (check14a, derivation_states, check13a_states) =
         check_14a_with_states(strategy, binding, &check1, &check2, &check13a);
     state.push_defects(check14a.clone());
+    push_derivation_13a_not_evaluated(&mut state, &check13a_states);
     push_derivation_14a_not_evaluated(&mut state, strategy, &derivation_states);
 
     // Check 14B — cross-derivation agreement. §5.2: 13B + 14A on all three
@@ -274,6 +278,11 @@ fn push_direction_rule_pairwise_not_evaluated(
 // Check 14A — 13A on the derivation + check 2 on its leaves.
 // ---------------------------------------------------------------------------
 
+/// Per-derivation `EvaluationState` for one check, keyed by the derivation's
+/// role (14A, role-addressed by 14B) or occurrence (13A, single-construct).
+type RoleStates = Vec<(CandidateRole, EvaluationState)>;
+type OccurrenceStates = Vec<(OccurrenceId, EvaluationState)>;
+
 /// The `EvaluationState` of every *present* candidate derivation's check-14A
 /// unit, alongside 14A's own (self-gated) defect output. Returned states are
 /// reused by the 14B correlation below (Ruling A transitive propagation —
@@ -284,11 +293,14 @@ fn check_14a_with_states(
     check1: &[DefectCore],
     check2: &[DefectCore],
     check13a: &[DefectCore],
-) -> (Vec<DefectCore>, Vec<(CandidateRole, EvaluationState)>) {
+) -> (Vec<DefectCore>, RoleStates, OccurrenceStates) {
     let defects = check_14a(strategy, binding);
     let mut states = Vec::new();
+    // Check 13A's own §5.2 prerequisite edge: check 2 on that derivation.
+    // Keyed by occurrence (13A is single-construct, no role needed).
+    let mut check13a_states = Vec::new();
     let Declared::Present(derivations) = &strategy.candidate_derivations else {
-        return (defects, states);
+        return (defects, states, check13a_states);
     };
     for derivation in derivations {
         let Declared::Present(role) = derivation.role else {
@@ -309,10 +321,21 @@ fn check_14a_with_states(
         // check 1 on the referencing construct is folded into 13A's own
         // computability (13A requires check 1 on that derivation).
         let _ = check1;
+        check13a_states.push((derivation.occurrence, evaluation_state(outcome_2.clone())));
         let combined = conjunction([outcome_13a, outcome_2]);
         states.push((role, evaluation_state(combined)));
     }
-    (defects, states)
+    (defects, states, check13a_states)
+}
+
+fn push_derivation_13a_not_evaluated(
+    state: &mut Phase6ExecutionState,
+    check13a_states: &[(OccurrenceId, EvaluationState)],
+) {
+    for (occurrence, eval) in check13a_states {
+        let record = not_evaluated_record(CheckNumber::C13A, *occurrence, eval);
+        state.push_record(record);
+    }
 }
 
 fn push_derivation_14a_not_evaluated(
@@ -729,6 +752,66 @@ mod tests {
             record_14b.blocking().try_eq(record_14a.blocking()),
             Some(true),
             "14B's root blocker must be the same identity inherited from 14A, never re-derived"
+        );
+    }
+
+    // -- Check-2 defect also suppresses its own 13A unit (MAJOR-001) --------
+
+    #[test]
+    fn a_check_2_unresolved_reference_suppresses_13a_for_that_derivation_with_the_same_root_blocker()
+     {
+        let mut strategy = clean_strategy();
+        // Same fixture as the 14A suppression test above: ENTRY references a
+        // nonexistent evidence lineage, producing an UNRESOLVED_REFERENCE
+        // anchored on the ENTRY derivation's own occurrence.
+        if let Declared::Present(derivations) = &mut strategy.candidate_derivations {
+            for derivation in derivations.iter_mut() {
+                if derivation.role == Declared::Present(CandidateRole::Entry) {
+                    derivation.expression =
+                        Declared::Present(DerivationExpression::EvidenceReference(lineage(999)));
+                }
+            }
+        }
+
+        let state = run_phase6(&strategy, &binding(), supported());
+
+        let record_13a = state
+            .not_evaluated
+            .iter()
+            .find(|r| matches!(r.check(), CheckNumber::C13A) && r.construct() == occ(500))
+            .expect("13A must be not-evaluated for ENTRY (check 2 on that derivation)");
+        assert_eq!(record_13a.counterpart(), None);
+
+        // STOP_LOSS's own 13A unit is unaffected — unrelated derivations
+        // continue evaluating normally.
+        assert!(
+            !state
+                .not_evaluated
+                .iter()
+                .any(|r| matches!(r.check(), CheckNumber::C13A) && r.construct() == occ(501))
+        );
+
+        // The blocker is the real check-2 root blocker — same identity as
+        // the one 14A inherits for the same derivation, never re-derived.
+        let record_14a = state
+            .not_evaluated
+            .iter()
+            .find(|r| matches!(r.check(), CheckNumber::C14A) && r.construct() == occ(500))
+            .expect("14A must be not-evaluated for ENTRY");
+        assert_eq!(
+            record_13a.blocking().try_eq(record_14a.blocking()),
+            Some(true),
+            "13A's root blocker must be the same check-2 identity 14A inherits, never re-derived"
+        );
+
+        // No duplicate C13A record is emitted for the same derivation.
+        assert_eq!(
+            state
+                .not_evaluated
+                .iter()
+                .filter(|r| matches!(r.check(), CheckNumber::C13A) && r.construct() == occ(500))
+                .count(),
+            1
         );
     }
 
