@@ -93,6 +93,7 @@ pub mod direction_conflict;
 pub mod direction_coverage;
 pub mod direction_determinism;
 pub mod evidence_integrity;
+pub mod finalize;
 pub mod guard_analysis;
 pub mod operative_provenance;
 pub mod orchestration;

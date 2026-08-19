@@ -946,7 +946,7 @@ Each slice is independently authorizable and independently reviewable, one check
 | 6A | **CLOSED (ARR-0046)** |
 | 6B | **CLOSED (ARR-0048)** |
 | 6C | **CLOSED — independently verified under ARR-0049** |
-| 6D | **AUTHORIZED — NOT STARTED (PBA-0146)** |
+| 6D | **IMPLEMENTED — AWAITING INDEPENDENT REVIEW (PBA-0146/ER-0120)** |
 
 **Slice 6C implemented (PBA-0144 / ER-0118, 2026-08-18).** `src/checks/orchestration.rs`: `run_phase6` invokes all 17 Phase-5 checks in fixed §5.1 order, threading closed Slice 6A/6B primitives to suppress dependent units into `NotEvaluatedRecord`s instead of evaluating them. Produces a bounded internal `Phase6ExecutionState`, not a final `WellFormednessResult`. Verification: 515 unit (was 505) + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. No 6D leakage; frozen surfaces preserved.
 
@@ -956,7 +956,9 @@ Each slice is independently authorizable and independently reviewable, one check
 
 **Slice 6C independently re-reviewed and CLOSED (ARR-0049, 2026-08-18).** Verdict PASS — Phase-6 Slice 6C independently verified incorporating the bounded MAJOR-001 remediation (PBA-0145/ER-0119). MAJOR-001 CLOSED. Zero BLOCKER, zero MAJOR, zero MINOR, zero NOTE outstanding. Reproduced 516 unit + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. No source remediation remains.
 
-**Phase 6 is not complete.** Next permitted action: implement Phase-6 Slice 6D under authorization PBA-0146.
+**Slice 6D implemented (PBA-0146 / ER-0120, 2026-08-18).** `src/checks/finalize.rs`: `finalize_phase6` consumes closed Slice 6C's `Phase6ExecutionState`, applies the existing `canonical_sort` exactly once to the wrapped defects, and constructs `WellFormednessResult::well_formed`/`::unusable` via the existing, unmodified constructors — empty sorted set is WellFormed, non-empty is Unusable with the canonical-first defect split from the remainder. `not_evaluated` carried through byte-identical; not-evaluated presence alone never forces Unusable. No `src/result/**` change. Verification: 525 unit (was 516) + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. No serialization/I/O; frozen surfaces preserved.
+
+**Phase 6 is not complete.** Next permitted action: independent read-only review of Phase-6 Slice 6D under the live next ARR.
 
 | | |
 |---|---|
