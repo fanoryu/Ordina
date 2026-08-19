@@ -946,7 +946,7 @@ Each slice is independently authorizable and independently reviewable, one check
 | 6A | **CLOSED (ARR-0046)** |
 | 6B | **CLOSED (ARR-0048)** |
 | 6C | **CLOSED — independently verified under ARR-0049** |
-| 6D | **NOT STARTED — READY FOR SEPARATE AUTHORIZATION** |
+| 6D | **AUTHORIZED — NOT STARTED (PBA-0146)** |
 
 **Slice 6C implemented (PBA-0144 / ER-0118, 2026-08-18).** `src/checks/orchestration.rs`: `run_phase6` invokes all 17 Phase-5 checks in fixed §5.1 order, threading closed Slice 6A/6B primitives to suppress dependent units into `NotEvaluatedRecord`s instead of evaluating them. Produces a bounded internal `Phase6ExecutionState`, not a final `WellFormednessResult`. Verification: 515 unit (was 505) + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. No 6D leakage; frozen surfaces preserved.
 
@@ -956,7 +956,7 @@ Each slice is independently authorizable and independently reviewable, one check
 
 **Slice 6C independently re-reviewed and CLOSED (ARR-0049, 2026-08-18).** Verdict PASS — Phase-6 Slice 6C independently verified incorporating the bounded MAJOR-001 remediation (PBA-0145/ER-0119). MAJOR-001 CLOSED. Zero BLOCKER, zero MAJOR, zero MINOR, zero NOTE outstanding. Reproduced 516 unit + 1 integration + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. No source remediation remains.
 
-**Phase 6 is not complete.** Next permitted action: separate authorization of Phase-6 Slice 6D.
+**Phase 6 is not complete.** Next permitted action: implement Phase-6 Slice 6D under authorization PBA-0146.
 
 | | |
 |---|---|
