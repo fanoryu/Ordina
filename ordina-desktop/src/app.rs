@@ -1,33 +1,36 @@
-//! N-22-A top-level application state — diagnosis-only (PBA-0156).
+//! N-22-B-2 top-level application state — the desktop correction loop
+//! (PBA-0168).
 //!
-//! There is exactly one state in N-22-A's scope: a Trader is shown the
-//! diagnosis for one already-computed `WellFormednessResult`. A "re-check"
-//! or "awaiting re-check" state is deliberately **not** modeled here — RFC-
-//! 0003 §9.7 stage 3's re-submission only makes sense once an edit surface
-//! exists to re-submit *from*, and that surface is N-22-B, blocked on N-25
-//! (see PBA-0156's explicit exclusions). Adding an unreachable state now
-//! would be inventing behavior this authorization does not cover.
+//! Extends N-22-A's diagnosis-only surface into RFC-0004's full local
+//! correction workflow: a Trader is shown a diagnosis and may edit, confirm,
+//! submit, and re-check the Strategy (§16/§17/§19). The correction logic itself
+//! lives entirely in the pure `correction`/`draft`/`hydrate`/`translate`
+//! modules; this struct only owns the [`CorrectionSession`] across frames and
+//! delegates rendering to `correction_view` (which reuses N-22-A's
+//! `diagnosis_view` unchanged for the diagnosis portion).
 
 use eframe::egui;
-use ordina::result::WellFormednessResult;
 
-use crate::view_model::DiagnosisViewModel;
+use crate::correction::CorrectionSession;
 
 pub struct App {
-    view_model: DiagnosisViewModel,
+    session: CorrectionSession,
+    /// The most recent Trader-facing status line (last action's outcome).
+    last_message: String,
 }
 
 impl App {
     #[must_use]
-    pub fn new(result: &WellFormednessResult) -> Self {
+    pub fn new(session: CorrectionSession) -> Self {
         Self {
-            view_model: DiagnosisViewModel::from_result(result),
+            session,
+            last_message: String::new(),
         }
     }
 }
 
 impl eframe::App for App {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        crate::diagnosis_view::show(ui, &self.view_model);
+        crate::correction_view::show(ui, &mut self.session, &mut self.last_message);
     }
 }
