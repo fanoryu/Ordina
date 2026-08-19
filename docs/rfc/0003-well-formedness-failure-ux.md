@@ -1,11 +1,14 @@
 # RFC-0003: Well-Formedness-Failure UX
 
-- **Status:** PROPOSED
+- **Status:** ACCEPTED
 - **Author:** Principal Engineer
 - **Created:** 2026-08-19
-- **Decision date:** —
-- **Authorizing artifact:** PBA-0152 (2026-08-18; "N-22 RFC Drafting authorization"), under the **PBD-0007** post-Slice-1 roadmap-direction record ("Post-Slice-1 Roadmap Direction — N-22 Selected")
+- **Decision date:** 2026-08-19
+- **Accepted by:** Product Board, PBR-0018
+- **Authorizing artifact:** PBA-0152 (2026-08-18; "N-22 RFC Drafting authorization"), under the **PBD-0007** post-Slice-1 roadmap-direction record ("Post-Slice-1 Roadmap Direction — N-22 Selected"); PBA-0153 (acceptance)
+- **Review:** ARR-0053 (PASS — RFC-0003 INDEPENDENTLY VERIFIED; zero BLOCKER, zero MAJOR; one non-blocking MINOR (§9.7 stage-3 re-submission trigger/timing ambiguity); one non-blocking NOTE (transient re-evaluation UX state unspecified); remediation required: NO)
 - **Originating source:** RFC-0001 §12 (Strategy Well-Formedness), §19 (N-22 opened), §21, §23
+- **N-22 implementation authorization:** NOT AUTHORIZED by this acceptance. A separate implementation-authorization cycle is required.
 
 > **Subordinate to** Product Constitution **v1.0 — ACTIVE — RATIFIED** and to the
 > applicable Tier-2 Product Specifications: `ux-constitution.md`,
