@@ -30,9 +30,21 @@ Also: `docs/product/open-questions.md`, `docs/product/risk-register.md`,
    and an ADR.
 5. **Never skip to implementation.** Discussion → RFC → Decision → ADR → Plan →
    Implementation → Review → Docs.
-6. **Do not ratify any document**, and **do not create an ADR to ratify or amend
-   the Product Constitution.** Ratification is product governance, not an
-   architecture decision (Constitution §9).
+6. **Do not independently ratify or accept any document.**
+   Ratification and acceptance decisions are reserved to the human Product Owner / Product Board.
+
+   Claude MAY mechanically record and synchronize a ratification or acceptance decision only when the human Product Owner has explicitly made that decision in the current conversation.
+
+   In that case, Claude may update document status, governance ledger, roadmap/status records, allocators, and related provenance, and may commit/push those synchronization changes when explicitly authorized.
+
+   Claude MUST NOT:
+   - infer acceptance from review readiness or a PASS review;
+   - self-authorize ratification or acceptance;
+   - change PROPOSED to ACCEPTED without an explicit human Product Owner decision;
+   - resolve outstanding findings or Product Board dispositions on behalf of the Product Owner;
+   - create an ADR merely to ratify or amend the Product Constitution.
+
+   Ratification remains product governance, not an architecture decision (Constitution §9).
 7. **The Constitution is v1.0 ACTIVE — RATIFIED (POR-0001).** It is now binding.
    Changes to product identity, boundaries, principles, or C1–C10 require the
    formal amendment process with explicit Product Owner sign-off; ADRs cannot
