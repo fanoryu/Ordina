@@ -1,9 +1,15 @@
 # RFC-0004: Authoring-to-Canonical Translation Contract
 
-- **Status:** PROPOSED
+- **Status:** ACCEPTED
 - **Author:** Principal Engineer
 - **Created:** 2026-08-19
-- **Decision date:** —
+- **Decision date:** 2026-08-19
+- **Accepted by:** Product Board, PBR-0021
+- **Acceptance provenance:** PBA-0166 (acceptance authorization) → PBR-0021
+  (Product Board acceptance) → ER-0138 (acceptance synchronization report),
+  citing ARR-0057 (independent final re-review, PASS; 0 BLOCKER, 0 MAJOR, 1
+  non-blocking MINOR — preserved, not remediated by this acceptance) and
+  ACCEPTED ADR-0007 as governing authority for §13/§14.2/§14.3
 - **Authorizing artifact:** PBA-0158 ("N-25 RFC Drafting Authorization"), under
   the **PBD-0007** post-Slice-1 roadmap-direction record, following N-22-A
   CLOSED/COMPLETE (ARR-0055) and N-22-B's block on this RFC
