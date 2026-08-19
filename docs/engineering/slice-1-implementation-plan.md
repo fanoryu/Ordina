@@ -1014,6 +1014,10 @@ a slice defined as having none (Slice Contract §2, §7.4).
 algebraic properties, under ADR-0005 §8 and §8.1. Property tests may express
 **only** properties already derivable from the accepted contract.
 
+**Boundary determination (PBA-0150 / ER-0124, 2026-08-18).** Product Board determination, read-only, no source-writing. Ruling A: `Modules: all` designates the audit target, not blanket `src/**` authorization — default test/audit-only; any genuine defect found requires its own separate bounded remediation. Ruling B: Obligation 8 requires two implementations; Slice 1 has one — ARR-0051's "satisfied" is understood as the observable-equivalence instrument (Phase 7's suite) being complete, not a completed two-implementation comparison; no second implementation is required or authorized. Ruling C: a ten-dimension matrix; the only genuinely new work is (2) a documented panic-safety audit of four production-path `.expect()`/`unreachable!()` sites (`src/result/identity.rs:224`, `src/result/discriminator.rs:283`, `src/checks/finalize.rs:55`, `src/checks/guard_analysis.rs:182`, each currently argued-safe by invariant, not type-proven) and (5) extending `tests/conformance/**` with maximally-malformed fixtures (including `Strategy::wholly_undeclared`, never yet run end-to-end) asserting `Unusable`, never a panic. Ruling D: one bounded implementation cycle, `tests/**` writable surface by default, no Phase-6-style sub-slicing. Ruling E: `proptest` optional, not required for this bounded scope, deferred. **Governance ruling: Phase-8 boundary questions closed.**
+
+**Phase 8: NOT STARTED — READY FOR SEPARATE AUTHORIZATION (PBA-0150/ER-0124).**
+
 ---
 
 ## Out of scope for every phase
