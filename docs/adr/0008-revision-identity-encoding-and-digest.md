@@ -16,8 +16,9 @@
   applied here); RFC-0004 (ACCEPTED, PBR-0021 — authoring/translation semantics
   and revision-identity-bearing convergence, unaffected); PBA-0169 (drafting
   authorization); PBA-0170 (first bounded remediation authorization); PBA-0171
-  (second bounded remediation authorization, closing findings from the
-  independent re-review of the first remediation)
+  (second bounded remediation authorization); PBA-0172 (third bounded
+  remediation authorization, closing the sole finding from the independent
+  final re-review of the second remediation)
 
 - **Remediation (PBA-0170):** the first remediation cycle addressed 2 BLOCKER
   (missing canonical field/tag registry; fixed-width rational encoding
@@ -34,6 +35,17 @@
   despite this ADR's own totality claim) — both remediated in this revision.
   Appendix Table B (`Strategy`) was independently re-verified against
   `required_property.rs`'s `check_1` and confirmed correct, unchanged.
+
+- **Third remediation (PBA-0172):** independent final re-review of the second
+  remediation found the "fixed 4-byte `u32`" defect had been replaced with a
+  structurally identical defect at a different scale — a single fixed byte
+  `L` (`0 < L ≤ 255`) still capped the length-of-magnitude value, falsifying
+  the ADR's own "for any reason, ever" totality claim. §2a's length grammar is
+  replaced outright with a Canonical Unsigned Length Varint (CULV) — a
+  base-128, continuation-bit, self-delimiting encoding with no fixed-width
+  field of any kind, fully specified normatively rather than referenced
+  externally. Tag `0x10` is re-stated completely; a totality proof is added
+  distinguishing semantic encodability from practical resource availability.
 
 ## Context
 
@@ -147,7 +159,7 @@ preimages without sharing code. Every value is encoded as `(tag: u8, payload)`:
 | `0x0D` | `DeclaredCategory::OutOfDomain` | none — zero-length |
 | `0x0E` | `Literal` tagged union | 1-byte variant tag (`0`=`Numeric{value, dimension}` → tag-`0x04` frame + tag-`0x07` frame; `1`=`Boolean(bool)` → tag-`0x06` frame; `2`=`Enum(EnumValue)` → tag-`0x07` frame) |
 | `0x0F` | `DerivationExpression` tagged union (recursive) | 1-byte variant tag (`0`=`Literal(Literal)`→ tag-`0x0E` frame; `1`=`EvidenceReference(LineageId)`→ tag-`0x07` frame; `2`=`ConfigurationReference(LineageId)`→ tag-`0x07` frame; `3`=`Add{left,right}`→ two nested tag-`0x0F` frames; `4`=`Subtract{left,right}`→ two nested tag-`0x0F` frames; `5`=`Multiply{operand,scalar}`→ one nested tag-`0x0F` frame + one tag-`0x0E` frame) |
-| `0x10` | Canonical arbitrary-precision `BigInt` (§2a) | 1-byte sign (`0`=zero, `1`=positive, `2`=negative) + [if non-zero] self-delimiting arbitrary-precision length prefix (§2a) + minimal big-endian magnitude bytes (no leading zero byte) — no fixed-width ceiling, total over the entire `BigInt` domain |
+| `0x10` | Canonical arbitrary-precision `BigInt` (§2a) | 1-byte sign (`0`=zero, `1`=positive, `2`=negative) + [if non-zero] magnitude byte-count as a **CULV** (§2a — no fixed-width field, genuinely unbounded) + minimal big-endian magnitude bytes (no leading zero byte) |
 | `0x11` | Closed-category enum (Appendix Table I; every model enum — `ConditionClassification`, `Direction`, `ComparisonOperator`, `EvidenceTypeTag`, `CandidateRole`) | 1-byte **ADR-fixed semantic tag** (§2b) — never a Rust discriminant, never a variant-name string |
 
 Rules that eliminate ambiguity across the list above, applying uniformly:
@@ -206,46 +218,124 @@ Rules that eliminate ambiguity across the list above, applying uniformly:
 
 #### 2a. Canonical arbitrary-precision integer and rational encoding (BLOCKER-2)
 
-Tag `0x10` (`BigInt`) is defined precisely enough to be injective over the
-entire domain `num_bigint::BigInt` admits:
+**Historical note (not normative):** an earlier revision of this section used
+a fixed 4-byte `u32` magnitude-byte-length, then (second remediation) a
+single fixed byte `L` (`0 < L ≤ 255`) bounding the byte-length of the
+length-of-magnitude value. Independent re-review found the second scheme
+still finite — merely a much larger, but still fixed, ceiling — falsifying
+this ADR's own totality claim. **Neither design is normative below.** The
+definition in this section replaces both outright with a length encoding
+that has no fixed-width field anywhere in its own structure.
 
-- **Sign byte:** `0` for zero, `1` for strictly positive, `2` for strictly
-  negative — never inferred from magnitude, never a two's-complement scheme.
-- **Zero** has exactly one representation: sign byte `0`, no length prefix, no
-  magnitude bytes (the magnitude is definitionally empty and is never
-  separately encoded).
-- **Magnitude** (non-zero only): a **self-delimiting arbitrary-precision
-  length prefix**, followed by that many big-endian magnitude bytes — the
-  magnitude itself is the **minimal** encoding (no leading zero byte; the
-  most-significant byte is always non-zero). This eliminates leading-zero
-  ambiguity and gives every non-zero magnitude exactly one encoding.
-- **The length prefix itself is total, not fixed-width, and self-delimiting**
-  — this is a direct architectural correction from this ADR's prior revision,
-  which used a fixed 4-byte `u32` byte-length and thereby imposed an
-  unstated ~4.29 GiB ceiling on magnitude size, contradicting Slice Contract
-  §4.2's explicit "no minimum or maximum magnitude" and this ADR's own
-  totality claim (found during independent re-review). The corrected scheme:
-  1 byte `L` (`0 < L ≤ 255`) giving the byte-length of the **length-of-
-  magnitude** value that follows, then `L` big-endian bytes encoding that
-  length-of-magnitude value (itself minimal — no leading zero byte, the same
-  minimality rule applied one level up), then the magnitude's own bytes at
-  that stated length. `L` is never `0` when a magnitude follows (a non-zero
-  sign always has a magnitude of at least one byte, so its length is always
-  at least `1`, which itself needs at least one byte, `L ≥ 1`) — this keeps
-  `L = 0` structurally impossible to produce for a well-formed encoding,
-  rather than a state requiring a separate error path. `L`'s own domain
-  (1–255) permits length-of-magnitude values up to `2^(255·8) - 1` bytes —
-  a magnitude size no realistic or even deliberately adversarial Strategy
-  construction can approach, while remaining, unlike the prior `u32` scheme,
-  **architecturally unbounded**: no `BigInt` the typed model can hold is
-  excluded by this encoding, for any reason, ever. A magnitude requiring more
-  than 255 bytes just to state *its own length* is not a case this encoding
-  fails on; it is a case that cannot arise from any process that terminates,
-  which is a resource-exhaustion property of computation in general, not a
-  semantic limit this ADR imposes (§10).
-- **No platform-width dependency, no truncation path, and no artificial
-  ceiling:** every `BigInt` the typed model can hold has exactly one,
-  well-defined encoding, unconditionally.
+**Canonical Unsigned Length Varint (CULV)** — the length primitive used
+everywhere a length/count needs to be genuinely unbounded (here, `0x10`'s
+magnitude-byte-length). Base-128, continuation-bit, big-endian-digit-order,
+fully self-contained — no external LEB128/protobuf specification is assumed
+or required; every rule is stated here in full:
+
+- Every non-negative integer `n` is encoded as one or more octets. Each octet
+  carries **7 payload bits** in its low-order bits; **bit 7 (the high bit) is
+  the continuation bit**: `1` means "another octet follows," `0` means "this
+  is the final octet."
+- The integer's binary representation is split into 7-bit groups; groups are
+  emitted **most-significant group first** (unlike LEB128's traditional
+  least-significant-first order — chosen here specifically so no reader
+  needs to buffer the whole varint before knowing its numeric value's
+  leading digits, and so it composes uniformly with this ADR's existing
+  big-endian convention for every other multi-byte field). Every octet
+  except the last has its continuation bit set to `1`; the last has it set
+  to `0`.
+- **Zero** has exactly one encoding: a single octet `0x00` (continuation bit
+  `0`, all seven payload bits `0`).
+- **Minimality (canonical form):** the encoding uses the fewest octets that
+  can represent `n` — equivalently, the first (most-significant) emitted
+  7-bit group is never `0000000` unless it is also the only group (i.e., `n
+  = 0`). A decoder encountering a leading all-zero payload group followed by
+  a continuation bit of `1` (a redundant leading-zero group) has received a
+  **non-canonical, invalid** encoding and must reject it — this is the
+  varint-level analogue of `0x10`'s own "no leading zero byte" magnitude
+  rule, applied one level down.
+- **Termination:** an octet sequence that ends without ever emitting a
+  continuation bit of `0` (i.e., truncated input) is invalid and must be
+  rejected — never interpreted as a partial or default value.
+- **No fixed maximum octet count.** Nothing in this grammar states or implies
+  an upper bound on how many 7-bit groups a CULV may contain — an
+  arbitrarily large `n` is represented by an arbitrarily long (but always
+  finite, for any finite `n`) sequence of continuation-bit-`1` octets
+  followed by exactly one continuation-bit-`0` octet. This is the property
+  that makes CULV genuinely unbounded, as opposed to §2a's two prior,
+  rejected designs, both of which capped the *number of length-describing
+  bytes* at a fixed constant.
+
+**Concrete boundary examples**, worked through explicitly:
+
+| `n` | Binary | 7-bit groups (MSB-first) | CULV octets (hex) |
+|---|---|---|---|
+| `0` | `0` | `0000000` | `00` |
+| `1` | `1` | `0000001` | `01` |
+| `127` | `1111111` | `1111111` | `7F` |
+| `128` | `10000000` | `0000001`, `0000000` | `81 00` |
+| `255` | `11111111` | `0000001`, `1111111` | `81 7F` |
+| `256` | `100000000` | `0000010`, `0000000` | `82 00` |
+| `u32::MAX` (`4294967295`) | 32 ones | `0001111`, `1111111`, `1111111`, `1111111`, `1111111` | `8F FF FF FF 7F` |
+| `u32::MAX + 1` (`4294967296`, i.e. `2^32`) | `1` followed by 32 zeros (33 bits) | padded to 35 bits (`001` + 32 zeros); groups `0010000`, then four `0000000` | `90 80 80 80 00` |
+| `u64::MAX` (`18446744073709551615`) | 64 ones | padded to 70 bits (`000000` + 64 ones); groups `0000001`, then nine `1111111` | `81 FF FF FF FF FF FF FF FF 7F` |
+| `u64::MAX + 1` (i.e. `2^64`) | `1` followed by 64 zeros (65 bits) | padded to 70 bits (`00000` + 65 bits); groups `0000010`, then nine `0000000` | `82 80 80 80 80 80 80 80 80 00` |
+
+(Every row above was hand-decomposed into 7-bit groups directly from its
+binary form, per the grammar stated above — pad the value's own binary
+representation on the left with the minimum number of zero bits needed to
+reach a multiple of 7, split into 7-bit groups most-significant first, then
+emit one octet per group with the continuation bit set on every group except
+the last. No row required consulting an external spec to derive; each is
+independently reproducible from this paragraph alone.)
+
+This grammar extends to **every finite non-negative integer** without
+introducing another fixed outer bound, because nothing above names a maximum
+octet count — the encoding procedure (split into 7-bit groups, emit
+most-significant-first, set continuation bits, stop after the last group) is
+defined purely in terms of `n`'s own binary length, which is finite for every
+finite `n` and has no ceiling the grammar itself imposes.
+
+**Tag `0x10` (`BigInt`), fully re-stated:**
+
+1. **Sign octet:** `0` = zero, `1` = strictly positive, `2` = strictly
+   negative — never inferred from magnitude, never two's-complement.
+2. **Zero** has exactly one representation: sign octet `0`, nothing further
+   (no length, no magnitude bytes).
+3. **Magnitude** (non-zero only): the magnitude's **minimal** big-endian byte
+   representation (no leading zero byte — the most-significant byte is
+   always non-zero) is computed first; its byte **count** is then encoded as
+   a single **CULV** value (above); the CULV octets are emitted, followed
+   immediately by that many magnitude bytes.
+4. **No fixed-width field appears anywhere in this frame** — not for the
+   sign (a single octet, but a closed 3-value enumeration, not a length),
+   not for the magnitude-byte-count (CULV, unbounded), not for the magnitude
+   itself (exactly as long as its own minimal representation requires).
+
+**Totality proof:**
+
+- Every finite `BigInt` has a well-defined sign (zero/positive/negative) and,
+  if non-zero, a well-defined absolute value.
+- Every finite non-negative integer (the absolute value's magnitude) has a
+  finite minimal big-endian byte representation — a standard, total function
+  of the integer's own bit length.
+- That minimal byte representation has a finite byte **count** — itself a
+  finite non-negative integer.
+- CULV encodes **every** finite non-negative integer, by construction (no
+  step above depends on the integer's size; the procedure only depends on
+  its finiteness).
+- Therefore every finite `BigInt` has a complete, finite, well-defined tag
+  `0x10` frame. **Every finite `BigInt` value representable by the accepted
+  model has a finite canonical encoding.**
+
+This is a claim about **semantic encodability**, not about practical
+resource availability: an implementation may exhaust memory or time
+attempting to construct or hash an absurdly large value, exactly as it could
+for any other unboundedly large in-memory structure anywhere in the crate —
+that is an ordinary runtime/environmental failure mode, not a Product/model
+representability limit, and this ADR makes no claim, and needs to make none,
+about what happens when a real machine runs out of resources (§7).
 
 Tag `0x04` (`Rational`, `ExactNumber`/`BigRational`) is two `0x10` frames —
 numerator (signed) and denominator (sign byte always `1`, i.e., strictly
@@ -270,7 +360,8 @@ crate's implementation choice:
   terms reduction above — eliminating the only remaining source of non-
   uniqueness for equivalent rationals.
 - **Zero** is canonically `0/1`: numerator's `0x10` frame is the zero encoding
-  above, denominator's `0x10` frame is sign `1`, length `1`, byte `0x01`.
+  above, denominator's `0x10` frame is sign octet `1`, CULV magnitude
+  byte-count `01` (a single octet, value `1`), magnitude byte `0x01`.
 
 No truncation, no platform-width dependency, and no overflow path exists for
 any value the current `BigInt`/`BigRational` domain accepts — this closes
@@ -565,19 +656,36 @@ preimage bytes and the final `RevisionIdentity` value**, not the digest alone
 9. **BigInt magnitude exceeding 64 bits** (numerator or denominator) →
    correctly encoded per §2a, no truncation, distinct from any other value
    that happens to share its low 64 bits.
-9a. **BigInt magnitude exceeding 255 bytes** (triggering `L ≥ 2` in §2a's
-    self-delimiting length-of-magnitude framing) → a real, concretely
+9a. **CULV length-primitive golden vectors, standalone:** exact octet
+    sequences for `0`, `1`, `127`, `128`, `255`, `256`, `u32::MAX`,
+    `u32::MAX + 1`, `u64::MAX`, `u64::MAX + 1` — §2a's own worked table —
+    tested as a pure length-encoder/decoder unit, independent of any BigInt
+    that happens to have that many magnitude bytes; this is the primary test
+    of the grammar's boundary transitions (single-octet ↔ multi-octet, and
+    each subsequent octet-count boundary).
+9b. **Non-canonical CULV rejected:** an artificially-constructed encoding
+    with a redundant leading all-zero 7-bit group followed by a
+    continuation-bit-`1` octet (e.g., `0x80 0x01` as an encoding of `1`,
+    where the canonical form is the single octet `0x01`) → decoding fails,
+    never silently accepted as an alternate valid encoding of the same
+    value.
+9c. **BigInt magnitude exceeding 255 bytes:** a real, concretely
     constructible vector (a 256+ byte magnitude is a few hundred bytes of
-    test fixture, not a multi-gigabyte allocation) proving the two-level
-    length grammar itself, not merely its `L = 1` common case.
-9b. **Architecture-level totality, not an empirical large-allocation test:**
-    §2a's length-of-magnitude framing is proven total by construction (`L`'s
-    own domain covers every magnitude any terminating process could produce)
-    — this ADR does not require, and implementation must not require, a
-    literal multi-gigabyte fixture to demonstrate the grammar handles
-    arbitrarily large magnitudes; vector 9a's small `L ≥ 2` case is sufficient
-    evidence the two-level scheme is wired correctly, and the general case
-    follows by the scheme's own induction, not by additional empirical scale.
+    test fixture, not a multi-gigabyte allocation) proving the CULV-prefixed
+    magnitude framing crosses the single-octet-length-count boundary
+    (magnitude byte-count itself becomes a two-octet CULV value) correctly.
+9d. **Architecture-level totality, not an empirical large-allocation test:**
+    §2a's grammar is proven total by construction — CULV encodes every
+    finite non-negative integer with no fixed maximum octet count, so a
+    magnitude requiring a length value beyond `u32::MAX` or `u64::MAX` bytes
+    is provable **at the length-prefix grammar level alone** (encode that
+    literal length value with CULV per 9a's worked table, using it as the
+    byte-count prefix in a conceptual frame) without allocating or hashing
+    the corresponding multi-gigabyte-or-larger magnitude payload; this ADR
+    does not require, and implementation must not require, a literal
+    absurdly-large fixture to demonstrate the grammar handles arbitrarily
+    large magnitudes — the general case follows from §2a's totality proof,
+    not from additional empirical scale.
 10. **Negative `BigInt`** in a rational numerator → correct sign-byte framing,
     distinct from its positive counterpart.
 10a. **`ConfigurationParameter` field-position correctness:** a Strategy
@@ -714,12 +822,32 @@ that future ADR explicitly says so.
   accepted, deliberately unbounded `BigInt`/`BigRational` domain (ADR-0005
   §7.3). See §2a.
 - **Fixed 4-byte `u32` magnitude-byte-length (the first remediation's own
-  interim choice)** — rejected during this second remediation: still a
+  interim choice)** — rejected during the second remediation: still a
   fixed-width ceiling (~4.29 GiB), just a larger one than `i64`/`u64`; still
   formally incompatible with Slice Contract §4.2's "no minimum or maximum
-  magnitude," and still contradicted this ADR's own totality claim. Replaced
-  by §2a's self-delimiting, two-level length-of-magnitude encoding, which has
-  no ceiling at all rather than a larger one.
+  magnitude," and still contradicted this ADR's own totality claim.
+- **Single fixed byte `L` (`0 < L ≤ 255`) bounding a length-of-magnitude
+  value (the second remediation's own interim choice)** — rejected during
+  this third remediation: independent re-review found this scheme, while a
+  vast improvement in scale, was structurally the identical defect as the
+  `u32` design above — a fixed-width outer field still capped what the
+  encoding could represent, only at `2^(255·8)` bytes instead of `2^32`
+  bytes, and the ADR's own "for any reason, ever" totality claim remained
+  false. Replaced by §2a's Canonical Unsigned Length Varint (CULV), which has
+  no fixed-width field anywhere in its own structure — the defect pattern of
+  "relocate the ceiling to a larger constant" is retired for good by this
+  design, which contains no constant to relocate.
+- **Existing external varint specifications (protobuf varint / LEB128),
+  referenced but not normatively adopted** — considered, but this ADR
+  specifies CULV's grammar completely and self-containedly in §2a rather than
+  incorporating an external specification by reference, per PBA-0172's
+  explicit requirement that "no protobuf/LEB128 dependency may be assumed
+  unless the ADR normatively selects and fully pins that external format."
+  CULV is deliberately MSB-group-first (the reverse of traditional LEB128's
+  LSB-group-first convention) specifically so it composes uniformly with
+  this ADR's existing big-endian convention for every other multi-byte field
+  — adopting LEB128 verbatim would have introduced the one byte-order
+  inconsistency in an otherwise uniformly big-endian document.
 
 ---
 
