@@ -1,8 +1,10 @@
 # ADR-0007: OccurrenceId Classification and Revision-Identity Scope
 
-- **Status:** PROPOSED
+- **Status:** ACCEPTED
 - **Date:** 2026-08-19
-- **Deciders:** Principal Engineer; to be accepted by Product Board
+- **Accepted by:** Product Board, PBR-0020
+- **Decision date:** 2026-08-19
+- **Deciders:** Principal Engineer; accepted by Product Board
 - **Related:** ADR-0003 (ACCEPTED, PBR-0007 — **explicitly superseded, narrowly, by
   this ADR**); ADR-0002 (ACCEPTED, PBR-0006 — unchanged, not reopened, **the
   primary source authority for this ADR's ruling**, specifically §2's typed-model
@@ -10,13 +12,16 @@
   (`first-runnable-slice-contract-r04.md` §C.1–§C.2, ACCEPTED PBR-0016 — cited,
   not amended); `src/model/opaque.rs` (current source, cited as evidence);
   RFC-0004 (PROPOSED — downstream consumer of this ruling, not edited here);
-  authorized by **PBA-0162**, following the read-only determination under
-  **PBA-0161** (outcome C — current authority insufficient to decide without this
-  amendment); remediated under **PBA-0163** following an independent read-only
-  review (**BLOCKER** — the drafting cycle's original text misattributed this
-  ruling to ADR-0004's W-1 resolution, which governs a narrow per-check
-  sub-expression comparison technique, not the checker-input/canonical-form
-  boundary; that citation is removed and replaced below)
+  PBA-0162 (drafting authorization), ER-0134 (drafting report), PBA-0163
+  (remediation authorization), ER-0135 (remediation report), ARR-0056
+  (independent re-review, PASS), PBA-0164 (acceptance authorization), ER-0136
+  (acceptance synchronization report)
+- **Review lineage:** PBA-0161 (read-only determination, outcome C) → PBA-0162 →
+  ADR-0007 (this document, drafted) → independent review (FAIL, 1 BLOCKER, 1
+  MINOR) → PBA-0163 → bounded remediation (ER-0135) → ARR-0056 (independent
+  re-review, PASS; 0 BLOCKER, 0 MAJOR, 1 non-blocking MINOR — preserved, not
+  remediated by this acceptance) → PBA-0164 → PBR-0020 (Product Board
+  acceptance)
 
 > This ADR decides **one narrow question only**: whether `OccurrenceId` (Slice
 > Contract Revision 4 §C.1's construct-occurrence addressing identity) is inside
@@ -344,8 +349,9 @@ a future RFC-0004 remediation cycle would be permitted to state:
 
 ---
 
-> ADRs are immutable once Accepted — supersede, never edit. This ADR is
-> currently **PROPOSED**. On acceptance, it becomes the authoritative narrow
-> supersession of ADR-0003 for this one classification question; ADR-0003
-> otherwise remains fully in force. Any future material change to this ruling
-> must itself be recorded through a new ADR that explicitly supersedes this one.
+> ADRs are immutable once Accepted — supersede, never edit. This ADR is now
+> **ACCEPTED**; its decision text is immutable historical architecture record.
+> It is the authoritative narrow supersession of ADR-0003 for this one
+> classification question; ADR-0003 otherwise remains fully in force. Any
+> future material change to this ruling must itself be recorded through a new
+> ADR that explicitly supersedes this one.
