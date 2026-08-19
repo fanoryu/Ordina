@@ -467,7 +467,7 @@ consumes an ARR number.
 | PBD-0004 | ALLOCATED | System Context dispositions (adopts SCW-01 Findings 1–7) |
 | **PBD-0005** | **ALLOCATED** | **Governance Identifier Ledger Establishment and Collision Resolution** |
 | **PBD-0006** | **ALLOCATED** | **Normative Engineering Contract Revision Convention** (authority PBA-0058; 2026-08-14). Establishes the successor convention for an accepted normative engineering contract that is neither an ADR nor an RFC and carries no version lifecycle. Recorded in `docs/engineering/workflow.md`. |
-| PBD-0007 and above | AVAILABLE-FUTURE | — |
+| **PBD-0007** | **ALLOCATED** | **Post-Slice-1 Roadmap Direction — N-22 Selected** (2026-08-18; explicit Product Owner roadmap-direction decision, recorded for reference; no source-writing, no RFC drafting, no implementation authorization. Following completed Slice 1 (Phases 0-8, closed) and a read-only Post-Slice-1 Product Direction Determination surveying the six items ADR-0002/0003/0004/0005 left OPEN and undertaken by no phase (Q-06, Q-08, N-22, N-24, N-25, F-8), the Product Owner selects **N-22 — Well-Formedness-failure UX design** as the next post-Slice-1 initiative: platform-agnostic UX/interaction design for presenting and correcting a Strategy that fails Well-Formedness, based on the completed Slice-1 `WellFormednessResult`, defect set, defect identities, ordering, and not-evaluated metadata; preserving Trader ownership of correction; never representing an UNUSABLE Strategy as READY/WAIT/DO_NOT_TRADE; never silently repairing operative Strategy rules — matching RFC-0001 §12/§19's own framing of N-22 as the open UX question following Strategy Well-Formedness. **This selection does not resolve or close Q-06, Q-08, N-24, or F-8 — those remain OPEN and independent.** This initiative is explicitly **not** named "Slice 2" — no accepted product/domain authority establishes that name or an implementation boundary for it; until an accepted RFC does, it is referred to as "N-22 — Well-Formedness-failure UX design." **Next governance stage: a separately authorized N-22 RFC drafting cycle.** RFC drafting NOT STARTED; implementation NOT AUTHORIZED. No `src/**`/`tests/**`/Cargo/toolchain change; no accepted RFC/ADR semantic text change. Terminates under §12(7).) |
 
 Other historical families, recorded for reference only and not allocated by this
 ledger: **POR-0001** (Product Owner Ratification, Constitution v1.0);
@@ -475,7 +475,7 @@ ledger: **POR-0001** (Product Owner Ratification, Constitution v1.0);
 **WN-0001/0002/0003/0006/0009** (workshop notes); **WR-0001/0003/0004** (working
 records); **SCW-01** (System Context workshop).
 
-**Next allocatable PBD: `PBD-0007`.**
+**Next allocatable PBD: `PBD-0008`.**
 
 ## 10. Reserved and Unknown-Historical Identifiers
 
@@ -500,7 +500,7 @@ never vacated.
 | PBR | **PBR-0017** | **PBR-0018** |
 | ARR | **ARR-0052** | **ARR-0053** |
 | ER | **ER-0125** | **ER-0126** |
-| PBD | PBD-0006 | **PBD-0007** |
+| PBD | **PBD-0007** | **PBD-0008** |
 
 **No pending synchronization remains.** Every issued identifier in every namespace
 is recorded as an ordinary allocation in §5–§9. No identifier that has been issued

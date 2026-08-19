@@ -1035,3 +1035,23 @@ phase. No phase selects a framework, UI technology, persistence, database,
 serialization format, parser, schema language, deployment target, provider,
 broker or market-data integration, evaluator implementation, hash algorithm,
 CI/CD platform, or release packaging model. No phase introduces `unsafe`.
+
+## Post-Slice-1 roadmap direction
+
+**Product Owner roadmap direction recorded (PBD-0007, 2026-08-18).** Following completed Slice 1, the Product Owner selects **N-22 — Well-Formedness-failure UX design** as the next post-Slice-1 initiative: platform-agnostic UX/interaction design for presenting and correcting a Strategy that fails Well-Formedness, based on the completed Slice-1 `WellFormednessResult`, defect set, defect identities, ordering, and not-evaluated metadata; preserving Trader ownership of correction; never representing an UNUSABLE Strategy as READY/WAIT/DO_NOT_TRADE; never silently repairing operative Strategy rules. This selection does not resolve or close Q-06, Q-08, N-24, or F-8 — those remain OPEN and independent. This initiative is **not** named "Slice 2" — no accepted authority establishes that name or boundary; it is referred to as "N-22 — Well-Formedness-failure UX design" until an accepted RFC establishes an implementation boundary.
+
+```text
+Slice 1: COMPLETE / CLOSED
+post-Slice-1 roadmap direction: N-22
+initiative: Well-Formedness-failure UX design
+next governance stage: RFC
+RFC drafting: NOT STARTED
+implementation: NOT AUTHORIZED
+Q-06: OPEN
+Q-08: OPEN
+N-24: OPEN
+N-25: OPEN
+F-8: OPEN
+```
+
+Next permitted action: separate authorization to begin drafting the N-22 RFC.
