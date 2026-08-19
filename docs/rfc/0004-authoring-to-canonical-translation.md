@@ -7,6 +7,12 @@
 - **Authorizing artifact:** PBA-0158 ("N-25 RFC Drafting Authorization"), under
   the **PBD-0007** post-Slice-1 roadmap-direction record, following N-22-A
   CLOSED/COMPLETE (ARR-0055) and N-22-B's block on this RFC
+- **Remediation:** bounded remediation of four MAJOR findings from an
+  independent read-only review (0 BLOCKER, 4 MAJOR, 2 MINOR, 2 NOTE) —
+  OccurrenceId minting (§14.2), opaque-handle order validity (§14.3),
+  canonical→draft hydration (§17), and multi-surface convergence
+  architecture (§13) — authorized by **PBA-0159**. Awaiting independent
+  re-review; RFC remains PROPOSED.
 - **Originating source:** ADR-0002 §15 ("Later RFC — authoring-to-canonical
   translation contract (and N-25)"); ADR-0003 §16 ("N-25 (authoring-to-canonical
   translation)"); `open-questions.md` N-25; RFC-0001 §9 (hybrid authoring model,
@@ -337,18 +343,56 @@ coexist. This RFC establishes the **convergence rule**:
 > canonical semantic form (and therefore, per ADR-0003 §7 I2, the same
 > revision identity).
 
-This is **not** a new identity or canonicalization rule — it is a
-**conformance requirement on translation**, derivable from ADR-0003 §7 I2
-(equivalent canonical forms collide) plus §12's determinism requirement:
-if translation is deterministic and canonicalization is total (ADR-0003
-§13), then any two translators (a wizard's and a visual builder's) that
-both correctly implement this contract necessarily converge, because they
-are computing the same function of the same confirmed content into the
-same target model. **The contract does not require the authoring surfaces
-themselves to be identical, or their intermediate representations to be
-identical** — only that their translation *output*, for identical confirmed
-Trader intent, is identical. Surfaces MAY differ arbitrarily in how they
-elicit and represent that intent pre-submission (§8's wide draft boundary).
+**This is a conformance requirement translation must be architected to
+guarantee — it does not follow automatically from determinism (§12) plus
+ADR-0003 §7 I2 alone.** Determinism (§12) only guarantees that **one**
+translator, run twice, agrees with itself; ADR-0003 §7 I2 only guarantees
+that **equal canonical forms** collide to one revision identity. Neither
+statement, individually or combined, guarantees that **two independently
+implemented** translators — a wizard's own code and a visual builder's own
+code — compute the *same* mapping from confirmed content to canonical form
+in the first place. Two independently-written, individually-deterministic
+functions are not thereby the same function. The convergence rule above is
+therefore a requirement this RFC imposes on the **architecture** of
+translation, not a fact derivable from already-accepted authority alone.
+
+**Required architecture: one shared, normative translation
+implementation.** To make the convergence rule genuinely satisfiable and
+testable, every authoring surface (wizard, template, visual builder,
+NL-assisted, or any future surface) **MUST invoke one shared, single
+normative translation implementation** for the actual confirmed-content →
+canonical-construct mapping (§7–§12, §14, §16) — no authoring surface may
+independently reimplement translation semantics, even if it produces
+"equivalent" output by its own judgment. This is the minimum architecture
+that makes convergence checkable at all: with one shared implementation,
+convergence follows directly from §12's determinism (the same function,
+given the same input, produces the same output — this part genuinely *is*
+a direct consequence of determinism, unlike the previous framing's claim
+about *independent* implementations); without a shared implementation,
+convergence would require an entirely separate, currently-undefined
+cross-implementation equivalence proof obligation this RFC does not
+attempt to specify.
+
+**What this requires, and does not require, architecturally.** "One shared
+implementation" is a **conformance requirement on how many independent
+translation implementations may exist**, not a claim about where that
+implementation lives, what language it is written in, or how it is
+packaged — those remain open per §16/§25 (a caller-composed function built
+from public `ordina` constructors, a dedicated `ordina`-owned entry point,
+or an authoring-layer library shared by every surface are all compatible
+with this requirement; which one is chosen is downstream, §24). This RFC
+does **not** require that authoring surfaces share any other code, UI, or
+representation — only the confirmed-content → canonical-construct mapping
+itself.
+
+**Testability.** Under this architecture, convergence is testable by a
+single conformance suite exercising the one shared translation
+implementation directly with varied confirmed-content orderings/surface
+provenances (mirroring the permutation-independence testing pattern already
+established for canonical ordering in the Slice-1 conformance suite,
+`tests/conformance/main.rs`) — it does not require standing up multiple
+independent authoring surfaces to test cross-implementation agreement,
+because there is, by this requirement, only one implementation to test.
 
 **What this does not solve.** Two authoring sessions expressing what a
 Trader subjectively considers "the same strategy" but confirming
@@ -360,49 +404,162 @@ the latter is authoring-surface design, out of scope here.
 
 ## 14. Identity Assignment / Minting for New Constructs
 
+Two distinct opaque domains require assignment during translation, and this
+RFC governs both. Both are **existing, accepted domains** — `src/model/opaque.rs`
+(governed by the Slice Contract, PBD-0006's normative-engineering-contract
+convention) and ADR-0003 §4/§9 — this section introduces **no new identity
+domain**; it applies existing authority to the authoring/translation moment,
+exactly as ADR-0003 §9's table already does for editing events generally.
+
+### 14.1 Lineage Identity Minting
+
 ADR-0003 §9 defines the dual-identity architecture and explicitly defers
 identifier-generation technology. This RFC defines the **minting contract**
-translation must satisfy, without selecting that technology:
+translation must satisfy for lineage identity (ADR-0003 §4 layer 3), without
+selecting that technology:
 
-1. **When to mint.** Translation mints a **new** lineage identity (ADR-0003
-   §4 layer 3) for every construct that has no prior lineage identity to
-   inherit — i.e., every genuinely new rule, condition, evidence
-   declaration, or other operative construct a Trader authors for the first
-   time. A construct the Trader is *editing* (correction flow, RFC-0003
-   §9.7 stage 2, or an ordinary revision per RFC-0001 §14) reuses its
-   **existing** lineage identity per ADR-0003 §9's table — translation MUST
-   NOT mint a new lineage identity for an edited-in-place construct, and
-   MUST mint one for a construct the Trader replaces, splits, merges, or
-   copies, exactly per that table.
-2. **Collision-freedom requirement.** Minted identities MUST be
-   collision-free across the full history the Strategy revision model can
-   reference — at minimum, across every construct ever minted within one
-   Trader's Strategy corpus. Translation is not required to guarantee
-   collision-freedom across independent installations (single-Trader,
-   in-process, per PBD-0008) unless a later persistence/sync architecture
-   requires it — that requirement, if any, is downstream (§18).
-3. **No semantic leakage.** A minted identity carries no semantic content
-   of its own (ADR-0003 §9: lineage identity is about authorship
-   continuity, not meaning) — translation MUST NOT derive a minted
-   identity from operative content in a way that would make two
-   semantically-identical-but-independently-authored constructs
-   accidentally share a lineage identity (that would misrepresent
-   authorship continuity, per ADR-0003 §9's Copy/Clone row: "must not share
-   the source's lineage identity merely because initial semantics are
-   identical").
-4. **Trader-invisible by default.** Minted identities are an internal
-   provenance mechanism (C4); nothing in this RFC requires exposing raw
-   identity values to the Trader — RFC-0003 §9.4 already establishes that
-   Trader-facing defect presentation maps *from* `DefectIdentity` without
-   exposing checker internals; the same principle applies to authoring:
-   the Trader interacts with named, described constructs, and minted
-   identity is plumbing underneath.
+1. **When to mint.** Translation mints a **new** lineage identity for every
+   construct that has no prior lineage identity to inherit — i.e., every
+   genuinely new rule, condition, evidence declaration, or other operative
+   construct a Trader authors for the first time. A construct the Trader is
+   *editing* (correction flow, §17's hydration, or an ordinary revision per
+   RFC-0001 §14) reuses its **existing** lineage identity per ADR-0003 §9's
+   table — translation MUST NOT mint a new lineage identity for an
+   edited-in-place construct, and MUST mint one for a construct the Trader
+   replaces, splits, merges, or copies, exactly per that table.
+2. **No semantic leakage.** A minted lineage identity carries no semantic
+   content of its own (ADR-0003 §9: lineage identity is about authorship
+   continuity, not meaning) — translation MUST NOT derive it from operative
+   content in a way that would make two semantically-identical-but-
+   independently-authored constructs accidentally share a lineage identity
+   (ADR-0003 §9's Copy/Clone row: "must not share the source's lineage
+   identity merely because initial semantics are identical").
 
-**Explicitly not decided here (§18):** the concrete generation technology
-(UUID, monotonic counter, content-derived handle, or other); whether
-minting happens client-side in the authoring surface or is mediated by a
-public `ordina` API call; whether ADR-0003 §9's table is fully sufficient
-guidance or needs an implementation-level elaboration.
+### 14.2 Occurrence Identity Minting
+
+`src/model/opaque.rs` (governed by the Slice Contract, Revision 4 §C.1)
+defines `OccurrenceId` as a **separate, mandatory, non-optional** opaque
+domain from lineage identity — "it identifies one concrete construct
+occurrence in the canonical input and carries no product semantics... it is
+distinct from lineage identity and never substitutes for it," and "every
+occurrence has exactly one, even a malformed one." Every construct
+translation emits therefore requires a valid `OccurrenceId`, and this RFC
+extends its minting contract accordingly, symmetric with §14.1:
+
+1. **Who assigns it, and when.** Translation is the authoritative assigner
+   of occurrence identity for every construct occurrence it emits, during
+   translation, strictly before the canonical `Strategy` is handed to
+   Well-Formedness (§16) — never left implicit, defaulted, or inferred by
+   a downstream checker or canonicalization step. This is a direct
+   application of `opaque.rs`'s own framing: the checker "never generates,
+   infers or chooses" an occurrence order or identity — it must already
+   arrive as part of the canonical input translation produces.
+2. **Uniqueness.** Every `OccurrenceId` translation mints MUST be unique
+   within the Strategy input it belongs to, per `opaque.rs`'s "unique within
+   one Strategy input" requirement — including across constructs that are
+   otherwise content-identical (§15 already establishes that content-
+   identical constructs in a non-deduplicating collection remain distinct;
+   `OccurrenceId` is the mechanism by which they stay distinguishable to the
+   checker).
+3. **Preservation across hydration/editing (§17).** Where an existing
+   construct is hydrated into a draft (§17) and the Trader edits it
+   in place without replacing it, translation MUST preserve its existing
+   `OccurrenceId` on re-submission — an edited-in-place construct is the
+   same occurrence with changed content, not a new occurrence. Where the
+   Trader's edit constitutes a genuine replacement (the prior construct is
+   removed and a materially different one takes its place, mirroring
+   ADR-0003 §9's Replacement row for lineage identity), translation MUST
+   mint a **new** `OccurrenceId` for the replacement; the old one is not
+   reused.
+4. **New constructs.** Every genuinely new construct (first-time authoring,
+   or a construct added during an edit) receives a newly minted
+   `OccurrenceId`, minted fresh in the same submission that first emits it.
+5. **Removed constructs.** A construct the Trader explicitly removes during
+   editing (§17) simply does not appear in the next submission's emitted
+   Strategy — its `OccurrenceId` is not reused for anything else, and
+   translation does not emit a tombstone occurrence record (occurrence
+   identity, unlike lineage identity, carries no cross-revision historical-
+   continuity requirement under `opaque.rs`/the Slice Contract; ADR-0003 §9's
+   lineage-tombstone requirement is unaffected and remains lineage-identity-
+   only).
+
+### 14.3 Opaque-Handle Order Validity
+
+`src/model/opaque.rs` states a requirement this RFC's original text did not
+engage with and must not contradict: for every opaque domain built on
+`OpaqueValue` (including `LineageId` and `OccurrenceId`), "**both** the
+values of an opaque domain **and** a deterministic total order over them
+[must] arrive as part of the already-canonical input... The checker never
+generates, infers or chooses an order," and "two conforming checkers agree
+because they receive the same order, never because they agree on a
+representation." Because translation's output **is** that already-canonical
+input (§16), translation — not any later stage — is where this order-supply
+obligation must be satisfied. This RFC accordingly clarifies, without
+redesigning canonicalization or the ordering `opaque.rs`/ADR-0003 §6 already
+fix:
+
+- **What is already fixed by existing authority (not decided here).** For
+  `OccurrenceId`, `opaque.rs` and the Slice Contract already require the
+  order to be "ordering only, carries no semantics" (Revision 4 §C.1) —
+  i.e. occurrence order is a **structural addressing order**, not itself
+  operative content, but it must still be a genuine deterministic total
+  order, consistently assigned, not an incidental artifact of an unrelated
+  encoding (ADR-0005 §7.5's prohibition on deriving authoritative order
+  from incidental representation, cited by `opaque.rs` itself, binds
+  translation exactly as it binds any other producer of canonical input).
+  For `LineageId`, ADR-0003 §6 separately classifies rule/node identifiers
+  as **CX (cosmetic)** unless reference-bearing — a cosmetic rename does not
+  fork revision identity — which this RFC does not reopen; `opaque.rs`'s
+  `Ord` implementation for `LineageId` exists for the Slice Contract's own
+  structural purposes (e.g. §6.4 sorting) and does not, by itself, make
+  lineage order operative/identity-bearing at the ADR-0003 revision-identity
+  layer.
+- **What this RFC requires of translation (new, minimum normative
+  requirement).** The total order translation assigns to the `OccurrenceId`
+  handles it mints for one submission MUST be a **deterministic function of
+  the confirmed draft's own declared/authored structure** — concretely, the
+  order in which the confirmed content occurs in the Trader-confirmed
+  submission (§11) — and MUST NOT be assigned from an unrelated source (a
+  random value, a wall-clock timestamp, a hash of unrelated content, or
+  any other source whose relative order carries no relationship to the
+  authored structure). This closes the gap the independent review
+  identified: a **content-addressed or randomly-generated handle whose
+  numeric value does not encode any authored-order relationship — including
+  a naively-generated UUID — is NOT, by itself, a conforming
+  `OccurrenceId`-minting strategy**, because its order would not be "the
+  contract-supplied order" `opaque.rs` requires; it would be an arbitrary
+  encoding accident. A generation technology remains free to use any
+  encoding (UUID, counter, or otherwise) **provided** the resulting
+  handles, when compared via each domain's `Ord`, reproduce the required
+  authored-order relationship — that remaining freedom (concrete encoding,
+  as opposed to the order it must reproduce) is genuinely implementation
+  mechanism and is left unselected here, consistent with ADR-0003's own
+  posture on identity-generation technology.
+- **Collision-freedom.** Both minted domains MUST be collision-free across
+  the full history the Strategy revision model can reference — at minimum,
+  across every construct ever minted within one Trader's Strategy corpus.
+  Translation is not required to guarantee collision-freedom across
+  independent installations (single-Trader, in-process, per PBD-0008)
+  unless a later persistence/sync architecture requires it — that
+  requirement, if any, is downstream (§24).
+
+### 14.4 Trader-Invisible by Default
+
+Minted identities (both domains) are an internal provenance/addressing
+mechanism (C4); nothing in this RFC requires exposing raw identity values to
+the Trader — RFC-0003 §9.4 already establishes that Trader-facing defect
+presentation maps *from* `DefectIdentity` without exposing checker
+internals; the same principle applies to authoring: the Trader interacts
+with named, described constructs, and minted identity is plumbing
+underneath.
+
+**Explicitly not decided here (§24):** the concrete generation encoding
+(UUID, monotonic counter, content-derived handle, or other) for either
+domain, provided §14.3's order requirement is satisfied; whether minting
+happens client-side in the authoring surface or is mediated by a public
+`ordina` API call; whether ADR-0003 §9's table and `opaque.rs`'s existing
+text are fully sufficient guidance or need an implementation-level
+elaboration.
 
 ## 15. Duplicate Handling
 
@@ -432,7 +589,8 @@ Where the collection is **not** unordered/deduplicating by ADR-0003 §6
 (e.g., a semantically ordered collection where two entries are
 independently meaningful even if superficially identical), translation
 MUST preserve both as distinct constructs with distinct minted identities
-(§14) — silent collapse there would be an uninvited Ordina decision (C2).
+(§14.1 lineage, §14.2 occurrence) — silent collapse there would be an
+uninvited Ordina decision (C2).
 
 ## 16. Canonicalization Timing / Handoff
 
@@ -460,13 +618,101 @@ identity. Concretely:
   is therefore never a Well-Formedness `Unusable` verdict (§10 already
   states this; restated here for the pipeline-ordering record).
 
-This handoff boundary is the direct answer to N-22-B's blocking question:
-a correction-flow re-entry into authoring produces a new submission, which
-re-enters translation, which re-enters the same Draft → Translation →
-Well-Formed → Canonicalize → Identity pipeline as first-time authoring —
-there is no separate "correction pipeline."
+This handoff boundary is a **necessary but not sufficient** part of the
+answer to N-22-B's blocking question: it establishes that a correction-flow
+re-entry into authoring produces a new submission, which re-enters
+translation, which re-enters the same Draft → Translation → Well-Formed →
+Canonicalize → Identity pipeline as first-time authoring — there is no
+separate "correction pipeline." It does **not**, by itself, define how a
+correction-flow re-entry obtains the draft content to re-submit in the first
+place — that reverse direction is §17's subject.
 
-## 17. AI / Suggestion Assistance Boundary
+## 17. Canonical → Draft Hydration
+
+§16 defines the forward pipeline (draft → canonical). RFC-0003 §9.7 stage 2
+requires the reverse: a Trader navigating from a diagnosed defect must be
+"taken to the point in Strategy authoring where the offending content
+lives." This is impossible without first reconstituting the **existing**
+canonical Strategy's confirmed content into an editable authoring draft —
+this section defines that reverse contract, without which N-22-B's
+correction workflow (and RFC-0001 §14's ordinary post-submission revision
+path) has no defined starting point. Hydration is the mirror operation of
+translation (§16), sharing its guards, not a separate authority.
+
+**Pipeline.** Canonical Strategy → **Hydration** → editable authoring draft
+→ Trader edit → explicit confirmation (§11) → deterministic translation
+(§16) → full fresh Well-Formedness check (§19). Hydration is a **new
+step inserted before** the existing Draft → Translation pipeline; it does
+not alter, reorder, or duplicate any step §16 already defines.
+
+1. **Scope of reconstitution.** Hydration reconstitutes **every** RFC-0001
+   §7 contract element the canonical Strategy declares — explicitly authored
+   and explicitly declared-absent content alike (§9's states 1 and 2) — into
+   the draft's corresponding representation. Hydration MUST NOT omit,
+   truncate, or selectively reconstitute content (e.g., hydrating only the
+   defect-adjacent construct while silently dropping the rest of the
+   Strategy) unless the authoring surface's own navigation model
+   legitimately scopes what is *displayed* at once (RFC-0003 §9.7 stage 2's
+   "per-defect" navigation is a display/navigation concern, not license to
+   hydrate an incomplete draft — the full Strategy's content remains
+   reconstituted underneath, consistent with §19's "entire Strategy, not a
+   delta" re-check requirement).
+2. **Confirmation status of hydrated content.** Content hydration produces
+   from an already-canonical, already-Well-Formed Strategy is represented in
+   the draft as **already Trader-confirmed** (§11) — hydration is not itself
+   a fresh confirmation event, and it is not an opportunity for the Trader
+   to be asked to reconfirm content they are not changing. This directly
+   implements §11's existing "no forced re-confirmation of untouched
+   content" rule, which presupposed but did not, until now, define hydration
+   as that rule's content source.
+3. **No silent modification.** Hydration MUST NOT change, normalize,
+   canonicalize, repair, reorder in a Trader-visible way, or otherwise alter
+   the operative meaning of the content it reconstitutes. Hydration is a
+   read/reconstitution operation only — it carries none of translation's
+   authority to interpret or resolve ambiguity, because there is no
+   ambiguity to resolve: the source is already canonical, already
+   Well-Formed content. Any apparent transformation during hydration is
+   presentation-only (e.g., mapping a canonical construct to a
+   human-readable authoring-surface widget) and MUST NOT change what
+   re-translating the untouched hydrated content would produce.
+4. **Identity preservation.** For every hydrated construct the Trader does
+   not replace, hydration MUST preserve both its lineage identity (§14.1)
+   and its occurrence identity (§14.2) through to the next submission —
+   this is what makes §14.1's "edited-in-place construct reuses its existing
+   lineage identity" and §14.2's "translation MUST preserve its existing
+   `OccurrenceId` on re-submission" rules implementable: hydration is the
+   step that carries those existing identities from the canonical source
+   into the editable draft so translation has them to preserve. Hydration
+   MUST NOT mint new identities for unchanged, hydrated content — minting
+   remains exclusively translation's role (§14), applied only to genuinely
+   new or genuinely replaced constructs the Trader introduces after
+   hydration.
+5. **New constructs after hydration.** A construct the Trader adds after
+   hydration is ordinary new authoring content (§7) and follows §14's
+   ordinary minting rules — nothing about having entered through a
+   correction-flow re-entry changes this.
+6. **Removed constructs.** A construct present in the hydrated draft that
+   the Trader explicitly, affirmatively removes (an explicit Trader action,
+   not an inferred one — mirroring §9's explicit/absent distinction, applied
+   to removal) simply does not appear in the next submission; per §14.2.5,
+   translation does not re-mint or reuse its occurrence identity for
+   anything else, and per ADR-0003 §9's Deletion row, its lineage identity
+   is retained as a tombstone for historical provenance (C4) — hydration
+   does not decide this, it is unchanged, already-accepted ADR-0003
+   behavior that a subsequent translation invocation exercises normally.
+
+**What hydration is not.** Hydration is not a second translation function,
+not a new checker, and not a new persistent representation — it operates
+entirely on data already produced by a prior, accepted translation +
+Well-Formedness + canonicalization cycle (§16), reading it back into the
+same conceptual draft state §7–§11 already govern. No new public `ordina`
+API is required by this section beyond what §16 already leaves open (§24);
+hydration may be implemented entirely as authoring-surface-local logic that
+reads the existing public accessors on the canonical `Strategy` and its
+constructs (the same frozen, public accessor surface N-22-A's diagnosis view
+already exercises) and populates draft state from them.
+
+## 18. AI / Suggestion Assistance Boundary
 
 RFC-0001 §9 guard 7 already establishes that AI may "clarify or translate
 expression" but gains no decision authority, and RFC-0003 §9.9 already
@@ -486,13 +732,13 @@ Trader confirming a hand-authored rule: both become confirmed draft content
 subject to the same translation function. AI proposing structure faster is
 a UX efficiency, not a new authority (C3).
 
-## 18. Edit → Full Re-Check Handoff
+## 19. Edit → Full Re-Check Handoff
 
 Extending RFC-0003 §9.7 stage 3 beyond the correction-specific case: **any**
 edit to a submitted, translated Strategy — whether reached via RFC-0003's
-correction flow, an ordinary RFC-0001 §14 revision, or a Trader
-independently reopening authoring — MUST re-enter the full pipeline (§16)
-from Translation forward. Specifically:
+correction flow (entering through §17's hydration), an ordinary RFC-0001
+§14 revision, or a Trader independently reopening authoring — MUST re-enter
+the full pipeline (§16) from Translation forward. Specifically:
 
 - there is no "patch only the changed rule" path that skips
   re-translation, re-Well-Formedness, or re-canonicalization;
@@ -507,36 +753,42 @@ from Translation forward. Specifically:
   it (C5 — no retroactive rewrite; ADR-0003 §7 I3/§8) — an in-progress
   edit never silently supersedes a revision a live decision is bound to.
 
-## 19. Boundary / Constitution Check
+## 20. Boundary / Constitution Check
 
 | Prohibited | Guard |
 |---|---|
 | translation infers or defaults an operative rule the Trader did not confirm | §7, §9 — explicit/absent/not-yet-addressed states only; no implicit defaults |
-| a proposal (template, NL, AI) becomes authoritative without confirmation | §7, §17 — proposal is draft content only, never translation output |
+| a proposal (template, NL, AI) becomes authoritative without confirmation | §7, §18 — proposal is draft content only, never translation output |
 | translation is non-deterministic or consults ambient state | §12 |
-| different authoring surfaces silently diverge on identical confirmed intent | §13 — convergence is a translation-fidelity requirement |
-| minted identity encodes semantic content or is derived from operative content | §14.3 |
+| different authoring surfaces silently diverge on identical confirmed intent | §13 — one shared, normative translation implementation, not independently reimplemented divergent translators |
+| minted lineage identity encodes semantic content or is derived from operative content | §14.1.2 |
+| minted occurrence-identity order is assigned from an unrelated/arbitrary source | §14.3 |
 | translation silently deduplicates non-unordered constructs | §15 |
 | translation approximates or predicts canonicalization/revision identity | §16 |
-| an edit skips full re-translation/re-check | §18 |
+| hydration silently changes, normalizes, or repairs operative content | §17.3 |
+| hydration mints new identity for unchanged content, or forces unnecessary re-confirmation | §17.2, §17.4 |
+| an edit skips full re-translation/re-check | §19 |
 | a translation-gate rejection is presented as a Well-Formedness defect | §10 |
 | a draft is presented as though it were a checked, canonical Strategy | §8 |
 
 **§2.1 five-part boundary test:** *Origination* — the Trader authors and
 confirms every operative rule; translation is a mechanical mapping with no
-discretion over content, only over representation (§7, §12). *Determinism*
-— translation is a pure deterministic function; AI is confined to
-expression assistance, never structural decision (§12, §17). *Provenance*
-— minted identities and translated provenance carry through unchanged into
-ADR-0003's identity-bearing operative provenance (§14, §6). *Gating* — the
-translation-gate (§10) and Well-Formedness (unchanged, ADR-0004) remain
-distinct, sequential gates; neither is bypassed or merged (§16). *Restraint*
-— nothing here implies or guarantees a Strategy will be Well-Formed or
-profitable; translation only maps confirmed intent faithfully. **No
-boundary failure identified**, provided §7–§18's guards are normative in
-the accepted RFC.
+discretion over content, only over representation (§7, §12); hydration
+reconstitutes without altering (§17). *Determinism* — translation is a pure
+deterministic function, invoked as one shared implementation so
+cross-surface agreement is a tested consequence, not an assumption (§12,
+§13); AI is confined to expression assistance, never structural decision
+(§12, §18). *Provenance* — minted lineage and occurrence identities, and
+translated provenance, carry through unchanged into ADR-0003's
+identity-bearing operative provenance (§14, §6); hydration preserves rather
+than re-derives them (§17.4). *Gating* — the translation-gate (§10) and
+Well-Formedness (unchanged, ADR-0004) remain distinct, sequential gates;
+neither is bypassed or merged (§16). *Restraint* — nothing here implies or
+guarantees a Strategy will be Well-Formed or profitable; translation only
+maps confirmed intent faithfully. **No boundary failure identified**,
+provided §7–§19's guards are normative in the accepted RFC.
 
-## 20. Alternatives Considered
+## 21. Alternatives Considered
 
 - **No translation contract — leave each authoring surface to define its
   own mapping ad hoc.** Rejected: this is the status quo that produced the
@@ -565,42 +817,59 @@ the accepted RFC.
   Rejected as a requirement: PBD-0008 already fixes a local, in-process,
   single-Trader desktop surface with no server-side persistence; requiring
   central minting would contradict that ruling. (A future architecture MAY
-  still choose a mediating local API call — §18 leaves that open — but this
-  RFC does not require one.)
+  still choose a mediating local API call — §14.4 leaves that open — but
+  this RFC does not require one.)
 
-## 21. What This Makes Harder
+## 22. What This Makes Harder
 
 - **Ad hoc authoring-surface prototyping** becomes harder: any new
-  authoring surface must implement a conforming translation function
-  (§12–§16), not merely produce "something that looks like a Strategy."
-  This is intentional — it is the guard against silent divergence (§13).
+  authoring surface must invoke the one shared, normative translation
+  implementation (§12–§17) rather than build its own, and any surface
+  reaching correction/edit must implement hydration (§17) correctly. This
+  is intentional — it is the guard against silent divergence (§13).
 - **"Quick and dirty" AI-generated strategies** become structurally
-  impossible to ship without a confirmation step (§17) — by design, this
+  impossible to ship without a confirmation step (§18) — by design, this
   closes a C2-adjacent risk RFC-0001 §9 already named, but it does mean any
   future AI-heavy authoring surface carries more UX friction than a
   fully-automated one would.
-- **Cross-surface identical-output testing** becomes an implied conformance
-  obligation (§13): a future implementation with more than one authoring
-  surface will need some way to verify convergence, which this RFC does
-  not design (downstream, §18).
+- **A single shared translation implementation is now a hard architectural
+  requirement** (§13), not merely a convention: a future implementation
+  cannot let each authoring surface reimplement translation independently,
+  even if doing so seems locally convenient. This trades some
+  implementation flexibility for convergence guarantees the review found
+  otherwise unenforceable.
 
-## 22. Risks
+## 23. Risks
 
 New entries for `docs/product/risk-register.md` (register alignment
-deferred to a separately authorized cycle, per precedent — RFC-0001 §17,
+deferred to a separately authorized cycle, per precedent — RFC-0001 §18,
 RFC-0003's equivalent):
 
-- **R-F — Translation drift between authoring surfaces.** Two conforming-
-  in-appearance authoring surfaces implement translation subtly differently
-  (e.g., differing treatment of an edge-case omission), producing different
-  canonical forms for what a Trader would consider the same intent.
-  *Mitigation:* §13's convergence rule as an explicit conformance
-  requirement; a future implementation-level conformance suite (downstream).
-- **R-G — Minted-identity collision.** A minting implementation fails
-  §14.2's collision-freedom requirement, corrupting lineage provenance.
-  *Mitigation:* §14 requirement stated explicitly now, before any minting
-  implementation exists, so a future ADR/implementation is reviewed against
-  it.
+- **R-F — Translation drift between authoring surfaces.** A future
+  implementation fails to route every authoring surface through the one
+  shared translation implementation §13 now requires, letting a surface
+  reimplement translation semantics independently and drift from it.
+  *Mitigation:* §13's shared-implementation requirement, stated as an
+  architecture constraint rather than an assumed consequence; a future
+  implementation-level conformance suite (downstream) can directly verify
+  only one implementation exists.
+- **R-G — Minted-identity collision or order-invalidity.** A minting
+  implementation fails §14.3's collision-freedom or order-validity
+  requirement for either lineage or occurrence identity — e.g. by
+  generating handles from a source (random UUID, unrelated hash) whose
+  order does not encode the required authored-order relationship,
+  producing canonical input the checker cannot correctly interpret without
+  detecting the defect. *Mitigation:* §14.2–§14.3 requirements stated
+  explicitly now, before any minting implementation exists, so a future
+  ADR/implementation is reviewed against them.
+- **R-J — Hydration silently alters operative content.** A hydration
+  implementation, in the course of reconstituting canonical content into an
+  editable draft representation, introduces a lossy or normalizing
+  transformation that changes what re-translating the untouched hydrated
+  content would produce, without the Trader ever confirming that change.
+  *Mitigation:* §17.3's explicit no-silent-modification prohibition; a
+  future conformance suite should assert hydrate-then-immediately-
+  retranslate-without-editing is a no-op on the canonical form.
 - **R-H — Translation-gate / Well-Formedness conflation.** An
   implementation or a UX surface presents a translation-gate rejection
   (§10) as though it were a checker-produced defect, confusing the
@@ -613,11 +882,11 @@ RFC-0003's equivalent):
   pre-filled and "just needing" a single bulk confirmation click drifts
   toward the RFC-0003 §9.9 "un-rejected suggestion becomes authoritative"
   failure mode in practice even while nominally requiring confirmation.
-  *Mitigation:* §17's per-rule confirmation requirement is unchanged from
+  *Mitigation:* §18's per-rule confirmation requirement is unchanged from
   RFC-0001 §9 / RFC-0003 §9.9 — carried forward, not weakened; a future UX
   review should specifically test for this drift.
 
-## 23. Open Questions / Deferred Decisions
+## 24. Open Questions / Deferred Decisions
 
 Per the authorizing PBA-0158, the following are **flagged, not resolved,**
 by this RFC:
@@ -636,25 +905,33 @@ by this RFC:
   outcome; it only observes it as a plausible resolution for a future
   architecture determination.
 - **Whether new public `ordina` API is required.** §14's minting contract
-  and §16's handoff boundary do not obviously require new public surface
-  beyond what N-22-A already found sufficient (existing `pub const fn new`
-  constructors on every identity type, per the frozen public API N-22-A's
+  (both lineage and occurrence identity), §16's handoff boundary, and §17's
+  hydration contract do not obviously require new public surface beyond
+  what N-22-A already found sufficient (existing `pub const fn new`
+  constructors on every identity type, and the existing public accessors on
+  `Strategy` and its constructs, per the frozen public API N-22-A's
   implementation reports confirmed complete for diagnosis). Whether
   *translation itself* (as opposed to diagnosis) needs a new `ordina`-owned
   entry point (e.g., a single `translate_and_validate` convenience
-  function) or can be composed entirely by a caller from existing public
-  constructors plus the existing `run_phase6`/`finalize_phase6` orchestration
-  is left to a future implementation-scoping determination.
-- **Whether ADR-0003 §9 already fully covers identity minting.** §14 of
-  this RFC is written as an application of ADR-0003 §9's existing table
-  to the authoring moment specifically, not as new identity architecture.
-  A future review should confirm §14 introduces no identity concept ADR-0003
-  does not already contain — if it does, that would indicate an ADR
-  amendment (via supersession, never edit) is needed rather than this RFC's
-  product-level restatement.
+  function, or an occurrence-identity-order-validation helper per §14.3)
+  or can be composed entirely by a caller from existing public constructors
+  plus the existing `run_phase6`/`finalize_phase6` orchestration is left to
+  a future implementation-scoping determination.
+- **Whether ADR-0003 §9 already fully covers identity minting.** §14.1
+  (lineage identity) is written as an application of ADR-0003 §9's existing
+  table to the authoring moment specifically, not as new identity
+  architecture. §14.2–§14.3 (occurrence identity and opaque-handle order
+  validity) instead apply `src/model/opaque.rs`/the Slice Contract (a
+  distinct, already-accepted governing authority under PBD-0006's
+  normative-engineering-contract convention, not ADR-0003) to the same
+  moment. A future review should confirm §14 as a whole introduces no
+  identity concept that **neither** ADR-0003 §9 **nor** the Slice Contract
+  already contains — if it does, that would indicate an ADR amendment (via
+  supersession, never edit) or a Slice Contract revision (per PBD-0006) is
+  needed rather than this RFC's product-level restatement.
 - **Whether a downstream ADR becomes necessary.** This RFC's own
-  determination (§24) is that no new persistent data shape, field, ordering
-  rule, or `src/**` change is proposed — but see §24 for the explicit
+  determination (§25) is that no new persistent data shape, field, ordering
+  rule, or `src/**` change is proposed — but see §25 for the explicit
   architectural-commitment analysis and its caveats.
 - **N-25 register closure.** This RFC, on acceptance, would resolve N-25 to
   the extent stated here; the canonical open-questions register update is
@@ -668,42 +945,70 @@ by this RFC:
   and, if persisted, persistence-architecture question (gated by Q-06's
   already-resolved desktop/in-process boundary, but not otherwise decided
   here).
-- **Cross-surface conformance testing mechanism.** §21 names this as an
+- **Cross-surface conformance testing mechanism.** §22 names this as an
   implied future obligation; no test architecture is designed here.
 
-## 24. Architectural-Commitment Determination
+## 25. Architectural-Commitment Determination
 
 **ADR requirement: NO**, with the following explicit analysis (an RFC that
 silently decided this without showing its work would itself violate the
 "do not silently decide" instruction under which this RFC was authorized):
 
-- This RFC proposes no new persistent data shape or field — §14's minting
-  contract is expressed entirely in terms of ADR-0003 §9's already-accepted
-  lineage/revision identity architecture; it adds no new identity *layer*.
+- This RFC proposes no new persistent data shape or field — §14.1's
+  lineage-minting contract is expressed entirely in terms of ADR-0003 §9's
+  already-accepted architecture; §14.2–§14.3's occurrence-identity and
+  order-validity contract is expressed entirely in terms of
+  `src/model/opaque.rs`/the Slice Contract's already-accepted, already-
+  existing `OccurrenceId` domain and order-supply requirement. Neither adds
+  a new identity *layer* or *domain* — both apply existing, accepted
+  authority (from two distinct governing documents) to the authoring/
+  translation moment specifically.
+- §17's hydration contract likewise proposes no new persistent shape: it
+  operates entirely on data an already-accepted translation + Well-
+  Formedness + canonicalization cycle already produced, read back through
+  existing public accessors (§17, "What hydration is not").
+- §13's shared-translation-implementation requirement is an **architecture
+  constraint on implementation structure** (how many independent
+  implementations may exist), not a new persistent data shape, canonical
+  construct, or ordering rule.
 - This RFC proposes no new canonicalization or ordering rule — §16
   explicitly forbids translation from approximating or reimplementing
   ADR-0003 §6; it only fixes the *handoff point*, which is already implied
   by ADR-0003 §5's stated ordering (Well-Formed → canonicalize → identity),
   now extended one step earlier (draft → translate → that same pipeline).
+  §14.3's order-validity requirement is likewise not a new canonicalization
+  rule — it requires translation to satisfy an order-supply obligation
+  `opaque.rs` already imposes on any producer of canonical input; it does
+  not change what that obligation is.
 - This RFC proposes no `src/**` change — it is a product/contract document;
-  §23 explicitly leaves open whether any future public API addition is
+  §24 explicitly leaves open whether any future public API addition is
   warranted, and defers that decision rather than making it here.
-- **Caveat.** If a future implementation-scoping cycle concludes that §14's
-  minting contract, in practice, requires a *new* public `ordina` identity-
-  minting entry point with its own invariants beyond what ADR-0003 §9
-  already states, that addition may itself cross the ADR-grade threshold
-  (new production dependency-free but new normative architecture surface)
-  — mirroring how ADR-0006 was required for the desktop toolkit despite
-  ADR-0005 §6.2's existing dependency set. This RFC does not pre-judge that
-  outcome; it flags it as the concrete trigger condition a future
-  determination should check.
+- **Caveat.** If a future implementation-scoping cycle concludes that
+  §14.1's lineage-minting contract, §14.2's occurrence-minting contract,
+  §14.3's order-validity requirement, or §17's hydration contract, in
+  practice, require a *new* public `ordina` entry point with its own
+  invariants beyond what ADR-0003 §9 and `src/model/opaque.rs`/the Slice
+  Contract already state, that addition may itself cross the ADR-grade
+  threshold (new production-dependency-free but new normative architecture
+  surface) — mirroring how ADR-0006 was required for the desktop toolkit
+  despite ADR-0005 §6.2's existing dependency set. This RFC does not
+  pre-judge that outcome; it flags it as the concrete trigger condition a
+  future determination should check. §13's shared-implementation
+  requirement is a further, independent candidate trigger: if a future
+  cycle concludes the shared implementation must be a new `ordina`-owned
+  public entry point (rather than caller-composed or authoring-layer-local)
+  with its own invariants, that too may cross the ADR-grade threshold —
+  this RFC does not decide where the shared implementation lives (§13).
 
-## 25. Acceptance Criteria
+## 26. Acceptance Criteria
 
 For a future implementation to be judged faithful to this RFC:
 
-1. Every authoring surface implements translation as a deterministic
-   function per §12, satisfying §13's convergence rule under test.
+1. Exactly **one** shared, normative translation implementation exists;
+   every authoring surface invokes it rather than independently
+   reimplementing translation semantics (§13); that implementation is
+   deterministic per §12, making §13's convergence rule a direct,
+   testable consequence rather than an assumed one.
 2. No authoring draft is ever presented, stored as, or treated as a
    checked, canonical, identity-bearing Strategy (§8).
 3. Every RFC-0001 §7 minimum-contract element reaches an explicit
@@ -712,23 +1017,32 @@ For a future implementation to be judged faithful to this RFC:
    (§9, §10).
 4. Translation invocation requires its own explicit Trader confirmation,
    distinct from and in addition to per-rule confirmation (§11).
-5. Minted identities are collision-free, semantically inert, and follow
-   ADR-0003 §9's existing event table without introducing a new identity
-   layer (§14).
+5. Minted lineage identities are collision-free, semantically inert, and
+   follow ADR-0003 §9's existing event table without introducing a new
+   identity layer (§14.1); minted occurrence identities are unique within
+   their Strategy input and assigned exclusively by translation before
+   Well-Formedness (§14.2); the total order encoded by every minted handle
+   is a deterministic function of the confirmed draft's authored/declared
+   structure, never an unrelated source (§14.3).
 6. Duplicate constructs are handled per §15's distinction between
    unordered-collection deduplication (ADR-0003 §6, unchanged) and
    preserved-distinct constructs.
 7. Translation never computes, approximates, or predicts a revision
    identity; that remains exclusively ADR-0003's (§16).
-8. AI/suggestion mechanisms may propose mappings but never bypass
+8. Hydration reconstitutes the full existing Strategy's confirmed content
+   into an editable draft, marks it already-confirmed (not newly accepted
+   by hydration), preserves existing lineage/occurrence identities for
+   unchanged content, and never silently changes operative meaning (§17).
+9. AI/suggestion mechanisms may propose mappings but never bypass
    confirmation; a proposal is draft content, never translation output
-   (§17).
-9. Every edit — correction-flow or ordinary revision — re-enters the full
-   pipeline from translation forward; no partial re-check exists (§18).
-10. A translation-gate rejection is visually and structurally distinguished
+   (§18).
+10. Every edit — correction-flow (via §17 hydration) or ordinary revision —
+    re-enters the full pipeline from translation forward; no partial
+    re-check exists (§19).
+11. A translation-gate rejection is visually and structurally distinguished
     from a Well-Formedness defect in any Trader-facing surface (§10, §16).
 
-## 26. Recommendation
+## 27. Recommendation
 
 Accept this RFC as the product-and-contract basis for authoring-to-canonical
 translation. On acceptance: (a) N-25 is resolved to the extent stated here,
@@ -738,7 +1052,7 @@ authorized synchronization cycle (matching RFC-0001/RFC-0003 precedent);
 separate N-22-B implementation-scoping/authorization cycle is run against
 it, exactly as N-22-A required its own scoping/authorization after RFC-0003
 and ADR-0006 were accepted; (c) risks R-F…R-I are recorded for a later
-register-alignment cycle; (d) §23's flagged questions — new intermediate
+register-alignment cycle; (d) §24's flagged questions — new intermediate
 type, new public API, ADR-0003 §9 sufficiency, downstream ADR need — are
 explicitly preserved as open, to be picked up by a future read-only
 determination in the established PBA-0147/PBA-0150-style pattern before any
