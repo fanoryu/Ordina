@@ -1,7 +1,7 @@
 # Open Questions
 
 - **Tier:** 2 (supporting)
-- **Last updated:** 2026-08-13
+- **Last updated:** 2026-08-19
 
 Unanswered questions that block decisions. Each names what it blocks. Answered
 questions move into the Constitution or a normative spec and are recorded in §2.
@@ -10,7 +10,6 @@ questions move into the Constitution or a normative spec and are recorded in §2
 
 | ID | Question | Blocks | Owner | Priority |
 |----|----------|--------|-------|----------|
-| Q-06 | Target platform / form factor: web, mobile, desktop, or API-first? | Stack selection. `ux-constitution.md` constrains the interface regardless, but this cannot be deferred much longer. | Product | **High** |
 | Q-10a | What **thresholds** define "sufficiently fresh" and "unacceptably stale" per data type? The availability-vs-validity *rule* is settled (`validation-model.md` §6.1); its numeric boundaries are not. | Market-context validation; applying the WAIT / DO NOT TRADE data split in practice. | Product | **Critical** |
 | N-10 | How is Self Assessment collected — cadence, form, timing relative to the decision? | Trader Readiness interaction design. | Product | Medium |
 | N-12 | How is conflicting readiness evidence presented without persuasion or urgency? | UX compliance (`ux-constitution.md` §5F). | Product | Medium |
@@ -37,6 +36,7 @@ questions move into the Constitution or a normative spec and are recorded in §2
 
 | ID | Question | Resolution |
 |----|----------|------------|
+| Q-06 | Target platform / form factor: web, mobile, desktop, or API-first? | **RESOLVED** (PBD-0008; explicit Product Owner decision, 2026-08-19). Ordina's initial target platform/form factor is a **local, single-Trader desktop presentation surface**, running in-process against the existing Rust core, with no server-side persistence and no multi-user/external-beta assumptions at this stage. **Resolves platform/form-factor category only** — does not select a GUI framework, toolkit, or packaging model; does not authorize N-22 implementation; does not resolve or narrow Q-08, N-24, N-25, or F-8 (all remain OPEN); does not authorize server-side persistence, networking, accounts, or multi-user behavior. `docs/governance/identifier-ledger.md` PBD-0008. |
 | W-1 | Well-Formedness vs canonicalization boundary — must a Strategy be canonicalized before Well-Formedness can be determined? | **RESOLVED** (ADR-0004 — ACCEPTED). **No.** ADR-0003's artifact-level ordering **Well-Formed → canonicalize → revision identity** is authoritative and unchanged; canonicalization of the Strategy artifact is **not** a precondition for determining Well-Formedness. A WF analysis may use a deterministic **local analysis normalization** that yields no revision identity, no canonical serialization, and does not supersede ADR-0003 canonicalization. Any normalization capable of affecting construct admission, a mandatory verdict, mandatory defect existence, Direction overlap/conflict/coverage, or defect identity/ordering is **contract-bound** to the applicable Canonical Semantic Contract and checker-semantics version. `adr/0004-strategy-well-formedness-evaluation.md` §7. |
 | W-2 | Does the Well-Formedness result depend on a checker-semantics version, and is it the same version as the runtime evaluator's? | **RESOLVED** (ADR-0004 — ACCEPTED). A **Well-Formedness-checker semantics version** exists as an architectural concern and **every WF result is bound to the checker-semantics version that produced it**. Its scope covers every semantic rule whose change can alter an authoritative WF result, and it **encompasses and binds the applicable Canonical Semantic Contract version**. It is conceptually **distinct** from the runtime evaluator-semantics version; **N-24 remains OPEN** and owns that. No version syntax, persistence, serialization, or schema selected. `adr/0004-...` §8. |
 | W-3 | How is ADR-0002 §10c construct admission operationalized — is decidability sufficient? | **RESOLVED** (ADR-0004 — ACCEPTED). Decidability is **necessary but not sufficient**. Each construct is dispositioned into exactly one of **structurally checkable / semantically analyzable / genuinely runtime-only / inadmissible**, and a construct is admissible only if every required WF analysis is **decidable**, **terminating**, and **tractability-bounded** (a bounded compositional traversal of the declared canonical construct, at most polynomial in declared construct size; no enumeration of an undeclared/implicit combinatorial state space). Unbounded or undecidable required analyses make the **construct type INADMISSIBLE** — never deferred to runtime and never merely UNUSABLE. A contradictory *instance* of an **admitted** construct is a mandatory WF defect → **UNUSABLE**, not inadmissible. The bound is architectural, not an implementation resource budget. `adr/0004-...` §4. |
