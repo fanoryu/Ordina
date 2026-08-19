@@ -16,7 +16,7 @@
 //! | 1 | WELL-FORMED outcome                                  | `clean_strategy_is_well_formed_with_no_defects_and_no_not_evaluated`   |
 //! | 2 | UNUSABLE outcome                                     | `multiple_defects_yield_unusable_in_exact_canonical_order`             |
 //! | 3 | complete defect-set preservation                     | `multiple_defects_yield_unusable_in_exact_canonical_order`             |
-//! | 4 | defect identity (category/occurrence/discriminator)  | `multiple_defects_yield_unusable_in_exact_canonical_order`             |
+//! | 4 | defect identity (category/occurrence/discriminator)  | `multiple_defects_yield_unusable_in_exact_canonical_order`, `defect_identity_includes_the_correct_discriminator` |
 //! | 5 | canonical defect ordering                            | `multiple_defects_yield_unusable_in_exact_canonical_order`             |
 //! | 6 | permutation-order independence                       | `permuted_input_order_yields_identical_result`                         |
 //! | 7 | prerequisite gating                                  | `check2_blocks_14a_blocks_14b_chain`                                   |
@@ -46,6 +46,7 @@ use ordina::model::opaque::{
 use ordina::model::strategy::Strategy;
 use ordina::numeric::ExactNumber;
 use ordina::result::category::{CheckNumber, DefectCategory};
+use ordina::result::discriminator::{Discriminator, PropertyPosition};
 use ordina::result::verdict::Verdict;
 use ordina::semantics::dimension::DimensionBinding;
 
@@ -275,32 +276,73 @@ fn multiple_defects_yield_unusable_in_exact_canonical_order() {
 }
 
 // ---------------------------------------------------------------------------
+// 4 (discriminator component): defect identity, non-trivial discriminator.
+// ---------------------------------------------------------------------------
+
+/// Proves the discriminator component of dimension 4 (defect identity): a
+/// malformed enum evidence declaration (empty declared value set) produces a
+/// real check-6 `INVALID_EVIDENCE_DECLARATION` defect via the actual pipeline
+/// — not a manufactured `DefectIdentity` — whose identity is checked/category/
+/// occurrence AND whose `Discriminator` is asserted to be the exact
+/// `Property(PropertyPosition::new(4))` (the §3.5 declared-value-set
+/// property position). An implementation whose category/occurrence matched
+/// but whose discriminator computation was wrong (e.g. the wrong property
+/// position, or a different discriminator kind entirely) would fail this
+/// test even though `multiple_defects_yield_unusable_in_exact_canonical_order`
+/// (which never inspects `.discriminator()`) would not catch it.
+#[test]
+fn defect_identity_includes_the_correct_discriminator() {
+    let mut strategy = clean_strategy();
+    strategy.evidence_declarations = Declared::Present(vec![
+        numeric_evidence(occ(100), lineage(100)),
+        bad_enum_evidence(occ(103), lineage(903)),
+    ]);
+
+    let state = run_phase6(&strategy, &binding(), supported());
+
+    assert_eq!(state.defects.len(), 1, "{:?}", state.defects);
+    let defect = &state.defects[0];
+    assert_eq!(defect.offending(), occ(103));
+    assert_eq!(
+        defect.category(),
+        DefectCategory::InvalidEvidenceDeclaration
+    );
+    match defect.discriminator() {
+        Discriminator::Property(position) => {
+            assert_eq!(*position, PropertyPosition::new(4));
+        }
+        other => panic!("expected Discriminator::Property(4), got {other:?}"),
+    }
+}
+
+// ---------------------------------------------------------------------------
 // 6: permutation-order independence.
 // ---------------------------------------------------------------------------
 
-/// Proves dimension 6 (permutation-order independence): the same semantic
-/// defects, fed via evidence/condition collections in reversed insertion
-/// order, produce an identical final `WellFormednessResult` — compared on the
-/// complete defect and not-evaluated sets, not a subset.
+/// Proves dimension 6 (permutation-order independence): TWO semantically
+/// distinct check-6 defects (malformed evidence declarations at occ(101) and
+/// occ(102), otherwise identical in category/discriminator so occurrence is
+/// the only ordering key) are fed in raw insertion order **opposite** their
+/// canonical order in `forward`, and in canonical-matching insertion order in
+/// `backward`. Both must still produce the identical, exact canonical
+/// sequence (occ(101) before occ(102)) — a plausible implementation that
+/// merely preserves raw insertion/discovery order instead of calling
+/// `canonical_sort` would produce occ(102)-before-occ(101) for `forward` and
+/// fail the explicit order assertion below, distinguishing it from a
+/// genuinely canonical-sorting implementation.
 #[test]
 fn permuted_input_order_yields_identical_result() {
     let mut forward = clean_strategy();
-    let bad_evidence = lineage(900);
+    // Raw insertion order is occ(102), then occ(101) — the reverse of the
+    // canonical (occurrence-ascending) order, so a non-canonicalizing
+    // implementation would emit them in the wrong sequence here.
     forward.evidence_declarations = Declared::Present(vec![
         numeric_evidence(occ(100), lineage(100)),
-        bad_enum_evidence(occ(101), bad_evidence),
+        bad_enum_evidence(occ(102), lineage(902)),
+        bad_enum_evidence(occ(101), lineage(901)),
     ]);
-    forward.conditions = Declared::Present(vec![Condition::new(
-        occ(300),
-        lineage(300),
-        ConditionClassification::Blocking,
-        Guard::from_atoms(vec![Atom::new(
-            bad_evidence,
-            ComparisonOperator::Equal,
-            Literal::Enum(EnumValue::new(OpaqueValue::new(1))),
-        )]),
-    )]);
 
+    // Raw insertion order now matches canonical order.
     let mut backward = forward.clone();
     if let Declared::Present(items) = &mut backward.evidence_declarations {
         items.reverse();
@@ -308,6 +350,25 @@ fn permuted_input_order_yields_identical_result() {
 
     let result_a = finalize_phase6(run_phase6(&forward, &binding(), supported()));
     let result_b = finalize_phase6(run_phase6(&backward, &binding(), supported()));
+
+    for (label, result) in [("forward", &result_a), ("backward", &result_b)] {
+        assert_eq!(result.verdict(), Verdict::Unusable, "{label}");
+        assert_eq!(result.defects().len(), 2, "{label}: {:?}", result.defects());
+        let first = result.defects()[0].core();
+        assert_eq!(first.offending(), occ(101), "{label}");
+        assert_eq!(
+            first.category(),
+            DefectCategory::InvalidEvidenceDeclaration,
+            "{label}"
+        );
+        let second = result.defects()[1].core();
+        assert_eq!(second.offending(), occ(102), "{label}");
+        assert_eq!(
+            second.category(),
+            DefectCategory::InvalidEvidenceDeclaration,
+            "{label}"
+        );
+    }
 
     assert_eq!(result_a.verdict(), result_b.verdict());
     assert_eq!(result_a.defects().len(), result_b.defects().len());

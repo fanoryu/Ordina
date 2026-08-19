@@ -991,6 +991,10 @@ a slice defined as having none (Slice Contract §2, §7.4).
 
 **Phase 7: IMPLEMENTED — awaiting independent review (PBA-0148/ER-0122).** `tests/conformance/main.rs` — seven tests exercising the real public API end-to-end (`Strategy` → `run_phase6` → `finalize_phase6` → `WellFormednessResult`), covering the full fifteen-dimension matrix (Ruling C) with complete-result assertions. Verification: 525 unit (unchanged) + 7 integration (was 1) + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. Zero API gap discovered; no `src/**` change.
 
+**Independent review — FAIL, bounded remediation required.** MAJOR-001: permutation-order fixture produced only one defect, unable to distinguish canonical ordering from raw insertion order. MAJOR-002: no test asserted a non-trivial `Discriminator`.
+
+**Phase 7: REMEDIATED — awaiting independent re-review (PBA-0149/ER-0123).** `permuted_input_order_yields_identical_result` reworked to use two defects whose raw insertion order is opposite their canonical order, with explicit exact-sequence assertions in both directions. New `defect_identity_includes_the_correct_discriminator` asserts the exact `Discriminator::Property(PropertyPosition::new(4))` via the real pipeline. Verification: 525 unit (unchanged) + 8 integration (was 7) + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean. No `src/**` change; no API gap.
+
 ## Phase 8 — Acceptance and hardening
 
 | | |
