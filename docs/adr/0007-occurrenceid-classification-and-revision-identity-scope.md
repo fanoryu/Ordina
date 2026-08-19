@@ -4,14 +4,19 @@
 - **Date:** 2026-08-19
 - **Deciders:** Principal Engineer; to be accepted by Product Board
 - **Related:** ADR-0003 (ACCEPTED, PBR-0007 — **explicitly superseded, narrowly, by
-  this ADR**); ADR-0002 (ACCEPTED, PBR-0006 — unchanged, not reopened); ADR-0004
-  (ACCEPTED — cited, not reopened, specifically its W-1 resolution); Slice Contract
-  Revision 4 (`first-runnable-slice-contract-r04.md` §C.1–§C.2, ACCEPTED PBR-0016 —
-  cited, not amended); `src/model/opaque.rs` (current source, cited as evidence);
+  this ADR**); ADR-0002 (ACCEPTED, PBR-0006 — unchanged, not reopened, **the
+  primary source authority for this ADR's ruling**, specifically §2's typed-model
+  enumeration and §10b's evolution invariants); Slice Contract Revision 4
+  (`first-runnable-slice-contract-r04.md` §C.1–§C.2, ACCEPTED PBR-0016 — cited,
+  not amended); `src/model/opaque.rs` (current source, cited as evidence);
   RFC-0004 (PROPOSED — downstream consumer of this ruling, not edited here);
   authorized by **PBA-0162**, following the read-only determination under
   **PBA-0161** (outcome C — current authority insufficient to decide without this
-  amendment)
+  amendment); remediated under **PBA-0163** following an independent read-only
+  review (**BLOCKER** — the drafting cycle's original text misattributed this
+  ruling to ADR-0004's W-1 resolution, which governs a narrow per-check
+  sub-expression comparison technique, not the checker-input/canonical-form
+  boundary; that citation is removed and replaced below)
 
 > This ADR decides **one narrow question only**: whether `OccurrenceId` (Slice
 > Contract Revision 4 §C.1's construct-occurrence addressing identity) is inside
@@ -21,7 +26,10 @@
 > generally, `LineageId` semantics, revision-token format, duplicate handling,
 > provenance classification, evaluator semantics, serialization, N-24, Q-08, F-8,
 > or any N-25 product semantics beyond this classification's direct consequence.
-> ADR-0002 and ADR-0004 are **not** reopened; they are read as fixed inputs.
+> ADR-0002 is **not** reopened; it is read as a fixed input whose existing,
+> unamended text is the basis for this ruling. ADR-0004 is cited only for
+> unrelated, uncontested boundary facts (§5, W-1 is **not** cited for this
+> ruling — see "What this ADR does not rely on," below).
 
 ---
 
@@ -50,12 +58,7 @@ deterministic-conformance mechanism only" that "carries no product semantics"
 Well-Formedness checker," and the Slice Contract's own A2 table (row 16,
 `first-runnable-slice-contract.md` line 734) states plainly: "Slice 1 computes
 **no** canonical form and **no** revision identity; it establishes only the
-*preconditions* ADR-0003 I9 requires." ADR-0004's own accepted resolution of
-open question W-1 goes further, formally distinguishing the Well-Formedness
-checker's own input representation from ADR-0003's canonical form: "A WF
-analysis may use a deterministic local analysis normalization that yields no
-revision identity, no canonical serialization, and **does not supersede ADR-0003
-canonicalization**" (`open-questions.md` W-1, citing `adr/0004-...` §7).
+*preconditions* ADR-0003 I9 requires."
 
 The gap this exposes: ADR-0003's §6 table was authored before `OccurrenceId`
 existed, has no entry for it, and no accepted document has ever formally decided
@@ -65,17 +68,67 @@ multi-surface-convergence sections (§13, §14.2–§14.3) depend on this answer
 a genuine, read-only Product Board determination (PBA-0161) found current
 authority — taken piece by piece — insufficient to certify an answer without
 performing the explicit classification act ADR-0003 §6.1 itself names as the
-required remedy. This ADR performs that act.
+required remedy. This ADR performs that act, grounded in ADR-0002 §2 and §10b
+(below) rather than in any claim about the Well-Formedness checking mechanism
+itself.
+
+### What this ADR does not rely on
+
+An earlier draft of this ADR cited ADR-0004's W-1 resolution ("A WF analysis may
+use a deterministic local analysis normalization... does not supersede ADR-0003
+canonicalization") as proof that the checker's input representation is
+architecturally distinct from ADR-0003's canonical form. An independent review
+(PBA-0163 remediation trigger) correctly found this citation unsound: W-1
+governs a narrow, **per-check, sub-expression comparison technique** some checks
+may use internally (ADR-0004 §7's own example: "comparing two Direction
+predicates for overlap/contradiction") — it says nothing about the `Strategy`
+struct's overall type identity or about whether `OccurrenceId`, specifically, is
+part of the ADR-0002 typed model. That citation is withdrawn. This ADR's ruling
+rests entirely on ADR-0002 §2 and §10b, below.
 
 ## Decision
 
 **We will classify `OccurrenceId` (and any future construct-occurrence
 addressing identity of the same kind) as categorically outside ADR-0003 §6's
 canonicalization taxonomy and §7's revision-identity computation — it is not an
-ID, CX, PX, or INV property of the canonical semantic form; it is a property of
-a distinct, already-architecturally-recognized data domain (the Well-Formedness
-checker's own local input representation, per ADR-0004's accepted W-1
-resolution) that ADR-0003 does not govern at all.**
+ID, CX, PX, or INV property of the canonical semantic form, because it was
+never part of the ADR-0002 typed model that form is defined over.**
+
+**How this is derived — interpretation vs. new decision, kept explicit and not
+blurred:**
+
+- **The premise — `OccurrenceId` was never part of the ADR-0002 typed model —
+  is a direct interpretation of existing, unamended accepted text, not a new
+  architecture choice.** ADR-0002 §2's Decision enumerates the typed model as a
+  closed, numbered list: (1) a declarative Strategy envelope carrying identity,
+  revision identity, applicability, declared evidence requirements, provenance
+  references, and freshness-policy references; (2) typed condition nodes; (3)
+  ordered-evidence constructs; (4) Direction derivation; (5) candidate-value
+  derivations; (6) declared configuration. Construct-occurrence addressing
+  identity appears in none of these six items, under any name. ADR-0002 §10b's
+  evolution invariants reinforce that this enumeration is not casually
+  extensible: "unknown or unsupported semantic constructs fail closed," "a model
+  extension must not silently change the meaning of an already-defined
+  construct," and "semantic evolution must therefore be explicit and governed."
+  Revision 4 (2026-08-16) added `OccurrenceId` to the Slice-1 **implementation**
+  under a Slice-Contract-only authorization track (PBA-0088…PBA-0095, governed
+  by PBD-0006's engineering-contract convention) that never invoked ADR-0002
+  §10b's explicit-governance mechanism and never amended ADR-0002. Under §10b's
+  own rule, an unexplained, ungoverned addition cannot be read as having
+  silently joined the model — the model's own evolution invariant forbids that
+  reading. This is a textual conclusion ADR-0002's existing, accepted words
+  already support; this ADR did not invent it.
+- **What *is* new here — and this is squarely ADR-0003 §6.1's own required
+  act, not an interpretation — is stating this conclusion explicitly, as a
+  citable architecture ruling, and using it to resolve ADR-0003 §6's silence
+  about `OccurrenceId`.** §6.1 requires "an explicit semantic-model/version
+  decision," never an informally-shared inference, before any property's
+  classification (including its exclusion) may be relied upon for
+  revision-identity purposes. Without this ADR, the correct conclusion above
+  existed only as an argument scattered across governance-cycle prose (PBA-0159,
+  PBA-0160, PBA-0161); it had no durable, citable, ADR-status form. Performing
+  that formal act — not inventing the underlying fact — is this ADR's actual
+  contribution.
 
 Concretely:
 
@@ -83,14 +136,12 @@ Concretely:
    Strategy property" within the meaning of ADR-0003 §6/§6.1. ADR-0003 §6
    classifies properties of **the canonical semantic form** — the ADR-0002 typed
    model after Well-Formedness and canonicalization (ADR-0003 §2, §5).
-   `OccurrenceId` is instead a property of the **Well-Formedness checker's own
-   input representation** — the Slice-1 `Strategy` struct, which ADR-0004's W-1
-   resolution already formally distinguishes from ADR-0003's canonical form
-   ("does not supersede ADR-0003 canonicalization") and which the Slice Contract
-   itself states computes "no canonical form and no revision identity" (A2 table
-   row 16). It therefore never enters ADR-0003's taxonomy at all — not because it
-   was overlooked, but because it belongs, by existing accepted architecture, to
-   a different pipeline stage than the one §6 classifies.
+   `OccurrenceId` was never part of that model (ADR-0002 §2's closed
+   enumeration, above) and was never added to it through §10b's required
+   governed-extension process. It therefore never enters ADR-0003's taxonomy at
+   all — not because it was overlooked by either ADR, but because ADR-0002's own
+   text never admitted it as a model element in the first place, and ADR-0003 §6
+   classifies only elements of that model.
 2. **Revision-identity participation (question 2).** `OccurrenceId` **does not
    participate** in Strategy revision-identity computation (ADR-0003 §7). It is
    never carried into, derived from, or required by the canonical semantic form;
@@ -99,26 +150,36 @@ Concretely:
 3. **Opaque/numeric ordering participation (question 3).** For the same reason,
    the **total order** a translator or other producer assigns to `OccurrenceId`
    handles (Slice Contract §3.3.1, Revision 4 §C.1) **does not participate** in
-   revision identity either. It is an addressing property of the checker-input
-   layer, not a property — ordered or otherwise — of the canonical semantic form
-   ADR-0003 §6 governs (cf. §6's own "Field/property ordering — CX: ... ordering
-   carries no meaning" row, which this ruling is consistent with in spirit, while
-   remaining a distinct ruling: `OccurrenceId` order is not merely CX-classified,
-   it is outside the taxonomy entirely, because `OccurrenceId` itself is).
+   revision identity either — the authority is the same as ruling 1's (ADR-0002
+   §2/§10b): `OccurrenceId` and its order are not properties of the canonical
+   semantic form at all, so no §6 row, including "Field/property ordering — CX,"
+   applies to them. **This is stated as an analogy only, not as authority for
+   the ruling:** §6's CX row governs ordering *of properties that are already
+   part of the canonical semantic form* (e.g., the order fields happen to be
+   listed in), and correctly treats that ordering as non-identity-bearing.
+   `OccurrenceId`'s exclusion is a different and prior claim — it is not in the
+   canonical semantic form to begin with, so it is not "CX-classified ordering,"
+   it is simply outside the table the CX row belongs to. The comparison is
+   offered only to illustrate that ADR-0003's own taxonomy already treats
+   ordering-only information as non-operative wherever it does apply, which is
+   consistent with, but does not itself establish, this ruling.
 4. **Equivalence under differing occurrence assignment (question 4).** **Yes** —
    two Strategies whose canonical semantic content (per ADR-0003 §6's existing ID
    rows) is identical, but whose `OccurrenceId` assignments or supplied order
    differ, remain **revision-equivalent**: they receive the same revision
    identity, because revision identity is computed over the canonical semantic
    form, from which `OccurrenceId` is categorically absent under this ruling.
-5. **Reconciliation with Revision 4 §C.1–§C.2 (question 5).** This ruling is not
-   an independent judgment call layered onto Revision 4's "carries no product
-   semantics" / "addressing and deterministic-conformance mechanism only"
-   framing — it is the direct architectural consequence of taking that framing,
-   plus ADR-0004's already-accepted W-1 distinction between the checker's local
-   input and ADR-0003's canonical form, at face value. Revision 4 never claimed
-   `OccurrenceId` was part of the ADR-0002/ADR-0003 canonical model; this ADR
-   confirms, formally and for the first time, that it correctly is not.
+5. **Reconciliation with Revision 4 §C.1–§C.2 (question 5).** Revision 4's own
+   framing ("carries no product semantics"; "addressing and
+   deterministic-conformance mechanism only") is **consistent with** this ruling
+   but is not, by itself, this ruling's authority — Revision 4 is a Slice
+   Contract amendment, governed by PBD-0006, and never purported to decide
+   anything about ADR-0002's typed model or ADR-0003's taxonomy; it does not
+   have that authority, and this ADR does not treat it as if it did. The actual
+   authority is ADR-0002 §2/§10b, above: `OccurrenceId` was never part of the
+   ADR-0002 model, and Revision 4's own self-description ("no product
+   semantics") is simply unsurprising corroborating evidence of a conclusion
+   independently reached from ADR-0002's text.
 6. **§6.1 closure-rule applicability after this amendment (question 6).**
    ADR-0003 §6.1's fail-closed rule ("an unclassified property fails closed to
    INV") **never applied to `OccurrenceId` in the first place**, under this
@@ -147,10 +208,12 @@ Concretely:
   situation — a property appearing after acceptance — and requires "an explicit
   semantic-model/version decision," never a silent or ad hoc one. This ADR is
   that decision, and nothing more.
-- **ADR-0004's already-accepted W-1 resolution.** The formal distinction between
-  the Well-Formedness checker's own "local analysis normalization" input and
-  ADR-0003's canonical form is not new architecture invented here — it is cited,
-  existing, accepted text this ADR relies on rather than reopens.
+- **ADR-0002 §2's closed model enumeration and §10b's evolution invariants.**
+  `OccurrenceId` was never one of the six items ADR-0002 §2 lists, and §10b
+  requires model extensions to be explicit and governed — an ungoverned
+  Slice-Contract-only addition cannot be read as having silently joined the
+  model. This is existing, accepted, unamended text this ADR relies on rather
+  than reopens.
 - **Internal consistency (the closure-rule tension).** A literal, unamended
   reading of §6.1 would fail-close every Strategy to INV the moment any construct
   carries a mandatory but unclassified `OccurrenceId` — which is every Strategy,
@@ -175,10 +238,10 @@ Concretely:
   it as an informally-shared assumption across governance cycles.
 - Adds zero new architecture surface: no new identity layer, no new
   canonicalization rule, no new ID/CX/PX/INV row, no `src/**` change.
-- Confirms, formally, that the Well-Formedness-checker-input/canonical-form
-  boundary ADR-0004's W-1 resolution already drew is load-bearing beyond
-  Well-Formedness itself — it is also the boundary that resolves this
-  classification question.
+- Confirms, formally, that ADR-0002's own evolution-governance discipline
+  (§10b) is sufficient by itself to resolve a later Slice-Contract-introduced
+  construct's model membership, without needing to reach for any Well-
+  Formedness-specific architecture.
 
 ### Negative
 
