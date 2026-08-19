@@ -15,18 +15,25 @@
   (ACCEPTED — `OccurrenceId`/order excluded from revision identity, unaffected,
   applied here); RFC-0004 (ACCEPTED, PBR-0021 — authoring/translation semantics
   and revision-identity-bearing convergence, unaffected); PBA-0169 (drafting
-  authorization); PBA-0170 (bounded remediation authorization, closing findings
-  from the failed independent review of the drafted version of this ADR)
+  authorization); PBA-0170 (first bounded remediation authorization); PBA-0171
+  (second bounded remediation authorization, closing findings from the
+  independent re-review of the first remediation)
 
-- **Remediation (PBA-0170):** this revision remediates 2 BLOCKER (missing
-  canonical field/tag registry; fixed-width rational encoding incompatible with
-  arbitrary-precision `BigRational`) and 2 MAJOR (Rust-variant-name-dependent
-  enum spelling; `RevisionIdentity` scheme/version not externally
-  distinguishable) findings from the drafted version's independent review. The
-  two NOTE findings (`LineageId` reference-bearing-role operational clarity;
-  `RevisionIdentityError` overflow-vector wording) are addressed only where
-  mechanically forced by the four remediated findings, per PBA-0170's bounded
-  scope.
+- **Remediation (PBA-0170):** the first remediation cycle addressed 2 BLOCKER
+  (missing canonical field/tag registry; fixed-width rational encoding
+  incompatible with arbitrary-precision `BigRational`) and 2 MAJOR
+  (Rust-variant-name-dependent enum spelling; `RevisionIdentity` scheme/version
+  not externally distinguishable) findings from the drafted version's
+  independent review.
+
+- **Second remediation (PBA-0171):** independent re-review of the first
+  remediation found 1 new BLOCKER (Appendix Table D's `ConfigurationParameter`
+  field-tag positions contradicted the Slice Contract's own confirmed §3.9
+  positions) and 1 new MAJOR (the BigInt magnitude-length field's fixed `u32`
+  width contradicted Slice Contract §4.2's explicitly unbounded magnitude,
+  despite this ADR's own totality claim) — both remediated in this revision.
+  Appendix Table B (`Strategy`) was independently re-verified against
+  `required_property.rs`'s `check_1` and confirmed correct, unchanged.
 
 ## Context
 
@@ -140,7 +147,7 @@ preimages without sharing code. Every value is encoded as `(tag: u8, payload)`:
 | `0x0D` | `DeclaredCategory::OutOfDomain` | none — zero-length |
 | `0x0E` | `Literal` tagged union | 1-byte variant tag (`0`=`Numeric{value, dimension}` → tag-`0x04` frame + tag-`0x07` frame; `1`=`Boolean(bool)` → tag-`0x06` frame; `2`=`Enum(EnumValue)` → tag-`0x07` frame) |
 | `0x0F` | `DerivationExpression` tagged union (recursive) | 1-byte variant tag (`0`=`Literal(Literal)`→ tag-`0x0E` frame; `1`=`EvidenceReference(LineageId)`→ tag-`0x07` frame; `2`=`ConfigurationReference(LineageId)`→ tag-`0x07` frame; `3`=`Add{left,right}`→ two nested tag-`0x0F` frames; `4`=`Subtract{left,right}`→ two nested tag-`0x0F` frames; `5`=`Multiply{operand,scalar}`→ one nested tag-`0x0F` frame + one tag-`0x0E` frame) |
-| `0x10` | Canonical arbitrary-precision `BigInt` (§2a) | 1-byte sign (`0`=zero, `1`=positive, `2`=negative) + [if non-zero] 4-byte big-endian magnitude-byte-length (`u32`) + minimal big-endian magnitude bytes (no leading zero byte) |
+| `0x10` | Canonical arbitrary-precision `BigInt` (§2a) | 1-byte sign (`0`=zero, `1`=positive, `2`=negative) + [if non-zero] self-delimiting arbitrary-precision length prefix (§2a) + minimal big-endian magnitude bytes (no leading zero byte) — no fixed-width ceiling, total over the entire `BigInt` domain |
 | `0x11` | Closed-category enum (Appendix Table I; every model enum — `ConditionClassification`, `Direction`, `ComparisonOperator`, `EvidenceTypeTag`, `CandidateRole`) | 1-byte **ADR-fixed semantic tag** (§2b) — never a Rust discriminant, never a variant-name string |
 
 Rules that eliminate ambiguity across the list above, applying uniformly:
@@ -155,9 +162,15 @@ Rules that eliminate ambiguity across the list above, applying uniformly:
 - **String encoding:** UTF-8 only, NFC-normalized against a pinned Unicode
   version (§9), length in bytes. Enum spelling never uses tag `0x05` — see
   tag `0x11`/§2b.
-- **Length prefixes:** always present for variable-length payloads (`0x05`,
-  `0x08`, `0x09`, `0x0A`'s field count, `0x10`'s magnitude); fixed-width
-  payloads (`0x02`, `0x03`, `0x06`, `0x07`, `0x11`) carry none.
+- **Length prefixes:** always present for variable-length payloads — fixed
+  4-byte `u32` counts for `0x05`, `0x08`, `0x09`, `0x0A`'s field count (these
+  remain bounded: no construct has anywhere near `2^32` fields, evidence
+  declarations, or collection members, so a fixed 4-byte count introduces no
+  real ceiling); `0x10`'s magnitude instead uses the **self-delimiting
+  arbitrary-precision length prefix** defined in §2a, deliberately not a fixed
+  width, because the magnitude domain itself (Slice Contract §4.2) is
+  explicitly unbounded. Fixed-width payloads (`0x02`, `0x03`, `0x06`, `0x07`,
+  `0x11`) carry no length prefix at all.
 - **Sequence boundaries:** always an explicit `u32` count, never a sentinel/
   terminator byte.
 - **Nested value framing:** every value, at any nesting depth, is the same
@@ -198,20 +211,41 @@ entire domain `num_bigint::BigInt` admits:
 
 - **Sign byte:** `0` for zero, `1` for strictly positive, `2` for strictly
   negative — never inferred from magnitude, never a two's-complement scheme.
-- **Zero** has exactly one representation: sign byte `0`, no magnitude-length
-  field, no magnitude bytes (the magnitude is definitionally empty and is
-  never separately encoded).
-- **Magnitude** (non-zero only): a 4-byte big-endian `u32` byte-length,
-  followed by that many big-endian magnitude bytes — the **minimal** encoding
-  (no leading zero byte; the most-significant byte is always non-zero). This
-  eliminates leading-zero ambiguity and gives every non-zero magnitude exactly
-  one encoding.
-- **No platform-width dependency and no truncation path:** the byte-length
-  field is a `u32` (supporting magnitudes up to `2^32 - 1` bytes, i.e.,
-  roughly the largest value any realistic Strategy could construct many orders
-  of magnitude beyond what any actual instrument/threshold value would need);
-  there is no fixed-width fallback and no overflow branch — every `BigInt` the
-  typed model can hold has exactly one, well-defined encoding.
+- **Zero** has exactly one representation: sign byte `0`, no length prefix, no
+  magnitude bytes (the magnitude is definitionally empty and is never
+  separately encoded).
+- **Magnitude** (non-zero only): a **self-delimiting arbitrary-precision
+  length prefix**, followed by that many big-endian magnitude bytes — the
+  magnitude itself is the **minimal** encoding (no leading zero byte; the
+  most-significant byte is always non-zero). This eliminates leading-zero
+  ambiguity and gives every non-zero magnitude exactly one encoding.
+- **The length prefix itself is total, not fixed-width, and self-delimiting**
+  — this is a direct architectural correction from this ADR's prior revision,
+  which used a fixed 4-byte `u32` byte-length and thereby imposed an
+  unstated ~4.29 GiB ceiling on magnitude size, contradicting Slice Contract
+  §4.2's explicit "no minimum or maximum magnitude" and this ADR's own
+  totality claim (found during independent re-review). The corrected scheme:
+  1 byte `L` (`0 < L ≤ 255`) giving the byte-length of the **length-of-
+  magnitude** value that follows, then `L` big-endian bytes encoding that
+  length-of-magnitude value (itself minimal — no leading zero byte, the same
+  minimality rule applied one level up), then the magnitude's own bytes at
+  that stated length. `L` is never `0` when a magnitude follows (a non-zero
+  sign always has a magnitude of at least one byte, so its length is always
+  at least `1`, which itself needs at least one byte, `L ≥ 1`) — this keeps
+  `L = 0` structurally impossible to produce for a well-formed encoding,
+  rather than a state requiring a separate error path. `L`'s own domain
+  (1–255) permits length-of-magnitude values up to `2^(255·8) - 1` bytes —
+  a magnitude size no realistic or even deliberately adversarial Strategy
+  construction can approach, while remaining, unlike the prior `u32` scheme,
+  **architecturally unbounded**: no `BigInt` the typed model can hold is
+  excluded by this encoding, for any reason, ever. A magnitude requiring more
+  than 255 bytes just to state *its own length* is not a case this encoding
+  fails on; it is a case that cannot arise from any process that terminates,
+  which is a resource-exhaustion property of computation in general, not a
+  semantic limit this ADR imposes (§10).
+- **No platform-width dependency, no truncation path, and no artificial
+  ceiling:** every `BigInt` the typed model can hold has exactly one,
+  well-defined encoding, unconditionally.
 
 Tag `0x04` (`Rational`, `ExactNumber`/`BigRational`) is two `0x10` frames —
 numerator (signed) and denominator (sign byte always `1`, i.e., strictly
@@ -401,11 +435,26 @@ BLAKE3 is treated as collision-resistant per its published security claims
 detection/handling is introduced; this matches ADR-0003's own posture.
 `compute_revision_identity` returns `Result<..., RevisionIdentityError>`
 **only** for genuinely malformed input — specifically, a `Strategy` that is
-not Well-Formed per ADR-0004's gate (I9's precondition). With BLOCKER-2's
-arbitrary-precision framing, no numeric-overflow error path exists any longer
-(§2a's encoding is total over the entire `BigInt`/`BigRational` domain) — the
-drafted version's implicit overflow ambiguity is closed by making overflow
-structurally impossible, not by adding an error variant for it.
+not Well-Formed per ADR-0004's gate (I9's precondition). With this remediation's
+self-delimiting arbitrary-precision framing (§2a), the encoding is total over
+the entire `BigInt`/`BigRational` domain unconditionally — there is no
+numeric-overflow **semantic** error path, and none is added, because none is
+needed: no `BigInt` value the typed model can construct is excluded by the
+encoding, for any magnitude. This is distinct from **ordinary resource
+exhaustion** (a process running out of memory or time while encoding an
+adversarially, computation-terminating-but-absurdly large magnitude) — that
+is a property of the executing machine, not of the identity scheme, and this
+ADR does not and must not turn it into a Product-level numeric limit by
+inventing an error variant for it; an implementation encountering resource
+exhaustion fails the way any Rust program does under memory/time exhaustion
+(allocation failure, abort), which is outside `RevisionIdentityError`'s scope
+entirely, exactly as it would be for any other unbounded allocation anywhere
+in the crate. `RevisionIdentityError`'s single variant, `NotWellFormed`,
+remains the complete and correct error surface for this function — no
+"unsupported scheme/model state" or "malformed internal state" case exists
+separately, because `compute_revision_identity` only ever receives a value
+the typed `Strategy` model already constructed, and every state that model
+can hold has a defined encoding (§2a) once the WF precondition is satisfied.
 
 ### 8. Deterministic cross-platform behavior
 
@@ -516,8 +565,25 @@ preimage bytes and the final `RevisionIdentity` value**, not the digest alone
 9. **BigInt magnitude exceeding 64 bits** (numerator or denominator) →
    correctly encoded per §2a, no truncation, distinct from any other value
    that happens to share its low 64 bits.
+9a. **BigInt magnitude exceeding 255 bytes** (triggering `L ≥ 2` in §2a's
+    self-delimiting length-of-magnitude framing) → a real, concretely
+    constructible vector (a 256+ byte magnitude is a few hundred bytes of
+    test fixture, not a multi-gigabyte allocation) proving the two-level
+    length grammar itself, not merely its `L = 1` common case.
+9b. **Architecture-level totality, not an empirical large-allocation test:**
+    §2a's length-of-magnitude framing is proven total by construction (`L`'s
+    own domain covers every magnitude any terminating process could produce)
+    — this ADR does not require, and implementation must not require, a
+    literal multi-gigabyte fixture to demonstrate the grammar handles
+    arbitrarily large magnitudes; vector 9a's small `L ≥ 2` case is sufficient
+    evidence the two-level scheme is wired correctly, and the general case
+    follows by the scheme's own induction, not by additional empirical scale.
 10. **Negative `BigInt`** in a rational numerator → correct sign-byte framing,
     distinct from its positive counterpart.
+10a. **`ConfigurationParameter` field-position correctness:** a Strategy
+    containing at least one declared `ConfigurationParameter` → the field
+    frames use positions `1, 3, 4, 5, 6` (never `2`, per corrected Table D),
+    verified against golden preimage bytes.
 11. **Rational normalization:** `1/2`, `2/4`, and `-1/-2` all produce the
     identical canonical `0x04` frame (numerator `1`, denominator `2`).
 12. **Enum canonical semantic tag independent of Rust spelling:** a vector
@@ -644,9 +710,16 @@ that future ADR explicitly says so.
   mode to `bincode`'s field-order coupling, applied to enum identifiers
   instead. See §2b.
 - **Fixed-width `i64`/`u64` rational framing (the drafted version's original
-  choice)** — rejected during this remediation: incompatible with the
+  choice)** — rejected during the first remediation: incompatible with the
   accepted, deliberately unbounded `BigInt`/`BigRational` domain (ADR-0005
   §7.3). See §2a.
+- **Fixed 4-byte `u32` magnitude-byte-length (the first remediation's own
+  interim choice)** — rejected during this second remediation: still a
+  fixed-width ceiling (~4.29 GiB), just a larger one than `i64`/`u64`; still
+  formally incompatible with Slice Contract §4.2's "no minimum or maximum
+  magnitude," and still contradicted this ADR's own totality claim. Replaced
+  by §2a's self-delimiting, two-level length-of-magnitude encoding, which has
+  no ceiling at all rather than a larger one.
 
 ---
 
@@ -677,9 +750,16 @@ construct, without exception.
 
 ### Table B — `Strategy` (type tag `1`), field positions
 
-Confirmed source: `src/model/strategy.rs`'s own field order; §3.4 "one per
-property and the occurrence anchor"; `required_property.rs`'s confirmed
-"semantic-model-version stays position 2."
+**Verified (re-review, independent re-confirmation) — outcome A, confirmed
+correct.** Directly quoted, not inferred, from `src/checks/required_property.rs`'s
+`check_1` (the envelope-level check-1 function) and its own doc comment:
+*"Check 1 over a whole Strategy — ... The envelope (§3.4) owns the absence of
+its five required collections (positions 3–7); positions 1 (lineage) and 2
+(semantic-model version) are not check 1's (checks 15 and 16)."* The function
+body itself assigns the five collections' positions explicitly and in this
+exact order: `evidence_declarations` → 3, `configuration_parameters` → 4,
+`conditions` → 5, `direction_rules` → 6, `candidate_derivations` → 7 — matching
+this table without alteration.
 
 | Position (field tag) | Field | Frame |
 |---|---|---|
@@ -704,17 +784,43 @@ Confirmed source: `src/checks/required_property.rs` — "Position 1 (lineage)
 
 ### Table D — `ConfigurationParameter` (type tag `3`), field positions
 
-Declared struct field order (no separately-quoted contract position found in
-source this cycle; follows the same declared-order convention Tables C/F/H
-confirm directly).
+**Corrected (second remediation) — the prior revision of this table used
+plain declared-struct-order and was wrong.** Directly quoted, not inferred,
+from `src/checks/required_property.rs`'s `check_configuration_parameter` and
+its own doc comment: *"Check 1 for one configuration parameter — §3.9
+positions 1, 3, 4, 5, 6 are check-1-owned. Position 2 (declared type) is
+NUMERIC-only and structurally implied (§3.9); its absence is unrepresentable
+and is never manufactured."* The function body assigns `lineage` → 1,
+`dimension` → 3, `lower_bound` → 4, `upper_bound` → 5, `adjustable` → 6,
+explicitly skipping 2. Independently corroborated by
+`src/checks/configuration_bounds.rs`: *"§3.9 positions: lower bound = 4,
+upper bound = 5."* Position 2 is **reserved**, not reused, not renumbered,
+and not collapsed — no live field occupies it, because Slice 1 admits only
+`NUMERIC` configuration parameters (`src/model/config.rs`'s own doc: "the
+declared type is implied by the struct rather than carried as a field"), so
+the declared-type property §3.9 names exists at the contract level but has no
+`Declared`-wrapped representation to encode.
 
 | Position | Field | Frame |
 |---|---|---|
 | `1` | `lineage` | tag `0x01` or `0x07` |
-| `2` | `dimension` | tag `0x01` or `0x07` (`DimensionSymbol`) |
-| `3` | `lower_bound` | tag `0x01` or `0x0E` (`Literal`) |
-| `4` | `upper_bound` | tag `0x01` or `0x0E` |
-| `5` | `adjustable` | tag `0x01` or `0x06` (bool) — declared structural flag, not an in-bounds value; "Configuration structure" row, ID |
+| `2` | *(reserved — structurally-implied `NUMERIC` declared type; no live field; never emitted)* | — |
+| `3` | `dimension` | tag `0x01` or `0x07` (`DimensionSymbol`) |
+| `4` | `lower_bound` | tag `0x01` or `0x0E` (`Literal`) |
+| `5` | `upper_bound` | tag `0x01` or `0x0E` |
+| `6` | `adjustable` | tag `0x01` or `0x06` (bool) — declared structural flag, not an in-bounds value; "Configuration structure" row, ID |
+
+Because position `2` has no corresponding live field, `ConfigurationParameter`'s
+tag-`0x0A` record frame emits exactly **5** field-position/value pairs (`1`,
+`3`, `4`, `5`, `6`) — never 6, and never a placeholder frame for position `2`
+itself; the "field count" prefix in tag `0x0A`'s framing (§2) is `5` for this
+record type, matching the number of fields actually present in the model, not
+the highest position number named by the contract. This is not an
+inconsistency: the record's own field-count prefix bounds what an
+implementation must iterate, and the *position tags* it iterates over are a
+sparse subset of the contract's full numbering — exactly analogous to how
+`Condition`, `DirectionRule`, and `EvidenceDeclaration`'s own field counts
+already equal their live field counts, not their highest contract position.
 
 ### Table E — `CandidateDerivation` (type tag `4`), field positions
 
@@ -802,6 +908,41 @@ model revision adds such a field to `Strategy` or any construct, the §6.1
 classification-closure gate governs it, and this Appendix must be extended
 (a new, later ADR revision or superseding ADR, per §6) before that field may
 participate in — or be correctly excluded from — revision identity.
+
+### Registry completeness audit (second remediation)
+
+Re-derived directly from live `src/model/**` during this remediation cycle,
+covering every reachable type: `Strategy`, `Condition`, `ConfigurationParameter`,
+`CandidateDerivation`, `DirectionRule`, `EvidenceDeclaration`, `Guard`, `Atom`,
+`Literal`, `DerivationExpression`, and the five closed enums.
+
+- **Live reachable record/struct types examined:** 8 (`Strategy`, `Condition`,
+  `ConfigurationParameter`, `CandidateDerivation`, `DirectionRule`,
+  `EvidenceDeclaration`, `Guard`, `Atom`) + 2 tagged unions (`Literal`,
+  `DerivationExpression`) + 5 closed enums.
+- **Live fields examined (record types, `occurrence` counted separately
+  below):** Strategy 7 (`lineage`, `semantic_model_version`, and 5
+  collections) + Condition 3 + ConfigurationParameter 5 (position `2` has no
+  field — see Table D) + CandidateDerivation 3 + DirectionRule 4 +
+  EvidenceDeclaration 4 + Guard 1 (`atoms`) + Atom 3 (`evidence`, `operator`,
+  `literal` — grammar-level fields, never `occurrence`-anchored) = **30**.
+- **Revision-bearing fields:** 30 (all — no PX/INV field exists in the
+  current model, per the note above).
+- **Excluded PX/INV fields:** 0.
+- **`OccurrenceId` exclusions:** 6 — one `occurrence` field on each of
+  `Strategy`, `Condition`, `ConfigurationParameter`, `CandidateDerivation`,
+  `DirectionRule`, `EvidenceDeclaration` (the six occurrence-anchored
+  constructs); `Guard` and `Atom` are grammar-level fragments with no
+  `occurrence` field of their own, so no exclusion applies to them because
+  there is nothing there to exclude.
+- **Appendix-mapped fields:** 30 of 30.
+- **Missing mappings:** 0.
+- **Duplicate mappings:** 0.
+- **Reserved (contract-named, no live field) positions:** 1 —
+  `ConfigurationParameter` position `2` (Table D).
+- **Contradictory mappings:** 0 (Table D's prior contradiction, found by
+  independent re-review, is corrected above; Table B was independently
+  re-verified and confirmed correct, not contradicted).
 
 ---
 
