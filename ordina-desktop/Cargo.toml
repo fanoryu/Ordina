@@ -1,0 +1,25 @@
+# N-22-A — diagnosis-only desktop presentation surface (PBA-0156).
+#
+# egui/eframe accepted as the desktop GUI toolkit by ADR-0006 (ACCEPTED,
+# PBR-0019). This crate is intentionally separate from the existing `ordina`
+# library crate: ADR-0005 §6.2 fixes that crate's production dependencies at
+# exactly `num-bigint`/`num-rational`, and this crate's dependencies must not
+# be added to it. `ordina` depends on nothing here; this crate depends on
+# `ordina` via an ordinary path dependency.
+#
+# Scope: diagnosis-only (RFC-0003 §9.1-9.6, §9.11). No authoring/editing
+# surface, no persistence, no networking. See PBA-0156.
+
+[package]
+name = "ordina-desktop"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.97.1"
+publish = false
+
+[dependencies]
+ordina = { path = ".." }
+eframe = { version = "0.36", default-features = false, features = [
+    "default_fonts",
+    "glow",
+] }

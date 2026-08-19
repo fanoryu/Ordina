@@ -2,6 +2,17 @@
 #
 # Library crate only. No binary, no framework, no async runtime, no network,
 # no database, no serialization, no logging or CLI framework.
+#
+# Workspace note (PBA-0156, N-22-A): this manifest is also the workspace root.
+# `ordina-desktop` (the N-22-A diagnosis-only desktop surface, ADR-0006) is
+# added as a workspace member below. This crate (`ordina`) is unaffected —
+# its own [package]/[dependencies] are unchanged, it does not depend on
+# `ordina-desktop`, and ADR-0005 §6.2's closed dependency set is preserved
+# exactly. The workspace member list is the minimum structural change needed
+# to add a second crate without moving `src/**` or any existing file.
+
+[workspace]
+members = ["ordina-desktop"]
 
 [package]
 name = "ordina"
