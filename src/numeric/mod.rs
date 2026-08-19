@@ -190,6 +190,20 @@ impl Digit {
 pub struct ExactNumber(BigRational);
 
 impl ExactNumber {
+    /// The underlying exact rational, for canonical revision-identity encoding
+    /// only — ADR-0008 §2 tag `0x04` frames a rational as its numerator's and
+    /// denominator's own tag-`0x10` `BigInt` frames.
+    ///
+    /// Deliberately `pub(crate)`: the ADR-0005 §6.3 isolation boundary is a
+    /// **public**-API boundary, and it is unchanged — no caller outside this
+    /// crate can reach the `BigRational`, and the `compile_fail` doctest above
+    /// holding that open still fails, because the tuple field `.0` stays
+    /// private and this accessor is invisible to an external crate.
+    #[must_use]
+    pub(crate) const fn as_ratio(&self) -> &BigRational {
+        &self.0
+    }
+
     /// An exact integer value.
     ///
     /// A bounded convenience over the admitted domain — every `i64` is an exact

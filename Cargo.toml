@@ -38,6 +38,12 @@ num-rational = { version = "0.4.2", default-features = false, features = [
     "num-bigint-std",
 ] }
 
+# ADR-0008 §4 (ACCEPTED, PBR-0022) + PBA-0168 authorize BLAKE3 as the
+# revision-identity digest. Plain unkeyed `hash()` only; no keyed/derive-key
+# API is used. Default features off keeps the dependency minimal — `std` is the
+# one feature required for the hashing entry point this crate calls.
+blake3 = { version = "1.5", default-features = false, features = ["std"] }
+
 # proptest is deferred at bootstrap — permitted by PBA-0041 §11. Phase 0 needs
 # no property tests, and deferring keeps the dev graph free of randomness
 # crates until the first property-test slice actually requires them.

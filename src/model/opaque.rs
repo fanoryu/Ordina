@@ -70,6 +70,19 @@ impl OpaqueValue {
     const fn supplied_order(self) -> u64 {
         self.0
     }
+
+    /// The caller-supplied handle, for canonical revision-identity encoding
+    /// only — ADR-0008 §2 tag `0x07` encodes an opaque-domain reference as the
+    /// 8-byte big-endian `u64` of the referenced value's underlying handle.
+    ///
+    /// Deliberately `pub(crate)`: this is not a public accessor, and nothing
+    /// outside this crate may read the handle. Nothing inside the crate may
+    /// read it for any purpose other than that encoding — the handle still
+    /// carries no meaning beyond the supplied order (see the type docs).
+    #[must_use]
+    pub(crate) const fn identity_handle(self) -> u64 {
+        self.0
+    }
 }
 
 /// Stable rule/node lineage identity — ADR-0003 §9, Slice Contract §3.3.
@@ -186,6 +199,47 @@ impl LineageId {
     #[must_use]
     pub const fn new(value: OpaqueValue) -> Self {
         Self(value)
+    }
+}
+
+// The five **semantic** opaque domains expose their underlying handle to the
+// crate — and only to the crate — so ADR-0008 §2's tag `0x07` frame can be
+// built. `OccurrenceId` deliberately exposes none: ADR-0007 places it outside
+// ADR-0003 §6's taxonomy entirely, so it is never walked and never encoded.
+// The absence of an accessor there is the structural enforcement of that ruling.
+
+impl LineageId {
+    #[must_use]
+    pub(crate) const fn identity_handle(self) -> u64 {
+        self.0.identity_handle()
+    }
+}
+
+impl DimensionSymbol {
+    #[must_use]
+    pub(crate) const fn identity_handle(self) -> u64 {
+        self.0.identity_handle()
+    }
+}
+
+impl EnumValue {
+    #[must_use]
+    pub(crate) const fn identity_handle(self) -> u64 {
+        self.0.identity_handle()
+    }
+}
+
+impl VersionToken {
+    #[must_use]
+    pub(crate) const fn identity_handle(self) -> u64 {
+        self.0.identity_handle()
+    }
+}
+
+impl PrecedenceOrdinal {
+    #[must_use]
+    pub(crate) const fn identity_handle(self) -> u64 {
+        self.0.identity_handle()
     }
 }
 

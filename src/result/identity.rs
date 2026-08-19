@@ -22,7 +22,7 @@
 
 use core::cmp::Ordering;
 
-use crate::model::opaque::{OccurrenceId, OpaqueValue};
+use crate::model::opaque::OccurrenceId;
 use crate::result::category::DefectCategory;
 use crate::result::discriminator::Discriminator;
 
@@ -102,19 +102,70 @@ impl PartialEq for DefectCore {
 
 impl Eq for DefectCore {}
 
-/// An applicable Strategy revision identity — §6.3 component 4.
+/// An applicable Strategy revision identity — §6.3 component 4, ADR-0008 §5.
 ///
-/// Opaque and **caller-supplied**; Slice 1 computes none itself (ADR-0003 §5
-/// fixes `Well-Formed → canonicalize → identity`, so at first-check time no
-/// revision identity yet exists). Compared by **exact equality only** — §6.4
-/// never orders by it — so, like a version token, it has no `Ord`.
+/// Its logical value is the pair `{ scheme_version: u8, digest: [u8; 32] }`
+/// (ADR-0008 §5): a BLAKE3-256 digest over the domain-separated canonical
+/// preimage, plus the scheme version that produced it. The version travels
+/// **alongside** the digest — distinct from its other copy *inside* the hashed
+/// preimage (ADR-0008 §3) — so a caller or persistence layer can tell which
+/// scheme produced any given value without recomputing or re-hashing anything.
+///
+/// Produced by [`compute_revision_identity`](crate::result::revision::compute_revision_identity);
+/// also accepted from a caller that
+/// obtained one earlier (§6.3 admits a caller-supplied identity, and ADR-0003
+/// §5's `Well-Formed → canonicalize → identity` ordering means no identity yet
+/// exists at first-check time).
+///
+/// **Equality is over the pair** (ADR-0008 §5): a `scheme_version = 0x01`
+/// identity and a hypothetical future `scheme_version = 0x02` identity are
+/// never equal even if their 32 digest bytes coincide.
+///
+/// **No ordering.** §6.4 never orders by revision identity and a
+/// content-addressed identity has no meaningful order, so — like
+/// [`VersionToken`](crate::model::opaque::VersionToken) — this type
+/// deliberately implements neither `Ord` nor `PartialOrd`.
+///
+/// The public surface stays opaque (ADR-0008 §5, §11): no public byte accessor
+/// is offered, and the TLV encoding mechanics are implementation-private.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct RevisionIdentity(OpaqueValue);
+pub struct RevisionIdentity {
+    scheme_version: u8,
+    digest: [u8; 32],
+}
 
 impl RevisionIdentity {
+    /// Builds an identity from its two components — ADR-0008 §5.
+    ///
+    /// `pub(crate)`: the only production producer is
+    /// [`compute_revision_identity`](crate::result::revision::compute_revision_identity),
+    /// and conformance-vector tests need to
+    /// construct expected values (including a second, hypothetical scheme
+    /// version, to exercise §5's cross-version inequality rule).
     #[must_use]
-    pub const fn new(handle: OpaqueValue) -> Self {
-        Self(handle)
+    pub(crate) const fn from_parts(scheme_version: u8, digest: [u8; 32]) -> Self {
+        Self {
+            scheme_version,
+            digest,
+        }
+    }
+
+    /// The scheme version that produced this identity — ADR-0008 §5/§6.
+    ///
+    /// `#[cfg(test)]`: no production consumer reads the components back out
+    /// (the type is opaque, ADR-0008 §5/§11); the §12 conformance vectors do.
+    #[cfg(test)]
+    #[must_use]
+    pub(crate) const fn scheme_version(self) -> u8 {
+        self.scheme_version
+    }
+
+    /// The 32 digest bytes — ADR-0008 §4/§5. Crate-internal, `#[cfg(test)]`,
+    /// for the §12 conformance vectors only.
+    #[cfg(test)]
+    #[must_use]
+    pub(crate) const fn digest(&self) -> &[u8; 32] {
+        &self.digest
     }
 }
 
@@ -236,8 +287,18 @@ mod tests {
         OccurrenceId::new(OpaqueValue::new(handle))
     }
 
+    /// A distinct [`RevisionIdentity`] per handle.
+    ///
+    /// These boundary tests care only that distinct handles give distinct
+    /// identities and that equal handles give equal ones — never about the
+    /// digest bytes themselves. ADR-0008 §5's widening (`{scheme_version,
+    /// digest}`) is therefore absorbed here: the handle is written into the
+    /// digest's leading bytes under `scheme_version` 1, which is deterministic
+    /// and injective over `u64`. Nothing below reads the bytes back.
     fn revision(handle: u64) -> RevisionIdentity {
-        RevisionIdentity::new(OpaqueValue::new(handle))
+        let mut digest = [0u8; 32];
+        digest[..8].copy_from_slice(&handle.to_be_bytes());
+        RevisionIdentity::from_parts(1, digest)
     }
 
     fn core(offending: u64, category: DefectCategory) -> DefectCore {

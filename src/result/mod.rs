@@ -17,6 +17,7 @@
 pub mod category;
 pub mod discriminator;
 pub mod identity;
+pub mod revision;
 pub mod verdict;
 
 pub use category::{CheckNumber, DefectCategory};
@@ -26,6 +27,7 @@ pub use discriminator::{
 pub use identity::{
     DefectCore, DefectIdentity, MixedQualificationBoundary, RevisionIdentity, canonical_sort,
 };
+pub use revision::{RevisionIdentityError, compute_revision_identity};
 pub use verdict::Verdict;
 
 use crate::model::opaque::OccurrenceId;
