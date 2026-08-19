@@ -1065,3 +1065,12 @@ ADR requirement: UNDETERMINED
 ```
 
 Next permitted action: draft the N-22 RFC under the newly recorded authorization (PBA-0152).
+
+**N-22 RFC drafted (PBA-0152 / ER-0126, 2026-08-18).** New `docs/rfc/0003-well-formedness-failure-ux.md` — Status: PROPOSED. Defines a platform-agnostic interaction contract for a Trader encountering an UNUSABLE Strategy: UNUSABLE distinct from READY/WAIT/DO_NOT_TRADE; complete defect and not-evaluated sets always fully enumerable; not-evaluated records structurally separated from defects with root-blocker links surfaced; canonical order ruled an identity/reproducibility guarantee, not a presentation mandate, with reordering constrained to an identity-derived stable function; every correction Trader-authored and per-rule confirmed, silent repair prohibited. Q-06, Q-08, N-24, N-25, F-8 explicitly excluded and unresolved; not named "Slice 2." ADR requirement: NO — consumes Slice 1's frozen result contract as-is, no new persistent data shape or `src/**` change proposed.
+
+```text
+N-22 initiative: SELECTED
+N-22 RFC drafting: COMPLETE
+N-22 RFC status: DRAFT — NOT ACCEPTED
+N-22 implementation: NOT AUTHORIZED
+```
