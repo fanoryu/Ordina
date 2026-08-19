@@ -1,8 +1,10 @@
 # ADR-0008: Revision-Identity Encoding and Digest
 
-- **Status:** PROPOSED
+- **Status:** ACCEPTED
 - **Date:** 2026-08-20
-- **Deciders:** Principal Engineer
+- **Accepted by:** Product Board, PBR-0022
+- **Decision date:** 2026-08-20
+- **Deciders:** Principal Engineer; accepted by Product Board
 - **Related:** ADR-0002 (ACCEPTED, PBR-0006 — semantic model, cited, not
   amended); ADR-0003 (ACCEPTED, PBR-0007 — §5 pipeline ordering, §6 ID/CX/PX/INV
   classification, §7 revision-identity invariants I1–I10, §10 configuration-vs-
@@ -18,7 +20,16 @@
   authorization); PBA-0170 (first bounded remediation authorization); PBA-0171
   (second bounded remediation authorization); PBA-0172 (third bounded
   remediation authorization, closing the sole finding from the independent
-  final re-review of the second remediation)
+  final re-review of the second remediation); ARR-0058 (independent final
+  re-review, PASS — zero BLOCKER/MAJOR/MINOR/NOTE); PBA-0173 (acceptance
+  authorization), PBR-0022 (Product Board acceptance), ER-0144 (acceptance
+  synchronization report)
+- **Review lineage:** PBA-0169 → drafting → independent review (FAIL, 2
+  BLOCKER, 2 MAJOR) → PBA-0170 → first remediation → independent re-review
+  (FAIL, 1 BLOCKER, 1 MAJOR) → PBA-0171 → second remediation → independent
+  re-review (FAIL, 1 BLOCKER) → PBA-0172 → third remediation → ARR-0058
+  (independent final re-review, PASS; zero BLOCKER/MAJOR/MINOR/NOTE) →
+  PBA-0173 → PBR-0022 (Product Board acceptance)
 
 - **Remediation (PBA-0170):** the first remediation cycle addressed 2 BLOCKER
   (missing canonical field/tag registry; fixed-width rational encoding
