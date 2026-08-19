@@ -1,14 +1,19 @@
 # ADR-0006: Desktop GUI Toolkit Selection
 
-- **Status:** PROPOSED
+- **Status:** ACCEPTED
 - **Date:** 2026-08-19
-- **Deciders:** Principal Engineer; to be accepted by Product Board
+- **Accepted by:** Product Board, PBR-0019
+- **Decision date:** 2026-08-19
+- **Deciders:** Principal Engineer; accepted by Product Board
 - **Related:** RFC-0003 (ACCEPTED, PBR-0018), PBD-0008 (Q-06 platform/form-factor
   ruling), ADR-0005 (ACCEPTED, immutable), PBA-0154 (drafting authorization),
-  ER-0128 (drafting report)
+  ER-0128 (drafting report), ARR-0054 (independent review, PASS), PBA-0155
+  (acceptance authorization), ER-0129 (acceptance synchronization report)
 - **Review lineage:** PBD-0008 → GUI-toolkit determination (read-only) → PBA-0154
-  → ADR-0006 (this document) → *(independent review, not yet scheduled)* →
-  *(Product Board acceptance, not yet scheduled)*
+  → ADR-0006 (this document) → ARR-0054 (independent review, PASS; 0 BLOCKER,
+  0 MAJOR, 2 non-blocking MINOR, 2 non-blocking NOTE — preserved, not
+  remediated by this acceptance) → PBA-0155 → PBR-0019 (Product Board
+  acceptance)
 - **Governed by:** Product Constitution v1.0 — ACTIVE — RATIFIED
 
 > This ADR decides **which toolkit renders Ordina's desktop presentation
