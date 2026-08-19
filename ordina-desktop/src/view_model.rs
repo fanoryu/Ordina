@@ -12,11 +12,17 @@
 //! is an opaque `OccurrenceId`, not Strategy-authored text, and the
 //! discriminator payload types (`PropertyPosition`, `NodePath`, `AtomKey`)
 //! expose no public accessors beyond construction and ordering — by design,
-//! per §6.4's occurrence-anchor/comparison-only contract. The "where"/detail
-//! descriptions below are therefore necessarily generic (an opaque construct
-//! reference, a discriminator *kind* description) until N-25 resolves how
-//! Strategy content maps onto these identities. This is a known,
-//! unavoidable limit of N-22-A's scope, not an oversight — see PBA-0156.
+//! per §6.4's occurrence-anchor/comparison-only contract. The "where"
+//! description is therefore necessarily generic (an opaque construct
+//! reference) until N-25 resolves how Strategy content maps onto these
+//! identities — a known, unavoidable limit of N-22-A's scope, not an
+//! oversight — see PBA-0156.
+//!
+//! PBA-0157 (bounded remediation) additionally requires that same-category
+//! siblings on the same construct remain *visibly distinguishable* even
+//! without a payload accessor. [`annotate_sibling_variants`] supplies that:
+//! a stable, `Ord`-derived rank suffix distinguishes siblings without ever
+//! reading a field no public accessor exposes.
 
 use ordina::model::derivation::CandidateRole;
 use ordina::result::{
@@ -76,15 +82,33 @@ impl DiagnosisViewModel {
             })
             .collect();
 
+        // PBA-0157 MAJOR remediation: distinguish same-category siblings on
+        // the same construct (RFC-0003 §9.4, third bullet) by their relative
+        // rank under `DefectCore`'s own `Ord` — never by reading a payload
+        // field no public accessor exposes (`PropertyPosition`/`NodePath`
+        // remain opaque). Two defects that share both category and
+        // occurrence necessarily differ in `Discriminator` (else they would
+        // be the identical defect), and `Discriminator` is itself publicly
+        // `Ord`-comparable, so a stable relative rank is always available.
+        annotate_sibling_variants(&mut defects);
+
         // §9.3: presentation order is a pure, identity-derived function of
-        // the defect set — grouping by category ordinal, a stable sort so
-        // that same-category defects keep their relative (canonical) order
-        // from the input, which is itself deterministic per the checker
-        // contract. This deliberately differs from raw canonical order
-        // (whose leading key is the internal check-number ordinal) while
-        // remaining fully reproducible and never incidental (never
-        // hash-based, never insertion-order-only).
-        defects.sort_by_key(|d| d.identity.core().category().ordinal());
+        // the defect set. Primary key: category ordinal (deliberately
+        // differs from raw canonical order, whose leading key is the
+        // internal check-number ordinal). PBA-0157 MINOR remediation:
+        // same-category ties are now broken by `DefectCore`'s own total
+        // `Ord` (check, then occurrence, then category, then discriminator)
+        // rather than by preserving whatever order the caller happened to
+        // supply — deterministic under any input permutation, never
+        // incidental, and never hash-based.
+        defects.sort_by(|a, b| {
+            a.identity
+                .core()
+                .category()
+                .ordinal()
+                .cmp(&b.identity.core().category().ordinal())
+                .then_with(|| a.identity.core().cmp(b.identity.core()))
+        });
 
         let not_evaluated = result
             .not_evaluated()
@@ -107,6 +131,57 @@ impl DiagnosisViewModel {
             .iter()
             .filter(|ne| ne.blocking.try_eq(defect) == Some(true))
             .collect()
+    }
+}
+
+/// PBA-0157 MAJOR remediation. For every group of defects sharing both
+/// category and offending occurrence (i.e. §9.4's "same-category sibling on
+/// the same construct"), appends a stable, identity-derived rank suffix —
+/// "(N of M such issues on this construct)" — so siblings are visibly
+/// distinguishable even when their discriminator's internal payload
+/// (`PropertyPosition`, `NodePath`, ...) has no public accessor to read.
+///
+/// Deliberately avoids any hash-based grouping (consistent with the
+/// determinism discipline `ordina` itself applies to conformance-visible
+/// ordering, ADR-0005 §7.6): grouping and ranking both use only `Ord`
+/// comparisons over public data (`DefectCore`, `DefectCategory`,
+/// `OccurrenceId`), which are already used elsewhere in this module.
+fn annotate_sibling_variants(defects: &mut [TraderFacingDefect]) {
+    let mut order: Vec<usize> = (0..defects.len()).collect();
+    order.sort_by(|&i, &j| {
+        let a = defects[i].identity.core();
+        let b = defects[j].identity.core();
+        a.category()
+            .ordinal()
+            .cmp(&b.category().ordinal())
+            .then_with(|| a.offending().cmp(&b.offending()))
+            .then_with(|| a.cmp(b))
+    });
+
+    let mut start = 0;
+    while start < order.len() {
+        let mut end = start + 1;
+        while end < order.len() {
+            let a = defects[order[start]].identity.core();
+            let b = defects[order[end]].identity.core();
+            if a.category().ordinal() == b.category().ordinal() && a.offending() == b.offending() {
+                end += 1;
+            } else {
+                break;
+            }
+        }
+
+        let group_size = end - start;
+        if group_size > 1 {
+            for (rank, &position) in order[start..end].iter().enumerate() {
+                defects[position].detail.push_str(&format!(
+                    " ({} of {group_size} such issues on this construct)",
+                    rank + 1
+                ));
+            }
+        }
+
+        start = end;
     }
 }
 
@@ -221,7 +296,9 @@ fn role_label(role: CandidateRole) -> &'static str {
 mod tests {
     use super::*;
     use ordina::model::opaque::{OccurrenceId, OpaqueValue};
-    use ordina::result::{CheckNumber, DefectCore, PropertyPosition, Verdict};
+    use ordina::result::{
+        CheckNumber, ChildPosition, DefectCore, NodePath, PropertyPosition, Verdict,
+    };
 
     fn occ(handle: u64) -> OccurrenceId {
         OccurrenceId::new(OpaqueValue::new(handle))
@@ -240,6 +317,18 @@ mod tests {
             occ(handle),
             category,
             Discriminator::Property(PropertyPosition::new(position)),
+        ))
+    }
+
+    fn defect_with_node_path(
+        handle: u64,
+        category: DefectCategory,
+        steps: Vec<ChildPosition>,
+    ) -> DefectIdentity {
+        DefectIdentity::unqualified(DefectCore::new(
+            occ(handle),
+            category,
+            Discriminator::NodePath(NodePath::new(steps)),
         ))
     }
 
@@ -325,18 +414,135 @@ mod tests {
     }
 
     #[test]
-    fn same_category_siblings_are_distinguished_by_discriminator_detail() {
+    fn property_siblings_on_the_same_construct_are_visibly_distinguishable() {
+        // PBA-0157 MAJOR remediation: same category, same occurrence,
+        // differing only in the (unreadable) Property position.
         let sibling_one = defect_with_property(1, DefectCategory::MissingRequiredProperty, 1);
         let sibling_two = defect_with_property(1, DefectCategory::MissingRequiredProperty, 2);
-        // Both currently produce the same *kind*-level detail text (no
-        // accessor exposes the position number, see module doc) — this test
-        // documents that current honest limit rather than asserting a
-        // distinction the API cannot yet support.
         let result = WellFormednessResult::unusable(sibling_one, vec![sibling_two], Vec::new());
         let vm = DiagnosisViewModel::from_result(&result);
 
         assert_eq!(vm.defects.len(), 2);
-        assert!(vm.defects.iter().all(|d| !d.detail.is_empty()));
+        assert_ne!(
+            vm.defects[0].detail, vm.defects[1].detail,
+            "same-category siblings on the same construct must render distinguishable text"
+        );
+    }
+
+    #[test]
+    fn node_path_siblings_on_the_same_construct_are_visibly_distinguishable() {
+        // Property/NodePath cases are both covered, per PBA-0157's scope.
+        let sibling_one = defect_with_node_path(
+            1,
+            DefectCategory::DimensionMismatch,
+            vec![ChildPosition::LeftOperand],
+        );
+        let sibling_two = defect_with_node_path(
+            1,
+            DefectCategory::DimensionMismatch,
+            vec![ChildPosition::RightOperand],
+        );
+        let result = WellFormednessResult::unusable(sibling_one, vec![sibling_two], Vec::new());
+        let vm = DiagnosisViewModel::from_result(&result);
+
+        assert_eq!(vm.defects.len(), 2);
+        assert_ne!(
+            vm.defects[0].detail, vm.defects[1].detail,
+            "NodePath-discriminated same-category siblings on the same construct must be distinguishable too"
+        );
+    }
+
+    #[test]
+    fn distinct_constructs_sharing_a_category_are_not_annotated_as_siblings() {
+        // §9.4's requirement is scoped to siblings "on the same construct" —
+        // defects on different occurrences must not be spuriously annotated.
+        let on_construct_a = defect(1, DefectCategory::MissingRequiredProperty);
+        let on_construct_b = defect(2, DefectCategory::MissingRequiredProperty);
+        let result =
+            WellFormednessResult::unusable(on_construct_a, vec![on_construct_b], Vec::new());
+        let vm = DiagnosisViewModel::from_result(&result);
+
+        assert!(
+            vm.defects.iter().all(|d| d.detail.is_empty()),
+            "defects on distinct constructs must not receive a sibling-rank suffix: {:?}",
+            vm.defects
+        );
+    }
+
+    #[test]
+    fn sibling_rank_is_identity_derived_and_stable_under_input_reversal() {
+        // PBA-0157 MINOR remediation, exercised together with the MAJOR fix:
+        // reversing input order for same-category siblings on the same
+        // construct must yield the same rank assignment, not a positional
+        // one.
+        let sibling_one = defect_with_property(1, DefectCategory::MissingRequiredProperty, 1);
+        let sibling_two = defect_with_property(1, DefectCategory::MissingRequiredProperty, 2);
+
+        let forward = WellFormednessResult::unusable(
+            sibling_one.clone(),
+            vec![sibling_two.clone()],
+            Vec::new(),
+        );
+        let reversed = WellFormednessResult::unusable(
+            sibling_two.clone(),
+            vec![sibling_one.clone()],
+            Vec::new(),
+        );
+
+        let vm_forward = DiagnosisViewModel::from_result(&forward);
+        let vm_reversed = DiagnosisViewModel::from_result(&reversed);
+
+        let detail_for = |vm: &DiagnosisViewModel, id: &DefectIdentity| {
+            vm.defects
+                .iter()
+                .find(|d| d.identity.try_eq(id) == Some(true))
+                .expect("defect present")
+                .detail
+                .clone()
+        };
+
+        assert_eq!(
+            detail_for(&vm_forward, &sibling_one),
+            detail_for(&vm_reversed, &sibling_one),
+            "a given defect's sibling rank must not depend on input order"
+        );
+        assert_eq!(
+            detail_for(&vm_forward, &sibling_two),
+            detail_for(&vm_reversed, &sibling_two)
+        );
+    }
+
+    #[test]
+    fn presentation_order_same_category_tie_break_is_identity_derived_not_positional() {
+        // PBA-0157 MINOR remediation, direct test: two same-category
+        // defects supplied in non-canonical (occurrence-descending) order
+        // must still resolve to the same relative presentation order
+        // regardless of which one was passed as the "first" defect.
+        let lower_occurrence = defect(1, DefectCategory::MissingRequiredProperty);
+        let higher_occurrence = defect(2, DefectCategory::MissingRequiredProperty);
+
+        let supplied_high_first = WellFormednessResult::unusable(
+            higher_occurrence.clone(),
+            vec![lower_occurrence.clone()],
+            Vec::new(),
+        );
+        let supplied_low_first = WellFormednessResult::unusable(
+            lower_occurrence.clone(),
+            vec![higher_occurrence.clone()],
+            Vec::new(),
+        );
+
+        let vm_high_first = DiagnosisViewModel::from_result(&supplied_high_first);
+        let vm_low_first = DiagnosisViewModel::from_result(&supplied_low_first);
+
+        assert!(
+            vm_high_first.defects[0].identity.try_eq(&lower_occurrence) == Some(true),
+            "same-category tie-break must order by occurrence identity, not input position"
+        );
+        assert!(
+            vm_low_first.defects[0].identity.try_eq(&lower_occurrence) == Some(true),
+            "the identity-derived tie-break must be identical regardless of caller input order"
+        );
     }
 
     #[test]
