@@ -590,6 +590,129 @@ fn unrelated_defect_does_not_suppress_other_checks() {
 // 15: repeated-invocation determinism.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Phase 8 (PBA-0151/ER-0124 Ruling C obligation 5): maximally-malformed and
+// structurally-extreme fixtures. These prove the pipeline never panics on
+// adversarial input and always resolves to a verdict — they intentionally do
+// NOT re-assert exact defect-set contents already covered by the dimension
+// table above.
+//
+// Panic-safety note (Ruling C obligation 2): the four audited `.expect()`/
+// `unreachable!()` sites —
+//   `src/result/identity.rs:224` (`canonical_sort`, reused by both
+//     `src/result/identity.rs` and `src/checks/finalize.rs:55`),
+//   `src/result/discriminator.rs:283` (`Ord for Discriminator`'s catch-all),
+//   `src/checks/guard_analysis.rs:182` (`to_equality`'s catch-all)
+// were independently audited and confirmed unreachable by ANY `Strategy`
+// constructible via the public API:
+//   - `canonical_sort`'s `.expect()` is only reached after every defect pair
+//     in the set is confirmed `is_comparable_with` (same qualification
+//     state). Every defect the pipeline ever produces is wrapped via
+//     `DefectIdentity::unqualified` (see `src/checks/finalize.rs`);
+//     `DefectIdentity::qualified` is never called by any production check —
+//     it appears only in `#[cfg(test)]` code in `src/result/identity.rs`.
+//     So the set is always homogeneously `Unqualified`, regardless of what
+//     the input `Strategy` looks like.
+//   - `Discriminator`'s `Ord` catch-all requires two *different* variants to
+//     share a `kind_ordinal()` — but `kind_ordinal()` is a `const fn` with no
+//     catch-all arm, assigning a distinct 1..=7 ordinal per variant. This is
+//     a static code property, not something any runtime `Strategy` value can
+//     perturb.
+//   - `to_equality`'s catch-all is only reachable if its caller passes an
+//     operator other than `Equal`/`NotEqual` — but both call sites in
+//     `analyze_guard` are behind a match arm that already requires
+//     `ComparisonOperator::Equal | ComparisonOperator::NotEqual` to bind;
+//     any other operator takes the sibling `_ => return None` arm before
+//     `to_equality` is ever invoked, regardless of the Guard/Atom content
+//     supplied by a malformed `Strategy`.
+//
+// Purity/no-I/O note: `run_phase6(&Strategy, &DimensionBinding, VersionToken)
+// -> Phase6ExecutionState` and `finalize_phase6(Phase6ExecutionState) ->
+// WellFormednessResult` both take only by-value/by-reference in-memory
+// arguments and return owned in-memory values — no filesystem, network, or
+// other I/O-capable parameter appears in either signature, so the full
+// pipeline invoked below is exercised as a pure, side-effect-free function of
+// its input.
+// ---------------------------------------------------------------------------
+
+/// Proves the maximally-malformed input — `Strategy::wholly_undeclared`, every
+/// field absent — survives the real pipeline end-to-end without panicking and
+/// resolves to `Unusable` with a non-empty defect set (never `WellFormed`,
+/// never a crash). This is the single most adversarial `Strategy` value the
+/// public API can construct.
+#[test]
+fn wholly_undeclared_strategy_yields_unusable_without_panicking() {
+    let strategy = Strategy::wholly_undeclared(occ(1));
+
+    let state = run_phase6(&strategy, &binding(), supported());
+    let result = finalize_phase6(state);
+
+    assert_eq!(result.verdict(), Verdict::Unusable);
+    assert!(
+        !result.defects().is_empty(),
+        "a wholly-undeclared strategy must yield at least one defect"
+    );
+}
+
+/// Proves a different malformation shape than `wholly_undeclared` or the
+/// existing dimension-table fixtures: evidence declarations wholly absent
+/// while conditions, direction rules and candidate derivations are all
+/// present and reference evidence lineages that (because no declarations
+/// exist at all) can never resolve. This exercises the "populated referencing
+/// constructs against a wholly-absent referenced collection" shape, which
+/// none of the Phase-7 dimension tests cover (those either use a fully clean
+/// strategy or perturb one declaration/derivation at a time against an
+/// otherwise-present evidence set).
+#[test]
+fn absent_evidence_with_populated_referencing_constructs_never_panics() {
+    let evidence = lineage(100);
+    let mut strategy = clean_strategy();
+    strategy.evidence_declarations = Declared::Absent;
+    // Conditions, direction rules and candidate derivations (inherited from
+    // `clean_strategy`) still reference `evidence` via `lineage(100)`, but no
+    // declaration for it exists anywhere in the strategy.
+    let _ = evidence;
+
+    let state = run_phase6(&strategy, &binding(), supported());
+    let result = finalize_phase6(state);
+
+    assert_eq!(result.verdict(), Verdict::Unusable);
+    assert!(
+        !result.defects().is_empty(),
+        "referencing constructs against wholly-absent evidence must yield defects"
+    );
+}
+
+/// Proves a third malformation shape: every top-level collection field
+/// present but empty (as opposed to `wholly_undeclared`'s all-`Absent`, or
+/// `clean_strategy`'s fully populated set). This exercises the
+/// `Declared::Present(vec![])` path distinctly from `Declared::Absent`,
+/// which `check1`-style "required property missing" logic may treat
+/// differently.
+#[test]
+fn all_collections_present_but_empty_never_panics() {
+    let strategy = Strategy::new(
+        occ(1),
+        lineage(1),
+        supported(),
+        Vec::new(),
+        Vec::new(),
+        Vec::new(),
+        Vec::new(),
+        Vec::new(),
+    );
+
+    let state = run_phase6(&strategy, &binding(), supported());
+    let result = finalize_phase6(state);
+
+    // No panic is the primary assertion; the verdict must resolve either way
+    // (an empty-but-present candidate-derivations set is itself malformed
+    // under §3, so this is expected to be Unusable, but the decisive proof
+    // here is survival through the pipeline, not exhaustive defect-set
+    // enumeration — already covered by the dimension table above).
+    assert_eq!(result.verdict(), Verdict::Unusable);
+}
+
 /// Proves dimension 15 (repeated-invocation determinism): invoking the full
 /// pipeline twice on the identical input produces an identical complete
 /// result — verdict, full defect sequence (by identity), and full

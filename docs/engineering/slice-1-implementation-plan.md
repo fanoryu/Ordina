@@ -1018,6 +1018,10 @@ algebraic properties, under ADR-0005 §8 and §8.1. Property tests may express
 
 **Phase 8: AUTHORIZED — NOT STARTED (PBA-0151).** Scope: default writable surface `tests/**`, per the PBA-0150/ER-0124 boundary determination's ten-dimension matrix. Any reachable source defect discovered requires its own separate bounded remediation authorization.
 
+**Phase 8 implemented (PBA-0151 / ER-0125, 2026-08-18).** Panic-safety audit performed first, independently: all four production `.expect()`/`unreachable!()` sites named by the boundary determination confirmed unreachable by any Strategy-constructible input — no source defect found, no `src/**` change. `tests/conformance/main.rs` extended with three new tests: `wholly_undeclared_strategy_yields_unusable_without_panicking`, `absent_evidence_with_populated_referencing_constructs_never_panics`, `all_collections_present_but_empty_never_panics` — each a distinct malformation shape run end-to-end, asserting `Unusable`, never a panic. Determinism reused from Phase 7; `proptest` not added. Verification: 525 unit (unchanged) + 11 integration (was 8) + 5 doctest + 14 compile-fail, 0 failures; fmt/check/clippy clean.
+
+**Phase 8: IMPLEMENTED — awaiting independent review (PBA-0151/ER-0125).**
+
 ---
 
 ## Out of scope for every phase
