@@ -1054,4 +1054,14 @@ N-25: OPEN
 F-8: OPEN
 ```
 
-Next permitted action: separate authorization to begin drafting the N-22 RFC.
+**N-22 RFC drafting authorized (PBA-0152, 2026-08-18).** Product Owner explicit authorization to draft the N-22 RFC. Scope: research + drafting only, platform-agnostic, preserving Trader ownership of corrections and the READY/WAIT/DO_NOT_TRADE/UNUSABLE distinction, never silently repairing operative rules; unresolved questions to be identified in the RFC, not silently decided. Does not authorize implementation, `src/**`/`tests/**` changes, RFC acceptance, or an ADR. Q-06, Q-08, N-24, N-25, F-8 remain OPEN.
+
+```text
+N-22 initiative: SELECTED
+N-22 RFC drafting: AUTHORIZED — NOT STARTED
+N-22 implementation: NOT AUTHORIZED
+RFC acceptance: NOT STARTED
+ADR requirement: UNDETERMINED
+```
+
+Next permitted action: draft the N-22 RFC under the newly recorded authorization (PBA-0152).
