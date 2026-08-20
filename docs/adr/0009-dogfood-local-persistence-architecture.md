@@ -1,10 +1,20 @@
 # ADR-0009: Dogfood Local Persistence Architecture
 
-- **Status:** PROPOSED
+- **Status:** ACCEPTED
 - **Date:** 2026-08-20
-- **Deciders:** Principal Engineer (drafting). **Not yet accepted** — acceptance
-  is a separate Product Owner / Product Board cycle (CLAUDE.md §Hard-stops(6)).
-- **Authorizing artifact:** PBA-0178 (ADR-0009 authoring authorization).
+- **Decision date:** 2026-08-20
+- **Deciders:** Principal Engineer (drafting); **accepted by Product Board**.
+- **Accepted by:** Product Board, PBR-0024.
+- **Acceptance provenance:** PBA-0180 (acceptance authorization) → PBR-0024
+  (Product Board acceptance) → ER-0151 (acceptance synchronization report),
+  citing ARR-0062 (independent re-review of the remediated ADR-0009, PASS; 0
+  BLOCKER, 0 MAJOR, 0 MINOR, 2 non-defect NOTE). Prior MAJOR-1 / MINOR-1 /
+  MINOR-2 all CLOSED; OQ-1 / m-1 / OQ-2 CLOSED, OQ-3 an implementation/UX detail.
+  Acceptance covers the persistence **architecture** decided here; persistence
+  **implementation** remains a separate, not-yet-granted authorization.
+- **Authorizing artifact:** PBA-0178 (ADR-0009 authoring authorization);
+  PBA-0179 (bounded remediation authorization); PBA-0180 (acceptance
+  authorization).
 - **Related:** RFC-0005 (ACCEPTED, PBR-0023 — the Product-level persistence
   contract this ADR realizes; OQ-1/OQ-2 are charged to this ADR, OQ-3 left as an
   implementation/UX detail); ARR-0061 (RFC-0005 independent review, PASS — its
@@ -878,8 +888,10 @@ removed handles).
 
 ---
 
-> ADRs are immutable once Accepted. This ADR is **PROPOSED** — it is not yet
-> accepted, implements nothing, and changes no `src/**`, `ordina-desktop/**`,
-> test, or `Cargo` file. If the decision changes before acceptance it is edited as
-> a draft; once accepted it becomes immutable and any change is a new, superseding
-> ADR. The record of why we chose this architecture is the archive's value.
+> ADRs are immutable once Accepted. This ADR is **ACCEPTED** (Product Board,
+> PBR-0024; acceptance provenance in the header) — it is now immutable: any change
+> is a new, superseding ADR, never an edit to this reasoning. Acceptance decides
+> the persistence **architecture** only; it implements nothing and changes no
+> `src/**`, `ordina-desktop/**`, test, or `Cargo` file — persistence
+> implementation remains a separate, not-yet-granted authorization. The record of
+> why we chose this architecture is the archive's value.
