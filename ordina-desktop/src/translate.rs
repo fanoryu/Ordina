@@ -43,6 +43,7 @@ use ordina::model::condition::Condition;
 use ordina::model::declared::Declared;
 use ordina::model::opaque::{LineageId, OccurrenceId, OpaqueValue};
 use ordina::model::strategy::Strategy;
+use ordina::persistence::MintHighWater;
 
 use crate::draft::{ConditionDraft, FieldState, StrategyDraft};
 
@@ -87,7 +88,10 @@ pub enum RequiredElement {
 /// both of which this satisfies.
 #[derive(Debug, Clone)]
 pub struct IdentityMinter {
-    next_handle: u64,
+    /// The next safe handle, or `Exhausted` — ADR-0009 §7. Backed by
+    /// `ordina::persistence::MintHighWater` so exhaustion is an explicit state
+    /// that survives a save/restart, never a wrapped or reused number.
+    state: MintHighWater,
 }
 
 impl IdentityMinter {
@@ -96,14 +100,39 @@ impl IdentityMinter {
     #[must_use]
     pub const fn seeded_at(first_handle: u64) -> Self {
         Self {
-            next_handle: first_handle,
+            state: MintHighWater::Next(first_handle),
         }
     }
 
+    /// A minter restored from a persisted [`MintHighWater`] (ADR-0009 §7) — the
+    /// reload path. A restored `Exhausted` state refuses further minting.
+    #[must_use]
+    pub const fn from_high_water(state: MintHighWater) -> Self {
+        Self { state }
+    }
+
+    /// The current high-water, for persisting the envelope (ADR-0009 §7).
+    #[must_use]
+    pub const fn high_water(&self) -> MintHighWater {
+        self.state
+    }
+
     fn next(&mut self) -> u64 {
-        let handle = self.next_handle;
-        self.next_handle += 1;
-        handle
+        // Checked advancement (ADR-0009 §7): never wraps, never reuses. The
+        // correction loop must refuse to mint on an exhausted corpus before
+        // reaching this point (the desktop checks `high_water().seed()` /
+        // exhaustion when opening an editing session), so this fail-closed
+        // panic is an unreachable last-resort guard, never a normal path.
+        match self.state.issue() {
+            Some((handle, next)) => {
+                self.state = next;
+                handle
+            }
+            None => panic!(
+                "identity mint domain exhausted (u64::MAX reached) — ADR-0009 §7: \
+                 the correction loop must refuse to mint on an exhausted corpus"
+            ),
+        }
     }
 
     fn mint_occurrence(&mut self) -> OccurrenceId {

@@ -36,5 +36,6 @@
 pub mod checks;
 pub mod model;
 pub mod numeric;
+pub mod persistence;
 pub mod result;
 pub mod semantics;

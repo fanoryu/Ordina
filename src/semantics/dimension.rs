@@ -64,6 +64,17 @@ impl DimensionBinding {
     pub fn is_dimensionless(&self, dimension: DimensionSymbol) -> bool {
         self.dimensionless == dimension
     }
+
+    /// The supplied distinguished dimensionless symbol, for **ADR-0009
+    /// persistence transport only** — `pub(crate)`.
+    ///
+    /// The binding is caller-supplied and round-trips verbatim across a
+    /// save/restart; this reader lets `ordina::persistence` transport it without
+    /// exposing any public accessor. It selects nothing and derives nothing.
+    #[must_use]
+    pub(crate) const fn dimensionless(&self) -> DimensionSymbol {
+        self.dimensionless
+    }
 }
 
 /// The result of a §4.6 dimensional rule.

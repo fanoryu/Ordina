@@ -204,9 +204,13 @@ impl LineageId {
 
 // The five **semantic** opaque domains expose their underlying handle to the
 // crate — and only to the crate — so ADR-0008 §2's tag `0x07` frame can be
-// built. `OccurrenceId` deliberately exposes none: ADR-0007 places it outside
-// ADR-0003 §6's taxonomy entirely, so it is never walked and never encoded.
-// The absence of an accessor there is the structural enforcement of that ruling.
+// built. `OccurrenceId`'s handle is exposed to the crate **only** for ADR-0009
+// persistence transport (its accessor is below, `pub(crate)`), never for
+// revision identity: ADR-0007 places `OccurrenceId` outside ADR-0003 §6's
+// taxonomy, so the ADR-0008 identity encoder still never walks or encodes it.
+// The persistence accessor round-trips the occurrence handle across a
+// save/restart (ADR-0009 §5); it is invisible to every external crate, so the
+// opacity boundary to `ordina-desktop` is intact.
 
 impl LineageId {
     #[must_use]
@@ -247,6 +251,21 @@ impl OccurrenceId {
     #[must_use]
     pub const fn new(value: OpaqueValue) -> Self {
         Self(value)
+    }
+
+    /// The caller-supplied occurrence handle, for **ADR-0009 persistence
+    /// transport only** — round-tripping the occurrence identity across a
+    /// save/restart (ADR-0009 §5).
+    ///
+    /// Deliberately `pub(crate)`: no external crate can read it, so the opacity
+    /// boundary to `ordina-desktop` is intact. The ADR-0008 revision-identity
+    /// encoder still **never** calls this — `OccurrenceId` remains outside
+    /// ADR-0003 §6's taxonomy (ADR-0007), never walked for identity. This
+    /// accessor exists solely so persistence can restore the exact occurrence
+    /// handle, never to give the handle semantic meaning.
+    #[must_use]
+    pub(crate) const fn identity_handle(self) -> u64 {
+        self.0.identity_handle()
     }
 }
 

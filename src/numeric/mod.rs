@@ -189,6 +189,14 @@ impl Digit {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExactNumber(BigRational);
 
+/// A persisted numerator/denominator pair was outside `ExactNumber`'s accepted
+/// decimal-only domain — ADR-0009 §4.5 (persistence transport).
+///
+/// `pub(crate)`: surfaced to `ordina::persistence` only, which maps it to its
+/// own `EnvelopeLoadError::RationalOutOfDomain`. Not part of the public API.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct RationalDomainError;
+
 impl ExactNumber {
     /// The underlying exact rational, for canonical revision-identity encoding
     /// only — ADR-0008 §2 tag `0x04` frames a rational as its numerator's and
@@ -250,6 +258,56 @@ impl ExactNumber {
             Sign::Positive => magnitude,
             Sign::Negative => -magnitude,
         })
+    }
+
+    /// Reconstruct an exact value from a persisted numerator/denominator pair —
+    /// **ADR-0009 §4.5 persistence transport only**, `pub(crate)`.
+    ///
+    /// Fail-closed domain validation, so persistence never manufactures a value
+    /// outside `ExactNumber`'s accepted decimal-only domain (ADR-0005 §7.3):
+    /// the denominator must be strictly positive, and the value in lowest terms
+    /// must be a **terminating decimal** — its reduced denominator's only prime
+    /// factors are 2 and 5. A non-terminating rational such as `1/3` is
+    /// rejected, never coerced. Reconstruction is exact and float-free.
+    ///
+    /// The external numeric API is unchanged: this is `pub(crate)`, reachable
+    /// only by `ordina::persistence`.
+    ///
+    /// # Errors
+    ///
+    /// [`RationalDomainError`] when the denominator is zero or not strictly
+    /// positive, or the reduced value is not a terminating decimal.
+    pub(crate) fn from_ratio_exact(
+        numerator: BigInt,
+        denominator: BigInt,
+    ) -> Result<Self, RationalDomainError> {
+        use num_bigint::Sign as BigSign;
+
+        if denominator.sign() != BigSign::Plus {
+            // Zero or negative denominator — not a canonical rational here.
+            return Err(RationalDomainError);
+        }
+        // `BigRational::new` reduces to lowest terms with a positive denominator.
+        let ratio = BigRational::new(numerator, denominator);
+        // Terminating-decimal test on the reduced denominator: strip every
+        // factor of 2 and 5; a terminating decimal reduces to exactly 1.
+        let zero = BigInt::from(0);
+        let one = BigInt::from(1);
+        let two = BigInt::from(2);
+        let five = BigInt::from(5);
+        let mut den = ratio.denom().clone();
+        while &den % &two == zero {
+            den /= &two;
+        }
+        while &den % &five == zero {
+            den /= &five;
+        }
+        if den != one {
+            // Reduced denominator still has a prime factor other than 2 or 5 —
+            // e.g. 1/3 — which `from_decimal` could never construct.
+            return Err(RationalDomainError);
+        }
+        Ok(Self(ratio))
     }
 
     /// Exact addition — §4.2.

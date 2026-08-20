@@ -20,5 +20,6 @@ pub mod correction_view;
 pub mod diagnosis_view;
 pub mod draft;
 pub mod hydrate;
+pub mod persist;
 pub mod translate;
 pub mod view_model;

@@ -41,6 +41,7 @@ use ordina::checks::finalize::finalize_phase6;
 use ordina::checks::orchestration::run_phase6;
 use ordina::model::opaque::VersionToken;
 use ordina::model::strategy::Strategy;
+use ordina::persistence::MintHighWater;
 use ordina::result::compute_revision_identity;
 use ordina::result::{RevisionIdentity, RevisionIdentityError, Verdict, WellFormednessResult};
 use ordina::semantics::dimension::DimensionBinding;
@@ -109,6 +110,29 @@ impl CorrectionSession {
             draft: None,
             minter: IdentityMinter::seeded_at(mint_base),
         }
+    }
+
+    /// Resume a session over a persisted corpus, seeding the minter from the
+    /// restored [`MintHighWater`] (ADR-0009 §7 reload path). A restored
+    /// `Exhausted` state refuses further minting; the caller should not open an
+    /// editing session on an exhausted corpus (diagnosis remains available).
+    #[must_use]
+    pub fn resume(context: CheckerContext, strategy: Strategy, high_water: MintHighWater) -> Self {
+        let result = context.check(&strategy);
+        Self {
+            context,
+            strategy,
+            result,
+            draft: None,
+            minter: IdentityMinter::from_high_water(high_water),
+        }
+    }
+
+    /// The session's current mint high-water, for persisting the envelope
+    /// (ADR-0009 §7).
+    #[must_use]
+    pub fn high_water(&self) -> MintHighWater {
+        self.minter.high_water()
     }
 
     /// The canonical checker context (its supported token, for offering the

@@ -44,6 +44,20 @@ num-rational = { version = "0.4.2", default-features = false, features = [
 # one feature required for the hashing entry point this crate calls.
 blake3 = { version = "1.5", default-features = false, features = ["std"] }
 
+# ADR-0009 §4.4 (ACCEPTED, PBR-0024) + PBA-0181 authorize serde + serde_json for
+# the Dogfood-0 local-persistence module (`src/persistence/**`) ONLY. This is the
+# "later separately-authorized architecture decision" ADR-0005 §6.4's own escape
+# clause reserves, discharging ADR-0002 §15's deferred serialization decision — it
+# does not reopen ADR-0005. The persistence JSON is transport/restore only, never
+# a revision-identity canonicalization (ADR-0008 remains authoritative).
+#
+# Scope discipline: serde is used only via a crate-private DTO in
+# `src/persistence`; it is NOT on the authoritative checker path, and the
+# num-bigint/num-rational `serde` features remain DISABLED (ADR-0005 §6.4) —
+# ExactNumber is serialized by hand as decimal numerator/denominator strings.
+serde = { version = "1", default-features = false, features = ["std", "derive"] }
+serde_json = { version = "1", default-features = false, features = ["std"] }
+
 # proptest is deferred at bootstrap — permitted by PBA-0041 §11. Phase 0 needs
 # no property tests, and deferring keeps the dev graph free of randomness
 # crates until the first property-test slice actually requires them.
