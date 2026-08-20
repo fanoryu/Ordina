@@ -1,9 +1,20 @@
 # RFC-0005: Minimum Single-Trader Local Persistence for Dogfood-0
 
-- **Status:** PROPOSED
+- **Status:** ACCEPTED
 - **Author:** Principal Engineer
 - **Created:** 2026-08-20
-- **Decision date:** —
+- **Decision date:** 2026-08-20
+- **Accepted by:** Product Board, PBR-0023
+- **Acceptance provenance:** PBA-0177 (acceptance authorization) → PBR-0023
+  (Product Board acceptance) → ER-0148 (acceptance synchronization report),
+  citing ARR-0061 (independent review, PASS; 0 BLOCKER, 0 MAJOR, 1 MINOR (m-1,
+  preserved as an ADR-0009 charge under OQ-1), 3 NOTE — none remediated in this
+  RFC). Acceptance covers the **Product-level persistence contract only**. The
+  ADR-level choices remain **unaccepted charges to ADR-0009**: OQ-1 (the
+  `ordina`-owned `Strategy ⇄ bytes` serialization API/format/dependency posture,
+  **including m-1's safe initial/imported-corpus mint-high-water establishment**)
+  and OQ-2 (a platform-independent durability invariant and its Windows
+  atomic-replace realization).
 - **Authorizing artifact:** PBA-0176 ("RFC-0005 Dogfood-0 Local-Persistence
   Authoring authorization"), explicit Product Owner direction to pursue Path 1
   (persistence architecture) rather than narrowing Dogfood-0 to a single-session
