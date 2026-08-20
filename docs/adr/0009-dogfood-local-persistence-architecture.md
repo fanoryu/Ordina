@@ -120,11 +120,22 @@ desktop already holds):
 
 ```rust
 pub struct DogfoodEnvelope {
-    pub format_version: u32,             // storage schema version (§12); value 1
-    pub binding:        DimensionBinding,// checker context, part 1 (§8)
-    pub supported:      VersionToken,    // checker context, part 2 (§8)
-    pub strategy:       Option<Strategy>,// the current canonical Strategy
-    pub mint_high_water: u64,            // next safe mint handle (§7)
+    pub format_version: u32,               // storage schema version (§12); value 1
+    pub binding:        DimensionBinding,  // checker context, part 1 (§8)
+    pub supported:      VersionToken,      // checker context, part 2 (§8)
+    pub strategy:       Option<Strategy>,  // the current canonical Strategy
+    pub mint_high_water: MintHighWater,    // next safe mint handle, or Exhausted (§7)
+}
+
+/// The persisted mint high-water — an **explicit** representation so an exhausted
+/// mint domain survives reload as a distinct state, never as a reusable number
+/// (§6/§7). `Next(v)` = the next safe handle is `v` (`v` may be `u64::MAX`, the
+/// final mintable handle); `Exhausted` = the domain is spent, no further mint may
+/// be issued. There is **no** numeric encoding of exhaustion (no sentinel that
+/// could be arithmetically transformed back into a handle).
+pub enum MintHighWater {
+    Next(u64),
+    Exhausted,
 }
 ```
 
@@ -155,19 +166,33 @@ pub fn serialize_envelope(envelope: &DogfoodEnvelope) -> Vec<u8>;
 pub fn deserialize_envelope(bytes: &[u8]) -> Result<DogfoodEnvelope, EnvelopeLoadError>;
 
 /// The minimum safe mint high-water derivable from a corpus with no persisted
-/// removal history — max over every `OccurrenceId` and `LineageId` handle
-/// present in `strategy`, plus one; `0` for an empty/absent Strategy. See §6.
-pub fn minimum_safe_high_water(strategy: &Strategy) -> u64;
+/// removal history — **fallible**. Semantics (§6/§7):
+/// - empty/absent Strategy (no relevant handle present) → `Ok(0)` (the minimum
+///   valid next-safe handle);
+/// - max present `OccurrenceId`/`LineageId` handle `< u64::MAX` → `Ok(max + 1)`;
+/// - max present relevant handle `== u64::MAX` → `Err(Exhausted)` — no safe next
+///   handle exists; **never** `u64::MAX + 1` (no wrapping, no saturating).
+pub fn minimum_safe_high_water(strategy: &Strategy) -> Result<u64, HighWaterExhausted>;
 
 pub enum EnvelopeLoadError {
     Malformed,                 // not valid JSON / schema; unreadable scalar
     UnsupportedVersion(u32),   // format_version this build does not support
-    HighWaterInconsistent,     // stored high_water < minimum_safe_high_water(strategy)
+    HighWaterInconsistent,     // stored high_water below the minimum safe value (§7)
+    HighWaterExhausted,        // corpus contains a relevant handle == u64::MAX (§6/§7)
+    RationalOutOfDomain,       // a persisted ExactNumber is not a valid decimal rational (§4.5)
 }
+
+/// The mint domain is exhausted: no handle strictly greater than every present
+/// relevant handle exists in `u64`. A distinct, explicit state — never a numeric
+/// value, so it can never be transformed back into a reusable handle (§7).
+pub struct HighWaterExhausted;
 ```
 
 - **`serialize_envelope` is total** (returns `Vec<u8>`, no error): every value a
-  typed `DogfoodEnvelope` can hold has a JSON representation (§5).
+  typed `DogfoodEnvelope` can hold has a JSON representation (§5). (The high-water
+  **derivation** is fallible — §6 — but a value already held in the envelope has
+  a representation; exhaustion is caught at derivation/seed time, not at
+  serialize time.)
 - **File I/O stays outside `ordina`.** `serialize_envelope` returns bytes; the
   desktop writes them (§10). `deserialize_envelope` takes bytes; the desktop reads
   them. Raw bytes **are** exposed to the desktop, as an opaque blob it never
@@ -200,11 +225,13 @@ Why JSON meets every RFC-0005 requirement:
 - **Opaque identities preserved exactly.** Each handle is stored as its raw `u64`
   (`identity_handle()`), reconstructed via `OpaqueValue::new`. No reminting, no
   aliasing, no reinterpretation (§5).
-- **`ExactNumber` preserved without floats.** `ExactNumber`/`BigRational` is
-  serialized as an explicit `{ "num": "<decimal>", "den": "<decimal>" }` pair of
-  **arbitrary-precision decimal strings** (numerator signed, denominator positive)
-  — never `f32`/`f64` (upholds ADR-0005 §7.2; the numeric crates' `serde` feature
-  stays **disabled**, §4.4).
+- **`ExactNumber` preserved without floats** (round-trip fully specified in §4.5).
+  `ExactNumber`/`BigRational` is serialized as an explicit
+  `{ "num": "<decimal>", "den": "<decimal>" }` pair of **arbitrary-precision
+  base-10 integer strings** (numerator signed, denominator strictly positive) —
+  never `f32`/`f64` (upholds ADR-0005 §7.2; the numeric crates' `serde` feature
+  stays **disabled**, §4.4). Reading uses the existing `pub(crate) as_ratio()`;
+  reconstruction and its fail-closed domain validation are specified in §4.5.
 - **Versioned** (§12), **rejects malformed input safely** (§13 — `serde_json`
   typed deserialization fails closed by construction; a truncated/invalid document
   yields `EnvelopeLoadError::Malformed`, never a partial or defaulted value),
@@ -253,6 +280,57 @@ Two production dependencies are added **to `ordina` only**: **`serde`** (with th
 The implementation cycle (a separate authorization) makes the actual `Cargo`
 change; this ADR decides only that these two dependencies, so scoped, are the
 approved posture.
+
+### 4.5 ExactNumber reconstruction and domain validation (MINOR-1)
+
+`ExactNumber` (`src/numeric/mod.rs`) is exact, arbitrary-precision, and
+**decimal-only** by construction: its constructors are `from_integer(i64)` and
+`from_decimal(sign, integer_digits, fraction_digits)`, the latter producing a
+denominator that is a power of ten, so a non-terminating rational such as `1/3`
+**cannot** be built (ADR-0005 §7.3). Its only value reader is `pub(crate)
+as_ratio() -> &BigRational`. Persistence must round-trip it exactly without
+broadening that semantic domain and without any floating point.
+
+- **Reading** uses the existing `pub(crate) as_ratio()`; the DTO stores the
+  reduced rational's numerator and denominator as base-10 integer strings (§4.2).
+- **Reconstruction** requires a **new crate-internal** constructor — the minimum
+  mechanism, spelled here by semantics (the exact name is an implementation-cycle
+  choice), e.g.:
+
+  ```rust
+  // in `ordina::numeric`, pub(crate) only — the external ExactNumber API stays
+  // opaque/minimal and unchanged; ADR-0005 §6.3's public boundary is untouched.
+  pub(crate) fn from_ratio_exact(num: BigInt, den: BigInt)
+      -> Result<ExactNumber, RationalDomainError>;
+  ```
+
+  It is `pub(crate)`, used **only** by `ordina::persistence` — exactly the
+  boundary-preserving pattern §5 uses for the `OccurrenceId` transport accessor.
+  No public numeric API is added.
+- **Fail-closed domain validation** — reconstruction returns an error (surfaced as
+  `EnvelopeLoadError::RationalOutOfDomain`, §13) unless **all** hold:
+  - the denominator string parses to a `BigInt` and is **strictly positive**
+    (`> 0`; a `0` or negative denominator is rejected);
+  - the numerator string parses to a `BigInt` (sign permitted on the numerator
+    only);
+  - the reduced rational lies in `ExactNumber`'s **decimal** domain — i.e. the
+    denominator of the value in lowest terms has the form `2^a · 5^b` (equivalently,
+    the value is a **terminating** decimal). A value such as `1/3` (denominator `3`)
+    is **rejected**, not coerced;
+  - reconstruction is **exact** — the reconstructed `BigRational` equals the
+    persisted value with **no precision loss** and **no floating-point** step
+    anywhere.
+- **Accepted** (exact round-trip, no loss): huge positive numerator, huge negative
+  numerator, huge denominator, any exact terminating-decimal value, and zero
+  (canonically `0/1`).
+- **Rejected** (fail closed): `1/3` (and any non-terminating rational), denominator
+  `0`, malformed sign, non-numeric integer strings, and any otherwise-invalid
+  representation.
+
+**Persistence reconstruction does not broaden `ExactNumber`'s semantic domain:**
+the loader admits exactly the values the type's own constructors can produce, and
+rejects everything else as unusable input — it never manufactures an out-of-domain
+value (ADR-0005 §7.2/§7.3 upheld).
 
 ### 5. Opaque-identity round-trip (§5)
 
@@ -304,50 +382,65 @@ minted handle can never collide with). **One shared high-water is sufficient**;
 per-domain high-waters are not required (§7), because the minter itself is a
 single counter.
 
-`ordina::persistence::minimum_safe_high_water(strategy)` returns
-`max(every OccurrenceId handle, every LineageId handle) + 1`, or `0` for an
-empty/absent Strategy. The scan happens **inside `ordina`** (only it can read
-handles); the desktop never inspects a handle. Case analysis:
+`ordina::persistence::minimum_safe_high_water(strategy)` is **fallible** (§3): it
+returns `Ok(max(every OccurrenceId handle, every LineageId handle) + 1)` when that
+maximum is `< u64::MAX`, `Ok(0)` for an empty/absent Strategy, and
+`Err(HighWaterExhausted)` when the maximum present relevant handle **equals**
+`u64::MAX` — because no handle strictly greater than `u64::MAX` exists, so there is
+**no safe next handle** and the `+1` must **never** be evaluated (no wrapping, no
+saturating). The scan happens **inside `ordina`** (only it can read handles); the
+desktop never inspects a handle. Case analysis:
 
-- **Case A — new envelope from newly-authored local state.** The desktop owns the
-  minter from a known base (e.g. `0`); on save it writes back the minter's current
-  `next_handle`, which already exceeds every handle it minted. `mint_high_water`
-  is the minter's own state — trivially safe. `minimum_safe_high_water` is not
-  needed here (it would agree, since the minter minted every present handle).
-- **Case B — reload of a persisted Dogfood envelope with explicit high-water.**
-  The stored `mint_high_water` is **authoritative** and seeds the new session's
-  minter. It already accounts for **removed** handles (a removed construct's
-  handle is never reused, RFC-0004 §14.2.5), because it was carried forward
-  monotonically, not re-derived from present handles. This is the normal steady
-  state.
-- **Case C — first import of a Strategy that contains identities but has no
-  persisted Dogfood high-water.** The desktop calls
-  `minimum_safe_high_water(strategy)` and seeds the minter with it. This is
-  **safe** because a fresh import has **no Ordina-side mint/removal history**: the
-  handles present in the imported corpus **are** the complete knowable mint
-  history, so `max-present + 1` cannot collide with anything (there is nothing
-  removed-but-higher that the corpus does not itself contain).
-- **Case D — imported corpus has high opaque handles unknown to the desktop.**
-  Identical to Case C: the scan runs **inside `ordina`**, which can read the high
-  handles; the desktop still never inspects a handle. `max-present + 1` is safe
-  regardless of how large the handles are.
-- **Case E — removed / high historical identities exist beyond currently-present
-  handles.** Such history can only exist if the corpus was **previously edited
-  inside an Ordina session**, which by RFC-0005's contract persisted an explicit
-  monotonic `mint_high_water` — i.e. **Case B**, where the stored high-water
-  already covers removed handles. A corpus that genuinely carries removal history
-  **but no persisted high-water** presents history that is **not derivable from
-  the corpus itself**; `minimum_safe_high_water` cannot and must not invent it.
+- **Case A — fresh corpus, no identities.** No relevant handle present →
+  `minimum_safe_high_water` = `Ok(0)`, the minimum valid next-safe handle. The
+  desktop seeds the minter at `0`; on save it writes back the minter's state as
+  `MintHighWater::Next(next_handle)` (or `Exhausted`, Case E).
+- **Case B — imported corpus with max `< u64::MAX`.** `minimum_safe_high_water` =
+  `Ok(max + 1)`; the desktop seeds the minter with it. Safe because a fresh import
+  has **no Ordina-side mint/removal history**: the handles present **are** the
+  complete knowable mint history, so `max + 1` collides with nothing (there is
+  nothing removed-but-higher the corpus does not itself contain).
+- **Case C — imported corpus containing `u64::MAX`.** `minimum_safe_high_water` =
+  `Err(HighWaterExhausted)` — the domain is spent; **no** identity may be minted.
+  The desktop surfaces exhaustion and does **not** open an editing session that
+  would mint (diagnosis/read is still possible; the corpus is loadable, only
+  further minting is refused). No wraparound to `0`, no reuse, no silent collision.
+- **Case D — persisted envelope whose high-water is already exhausted.** The
+  reloaded `mint_high_water` is `MintHighWater::Exhausted`; the session refuses to
+  mint further. Because exhaustion is an explicit tagged state, reload cannot
+  transform it into a reusable numeric value (§7). A stored `Next(u64::MAX)` seeds
+  the minter for exactly **one** final mint (issuing `u64::MAX`), after which the
+  minter is `Exhausted` and the next save persists `Exhausted`.
+- **Case E — minter reaches `u64::MAX` during a live session.** The mint that
+  issues `u64::MAX` is the last permitted; the minter must then transition to
+  `Exhausted` rather than advancing `next_handle` to `u64::MAX + 1` (which would
+  overflow). Any subsequent mint attempt **fails closed** — no identity is issued
+  after exhaustion unless a later architecture decision changes the identity
+  domain. This is the live-session analogue of the derivation rule above; the
+  implementation must use checked arithmetic (never `+=` that can wrap) at the
+  minter's advance step.
+
+**Removed / high historical identities** (the former Case E concern) are unchanged:
+such history can only exist if the corpus was previously edited inside an Ordina
+session, which persisted an explicit monotonic `mint_high_water` (`Next(v)` or
+`Exhausted`) — the reload path (Case D / §7) — where the stored high-water already
+covers removed handles (RFC-0004 §14.2.5). A bare import that genuinely carries
+removal history **but no persisted high-water** presents history **not derivable
+from the corpus itself**; `minimum_safe_high_water` cannot and must not invent it,
+and the import surface must accept an explicitly supplied high-water alongside the
+corpus (below).
 
 **Chosen mechanism and its exact limitation.** For a first/imported corpus with no
 persisted high-water, the seed is `minimum_safe_high_water(strategy)` =
-max-present-handle-over-{occurrence,lineage} + 1. This is **not** chosen "because
-it is convenient" (PBA-0178's caution): it is the **minimum sound** seed for a
-corpus **with no removal history**, and the only removal history that can exist
-carries its own persisted high-water (Case B/E) and takes that path instead.
-Scanning occurs **inside `ordina`**; it includes exactly the two minted domains
-(occurrence, lineage); removed handles are **out of a first import's knowable
-scope** by construction. **Stated limitation:** first-import from a bare corpus
+`Ok(max-present-handle-over-{occurrence,lineage} + 1)` when that maximum is
+`< u64::MAX`, and `Err(HighWaterExhausted)` at `u64::MAX` (above). This is **not**
+chosen "because it is convenient" (PBA-0178's caution): it is the **minimum sound**
+seed for a corpus **with no removal history**, and the only removal history that can
+exist carries its own persisted high-water (Case D / §7) and takes that path
+instead. Scanning occurs **inside `ordina`**; it includes exactly the two minted
+domains (occurrence, lineage); removed handles are **out of a first import's
+knowable scope** by construction. **Stated limitation:** first-import from a bare
+corpus
 **cannot** reconstruct removed-but-higher historical handles it does not contain.
 Where a caller has out-of-band knowledge of such history, the import path **must**
 accept an **explicitly supplied high-water alongside the corpus** (the desktop
@@ -358,27 +451,43 @@ importing a corpus whose removal history lives outside the file.
 
 ### 7. Persistent high-water representation (§7)
 
-- **Logical type:** `u64` (`mint_high_water`).
-- **Semantics:** the **next** safe mint handle — strictly greater than every
-  handle any session minted into this corpus.
+- **Logical type:** `MintHighWater` (`Next(u64) | Exhausted`, §2) — **not** a bare
+  `u64`. The explicit `Exhausted` variant is the minimum representation that lets
+  an exhausted mint domain survive reload as a distinct state, never as a numeric
+  value that could be arithmetically transformed back into a reusable handle.
+- **Semantics:** `Next(v)` = the **next** safe mint handle is `v`, strictly greater
+  than every handle any session minted into this corpus (`v` may be `u64::MAX`, the
+  final mintable handle); `Exhausted` = the domain is spent, no further mint may be
+  issued (§6 Cases C–E).
 - **Monotonicity:** never decreases across saves; each session seeds its
   `IdentityMinter` from the stored value and, on save, writes back the minter's
-  advanced `next_handle`.
-- **Equality / ordering:** only **ordering** is operative (the seed must strictly
-  exceed every prior handle); equality carries no special meaning.
+  advanced state (`Next(next_handle)`, or `Exhausted` once `u64::MAX` has been
+  issued). The advance step uses **checked** arithmetic — never `+=` that can wrap;
+  advancing past `u64::MAX` yields `Exhausted`, never `0`.
+- **No overflow / no wrap / no saturate:** the `+1` is evaluated **only** when the
+  current value is `< u64::MAX`; there is no code path that computes `u64::MAX + 1`.
+- **Equality / ordering:** only **ordering** is operative for `Next(v)` (the seed
+  must strictly exceed every prior handle); `Exhausted` is a terminal state, not an
+  orderable value; equality carries no special meaning.
 - **Relationship to identity domains:** governs the **minter's** domains
   (`OccurrenceId` ∪ `LineageId`) via the single shared counter; **one** shared
   value suffices (§6). It has **no** relationship to `DimensionSymbol`/`EnumValue`/
   `VersionToken`/`PrecedenceOrdinal`, which are never minted.
-- **Reload behaviour:** the stored value seeds the new minter (Case B); the first
-  new mint is strictly greater than every prior-session handle — closing
-  ARR-0060 NOTE 1.
-- **Update behaviour:** after each successful mint the minter advances; the
-  advanced value is written back on the next save.
-- **Prohibition:** never decremented, reset below a real prior mint, or reused;
-  load-time validation rejects a stored `mint_high_water <
-  minimum_safe_high_water(strategy)` as `EnvelopeLoadError::HighWaterInconsistent`
-  (RFC-0005 R-P3, D-3).
+- **Reload behaviour:** a stored `Next(v)` seeds the new minter (reload, Case D;
+  first-import Cases A–B instead seed from the derived `minimum_safe_high_water`); the
+  first new mint is strictly greater than every prior-session handle — closing
+  ARR-0060 NOTE 1. A stored `Exhausted` refuses further minting (Case D).
+- **Update behaviour:** after each successful mint the minter advances (checked);
+  the advanced state is written back on the next save.
+- **Prohibition and load-time validation:** never decremented, reset below a real
+  prior mint, or reused. Load-time validation, using `minimum_safe_high_water`:
+  - a stored `Next(v)` with `v` below the minimum safe value for the corpus →
+    `EnvelopeLoadError::HighWaterInconsistent` (RFC-0005 R-P3, D-3);
+  - a corpus whose present handles are already exhausted
+    (`minimum_safe_high_water` returns `Err`) while the stored high-water is a
+    `Next(_)` that contradicts it → `EnvelopeLoadError::HighWaterExhausted`
+    (reload cannot turn exhaustion into a reusable value);
+  - a stored `Exhausted` is accepted as-is and forbids further minting.
 
 ### 8. `CheckerContext` persistence (§8)
 
@@ -457,8 +566,22 @@ Realization (single-writer, single-process, local file):
   as `EnvelopeLoadError` (§13); the desktop reports I/O failures from its own file
   operations.
 
-Production database transactions, journaling, and backup/restore are **excluded**
-(§19); this atomic-replace-with-pre-fsync is the whole failure model.
+**Scope of the guarantee — atomic/non-torn visibility, not strongest power-loss
+durability (NOTE-1).** The invariant above is a **non-torn visibility** guarantee:
+the next launch sees a *complete* envelope — old or new — never a torn mixture.
+This is exactly RFC-0005 D-1/D-2's requirement, and the atomic replace-existing
+rename provides it. It is deliberately **distinct** from a *strongest post-power-loss
+durability* guarantee (that the newest committed save, specifically, always survives
+a power loss rather than the still-valid previous one). On some POSIX filesystems
+the latter additionally requires an `fsync` of the **containing directory** after
+the rename so the directory entry itself is durable; Dogfood-0 does **not** promise
+that stronger property and **must not** be read as promising it — losing the last
+save to the still-complete previous envelope is within contract. An implementation
+**may** add a parent-directory `fsync` for extra robustness, but it is **not
+required** to make any claim in this ADR true, and adding it does **not** upgrade
+Dogfood-0's durability product contract. Production database transactions,
+journaling, and backup/restore remain **excluded** (§19); this
+atomic-replace-with-pre-fsync is the whole failure model.
 
 ### 11. Windows requirement (§11)
 
@@ -467,21 +590,27 @@ replacing the target must be an **atomic replace-existing** that leaves the targ
 as either the complete old file or the complete new file, with the new bytes
 already durably flushed before the replace (§10).
 
-**Implementation choice (what realizes it):** `std::fs::rename`. On Windows,
-`std::fs::rename` maps to `MoveFileExW` with `MOVEFILE_REPLACE_EXISTING |
-MOVEFILE_WRITE_THROUGH`, which — **unlike POSIX-only assumptions** — **does replace
-an existing destination** and, for a same-directory (same-volume, NTFS) move,
-performs the replace atomically at the filesystem-metadata level. Standard rename
-semantics are therefore **sufficient** on the supported Windows/NTFS local target;
-the ADR does **not** need to pin a Win32 API in the architecture.
+**Implementation choice (what realizes it):** a **replace-existing rename** that
+satisfies the invariant above — expected to be `std::fs::rename`, which **unlike
+POSIX-only assumptions does replace an existing destination on Windows**. The ADR
+does **not** assert, and does **not** rely on, any specific Win32 mapping: the
+exact mechanism `std::fs::rename` uses on Windows is **std-library/OS/version
+dependent** (current Rust std, for example, prefers `SetFileInformationByHandle`
+with `FileRenameInfoEx` where available and falls back to `MoveFileExW` — details
+that are internal to std and not guaranteed as a stable contract), so pinning a
+particular flag combination would be a factual overstatement. What the architecture
+requires is only the **replace-existing, non-torn** property; the concrete Windows
+realization is an implementation choice.
 
-- The implementation cycle **must verify** (not assume) this durability behaviour
-  on the supported Windows target, per RFC-0005 R-P2 / OQ-2. If verification shows
-  plain `std::fs::rename` insufficient on a supported target, the minimum
-  compatible strengthening is `ReplaceFileW` (or `MoveFileExW` with
-  `MOVEFILE_WRITE_THROUGH`) via a thin platform shim — an **implementation**
-  detail, adopted only if verification requires it, not pinned as architecture
-  here.
+- The implementation cycle **must verify** (not assume) that the chosen mechanism
+  provides the replace-existing / non-torn durability behaviour on the supported
+  Windows target, per RFC-0005 R-P2 / OQ-2 — rather than relying on any assumed
+  std-internal mapping.
+- If verification shows the default `std::fs::rename` insufficient on a supported
+  target, a proven replace-existing mechanism (for example `ReplaceFileW`, or
+  `MoveFileExW` with `MOVEFILE_WRITE_THROUGH`, via a thin platform shim) may be
+  adopted — an **implementation** detail chosen only if verification requires it,
+  **not** pinned as architecture here.
 - Non-local / network filesystems that cannot provide atomic replace-existing are
   **out of scope** (Dogfood-0 is local-only, §19).
 
@@ -514,8 +643,10 @@ Deterministic, fail-closed behaviour — **no silently repaired data**:
 | Malformed format | `EnvelopeLoadError::Malformed`. |
 | Unknown format version | `EnvelopeLoadError::UnsupportedVersion(v)`. |
 | Invalid opaque-identity representation (non-`u64`, missing field) | `EnvelopeLoadError::Malformed`. |
-| Invalid high-water (non-`u64`) | `EnvelopeLoadError::Malformed`. |
-| High-water inconsistent with corpus (`< minimum_safe_high_water`) | `EnvelopeLoadError::HighWaterInconsistent`. |
+| Invalid high-water (neither a `Next(u64)` nor `Exhausted`) | `EnvelopeLoadError::Malformed`. |
+| High-water `Next(v)` below the corpus minimum safe value | `EnvelopeLoadError::HighWaterInconsistent`. |
+| Corpus already exhausted (present handle `== u64::MAX`) while stored high-water is a contradicting `Next(_)` | `EnvelopeLoadError::HighWaterExhausted` (§7) — never turned into a reusable value. |
+| Persisted `ExactNumber` out of the decimal domain (`1/3`, denominator `0`/negative, malformed sign/digits) | `EnvelopeLoadError::RationalOutOfDomain` (§4.5). |
 | Malformed `CheckerContext` field | `EnvelopeLoadError::Malformed`. |
 | Deserialized Strategy that is **not** Well-Formed | **Not a load error.** Decode success ≠ Well-Formedness. |
 
@@ -549,8 +680,9 @@ Accepted ADR-0009 unblocks the implementation cycle to realize the 15-step loop
    empty corpus (§8, §13 missing-file);
 4. restore `CheckerContext` → from `binding`/`supported` (§8);
 5. restore `Strategy` → from the envelope (§4/§5);
-6. restore safe mint high-water → stored `mint_high_water` (Case B), or
-   `minimum_safe_high_water`/explicit import value (Case C/D/E) (§6/§7);
+6. restore safe mint high-water → stored `mint_high_water` on reload (Case D), or
+   `minimum_safe_high_water`/explicit import value on first import (Cases A–C),
+   **failing closed on exhaustion** (`HighWaterExhausted`, Cases C–E) (§6/§7);
 7. run current diagnosis → existing `CheckerContext::check` (N-22-A);
 8. edit/correct → existing N-22-B-2 `CorrectionSession` loop;
 9. fresh whole-Strategy WF re-check → existing `submit` (§19 of RFC-0004);
@@ -577,7 +709,17 @@ Implementation-reviewable requirements the implementation cycle must satisfy:
   `DeclaredCategory` state, `ExactNumber` via decimal-string num/den).
 - Opaque identities round-trip exactly (all six domains, §5).
 - `CheckerContext` (`binding`, `supported`) round-trips exactly.
-- `mint_high_water` round-trips exactly.
+- `mint_high_water` round-trips exactly, **including the `Exhausted` variant** (a
+  saved `Exhausted` reloads as `Exhausted`, never as a number).
+
+**ExactNumber round-trip (§4.5)**
+- valid exact values round-trip with **no precision loss**: huge positive
+  numerator, huge negative numerator, huge denominator, an exact terminating
+  decimal, and zero (`0/1`);
+- **out-of-domain / malformed input is rejected** (`RationalOutOfDomain`): `1/3`
+  (non-terminating), denominator `0`, negative denominator, malformed sign, and
+  non-numeric integer strings;
+- no floating-point step appears on any path.
 
 **Restart**
 - save → reload → same logical Strategy;
@@ -587,19 +729,33 @@ Implementation-reviewable requirements the implementation cycle must satisfy:
 **Mint continuity**
 - mint → save → restart → mint again → **no collision**;
 - mint highest identity → **remove** it → save → restart → mint → **no reuse**
-  (exercises Case B / RFC-0004 §14.2.5 removed-handle non-reuse).
+  (exercises reload Case D / RFC-0004 §14.2.5 removed-handle non-reuse).
+
+**Mint exhaustion boundary (MAJOR-1, §6/§7)**
+- corpus with max relevant handle = `u64::MAX - 1` → `minimum_safe_high_water` =
+  `Ok(u64::MAX)`; one final mint issues `u64::MAX`, then the minter is `Exhausted`;
+- corpus with max relevant handle = `u64::MAX` → `minimum_safe_high_water` =
+  `Err(HighWaterExhausted)`; **no** mint is issued; **no** wrap to `0`;
+- persisted `Exhausted` state reloads as `Exhausted` and forbids further minting;
+- **no-wrap guarantee:** there is no input for which the derivation or the minter
+  advance produces `0` (or any prior handle) from a `u64::MAX` boundary.
 
 **First / import**
-- imported corpus (identities present, no persisted high-water) obtains a safe
-  seed via `minimum_safe_high_water`; first mint does not collide (Case C/D);
-- explicit-import-high-water override accepted where supplied (Case E).
+- imported corpus (identities present, max `< u64::MAX`, no persisted high-water)
+  obtains a safe seed via `minimum_safe_high_water`; first mint does not collide
+  (Cases B);
+- imported corpus containing `u64::MAX` fails closed (Case C);
+- explicit-import-high-water override accepted where supplied (removed-history
+  corner case).
 
 **Failure**
 - interrupted save preserves the previous valid envelope (temp + pre-fsync +
   atomic replace);
 - malformed / truncated / empty load fails closed (`Malformed`);
 - unknown version rejected (`UnsupportedVersion`);
-- high-water inconsistent with corpus rejected (`HighWaterInconsistent`);
+- high-water below the corpus minimum rejected (`HighWaterInconsistent`);
+- out-of-domain persisted rational rejected (`RationalOutOfDomain`, §4.5);
+- corpus/high-water exhaustion rejected/handled fail-closed (`HighWaterExhausted`);
 - a decoded-but-not-Well-Formed Strategy is a valid `Unusable` diagnosis, **not**
   a load error.
 
@@ -650,9 +806,14 @@ Implementation-reviewable requirements the implementation cycle must satisfy:
 ### 18. Architecture consequences (§18)
 
 - **Public API additions:** `ordina::persistence` with `DogfoodEnvelope`,
-  `serialize_envelope`, `deserialize_envelope`, `minimum_safe_high_water`,
-  `EnvelopeLoadError`. Plus a **`pub(crate)`** (not public) `OccurrenceId`
-  handle accessor for transport (§5).
+  `MintHighWater` (`Next(u64) | Exhausted`, §2/§7), `serialize_envelope`,
+  `deserialize_envelope`, the **fallible** `minimum_safe_high_water -> Result<u64,
+  HighWaterExhausted>` (§3/§6), and `EnvelopeLoadError` (now including
+  `HighWaterExhausted` and `RationalOutOfDomain`). Plus two **`pub(crate)`** (not
+  public) transport helpers used only by `ordina::persistence`: an `OccurrenceId`
+  handle accessor (§5) and an `ExactNumber` reconstruction constructor with
+  fail-closed decimal-domain validation (§4.5). No public opacity or numeric API
+  surface changes.
 - **Dependency additions:** `serde` (derive) + `serde_json`, isolated to
   `ordina::persistence`, numeric-crate `serde` features remaining off (§4.4).
 - **Persistence-format stability commitment:** `format_version 1` / JSON with
@@ -684,8 +845,10 @@ Implementation-reviewable requirements the implementation cycle must satisfy:
 - Introduces the project's first production `serde` usage and first durable
   on-disk artifact — a compatibility surface (mitigated by §12 versioning and
   §4's field-name/string-tag stability).
-- Adds a `pub(crate)` `OccurrenceId` transport accessor (mitigated: crate-internal,
-  identity encoder still never calls it, ADR-0007 preserved — §5).
+- Adds two `pub(crate)` transport helpers — an `OccurrenceId` handle accessor (§5)
+  and an `ExactNumber` reconstruction constructor (§4.5) — both crate-internal;
+  the identity encoder still never calls the `OccurrenceId` accessor (ADR-0007
+  preserved) and the external numeric/opacity APIs are unchanged.
 
 ### Neutral / accepted trade-offs
 
