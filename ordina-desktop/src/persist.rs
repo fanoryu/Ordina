@@ -217,4 +217,91 @@ mod tests {
             other => panic!("expected NotFound Io error, got {other:?}"),
         }
     }
+
+    /// MINOR-1 (ADR-0009 §16 "interrupted save preserves the previous valid
+    /// envelope"): a save that fails **before** the atomic replace must leave the
+    /// prior destination byte-unchanged and still loadable — never torn.
+    ///
+    /// Deterministic failure injection without weakening production logic: the
+    /// temp path `atomic_write` uses is `<dir>/.<name>.tmp`; pre-creating a
+    /// **directory** at exactly that path makes the temp `File::create` fail, so
+    /// the replace never runs and the target is untouched. No production seam is
+    /// added — the real `atomic_write` is exercised end to end.
+    #[test]
+    fn interrupted_save_preserves_the_previous_valid_envelope() {
+        // A private working directory so the temp-name collision is isolated.
+        let dir = {
+            let mut d = std::env::temp_dir();
+            d.push(format!("ordina-dogfood-{}-interrupted", std::process::id()));
+            d
+        };
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        let target = dir.join("envelope.json");
+
+        // 1. A valid initial destination envelope (a real serialized envelope).
+        let context = correction_fixtures::checker_context();
+        let strategy = correction_fixtures::unusable_missing_version();
+        let session = CorrectionSession::begin(context, strategy, correction_fixtures::MINT_BASE);
+        save_session(&session, &target).expect("initial save");
+        let original = fs::read(&target).unwrap();
+        // It is a genuinely loadable envelope.
+        assert!(load_envelope(&target).is_ok());
+
+        // 2. Force the next save's temp-file creation to fail: occupy the exact
+        //    temp path (`.envelope.json.tmp`) with a directory.
+        let tmp_collision = dir.join(".envelope.json.tmp");
+        fs::create_dir(&tmp_collision).unwrap();
+
+        // 3. The save must return Err (temp create fails before any replace).
+        let err = atomic_write(&target, b"{\"torn\":true}").unwrap_err();
+        assert!(
+            matches!(
+                err.kind(),
+                io::ErrorKind::AlreadyExists
+                    | io::ErrorKind::PermissionDenied
+                    | io::ErrorKind::Other
+            ) || err.raw_os_error().is_some(),
+            "expected a create failure, got {err:?}"
+        );
+
+        // 4-6. The prior destination is byte-unchanged, still loads, not torn.
+        let after = fs::read(&target).unwrap();
+        assert_eq!(
+            after, original,
+            "prior envelope was mutated by a failed save"
+        );
+        assert!(
+            load_envelope(&target).is_ok(),
+            "prior envelope no longer loads after a failed save"
+        );
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn exhausted_session_refuses_minting_without_panic() {
+        // A resumed corpus at the exhaustion boundary must report it cannot mint;
+        // the UI gate (correction_view) keys off exactly this to refuse editing.
+        assert!(!can_mint(MintHighWater::Exhausted));
+        assert!(can_mint(MintHighWater::Next(0)));
+        assert!(can_mint(MintHighWater::Next(u64::MAX)));
+    }
+
+    #[test]
+    fn save_advances_and_reload_preserves_high_water_continuity() {
+        let context = correction_fixtures::checker_context();
+        let strategy = correction_fixtures::unusable_missing_version();
+        let session = CorrectionSession::begin(context, strategy, correction_fixtures::MINT_BASE);
+        let path = temp_path("continuity");
+
+        save_session(&session, &path).unwrap();
+        let reloaded = resume_session(load_envelope(&path).unwrap()).unwrap();
+        // The persisted high-water seeds the resumed session identically — no
+        // hidden in-memory state is required across the save/reload boundary.
+        assert_eq!(reloaded.high_water(), session.high_water());
+        assert!(can_mint(reloaded.high_water()));
+
+        let _ = fs::remove_file(&path);
+    }
 }

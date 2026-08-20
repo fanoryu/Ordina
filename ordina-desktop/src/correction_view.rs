@@ -12,18 +12,28 @@
 //! confirm the submission, and submit (full fresh re-check). Everything else in
 //! the Strategy is carried through translation verbatim.
 
+use std::path::Path;
+
 use eframe::egui;
 use ordina::model::condition::ConditionClassification;
 use ordina::model::guard::Guard;
 use ordina::result::Verdict;
 
 use crate::correction::{CorrectionSession, Stage, SubmitError};
+use crate::persist;
 use crate::translate::TranslationGateError;
 use crate::view_model::DiagnosisViewModel;
 
 /// Render the whole correction surface for one session, mutating it in response
-/// to the Trader's bounded controls.
-pub fn show(ui: &mut egui::Ui, session: &mut CorrectionSession, last_message: &mut String) {
+/// to the Trader's bounded controls. `envelope_path` is the caller-supplied
+/// local persistence path (PBA-0182); when `Some`, a human-reachable Save
+/// action persists the whole envelope atomically.
+pub fn show(
+    ui: &mut egui::Ui,
+    session: &mut CorrectionSession,
+    envelope_path: Option<&Path>,
+    last_message: &mut String,
+) {
     // The committed diagnosis, reusing N-22-A's diagnosis view unchanged.
     let vm = DiagnosisViewModel::from_result(session.result());
     crate::diagnosis_view::show(ui, &vm);
@@ -46,12 +56,39 @@ pub fn show(ui: &mut egui::Ui, session: &mut CorrectionSession, last_message: &m
         }
     }
 
+    // Dogfood-0 persistence — a human-reachable Save action (PBA-0182 §5),
+    // shown only when a local envelope path is configured. Saves the whole
+    // envelope (Strategy + CheckerContext + current mint high-water) atomically.
+    if let Some(path) = envelope_path {
+        ui.separator();
+        if ui.button("Save to local envelope").clicked() {
+            match persist::save_session(session, path) {
+                Ok(()) => *last_message = format!("Saved to {}.", path.display()),
+                Err(error) => *last_message = format!("Save failed: {error}"),
+            }
+        }
+    }
+
     ui.separator();
     match session.stage() {
         Stage::Diagnosing => {
-            if ui.button("Begin correction").clicked() {
-                session.begin_edit();
-                *last_message = "Editing — the Strategy content is now editable.".to_owned();
+            // Exhausted-corpus gate (PBA-0182 §7): editing leads to minting new
+            // OccurrenceId/LineageId on submit; if the mint domain is exhausted,
+            // refuse to open an editing session so the minter's fail-closed
+            // exhaustion path is never reached. Diagnosis remains available.
+            if persist::can_mint(session.high_water()) {
+                if ui.button("Begin correction").clicked() {
+                    session.begin_edit();
+                    *last_message = "Editing — the Strategy content is now editable.".to_owned();
+                }
+            } else {
+                ui.label(
+                    egui::RichText::new(
+                        "This corpus's identity mint domain is exhausted; \
+                         editing that mints new constructs is disabled.",
+                    )
+                    .strong(),
+                );
             }
         }
         Stage::Editing => show_editing_controls(ui, session, last_message),
