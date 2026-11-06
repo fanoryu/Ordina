@@ -17,30 +17,39 @@ Ordina does not predict outcomes and does not guarantee profit.
 
 ## Project status
 
-**Foundation phase. No production code exists, by design.**
+**Dogfood-0 is complete.** Ordina has a Rust engine for deterministic Strategy
+Well-Formedness checks and a Windows-tested desktop prototype for diagnosing,
+correcting, and resuming a Strategy from a local JSON file.
 
-The Product Constitution is **v1.0 — ACTIVE — RATIFIED** (Product Owner, POR-0001,
-2026-08-12).
+The checker reports `Well-Formed` or `Unusable`. The desktop app shows issues
+and any checks blocked by those issues. It computes a revision identity when the
+Strategy is Well-Formed. Live trade-decision statuses (`READY`, `WAIT`,
+`DO NOT TRADE`) are outside the scope of this prototype.
 
-The first architecture and engineering decisions are now accepted:
+In the [first live Dogfood-0 session (ER-0154)](docs/governance/identifier-ledger.md?plain=1#L539)
+on August 20, 2026, the Product Owner corrected a Strategy from `Unusable` to
+`Well-Formed`, saved it locally, and reopened it successfully. A Blocking
+condition added after the first restart was still present after a second save
+and restart.
 
-| Artifact | Status |
-|----------|--------|
-| [Product Constitution](docs/product/constitution.md) v1.0 | **ACTIVE — RATIFIED** (POR-0001) |
-| [RFC-0001 — Strategy Formation and Authoring](docs/rfc/0001-strategy-formation-and-authoring.md) | **ACCEPTED** (PBR-0003) |
-| [ADR-0001 — Record architecture decisions](docs/adr/0001-record-architecture-decisions.md) | **ACCEPTED** |
-| [ADR-0002 — Canonical Strategy Semantic Model](docs/adr/0002-canonical-strategy-semantic-model.md) | **ACCEPTED** (PBR-0006) |
-| [ADR-0003 — Canonicalization & Revision Identity](docs/adr/0003-canonicalization-and-revision-identity.md) | **ACCEPTED** (PBR-0007) |
-| [ADR-0004 — Strategy Well-Formedness Evaluation](docs/adr/0004-strategy-well-formedness-evaluation.md) | **ACCEPTED** (PBR-0009) |
-| [First Runnable Slice Contract](docs/engineering/first-runnable-slice-contract.md) | **ACCEPTED** (PBR-0011) |
+### Run the desktop example
 
-Accepted architecture does not mean the product is implementation-ready. **No
-implementation technology is selected** — language, framework, parser,
-serialization, persistence, database, hash algorithm, evaluator, deployment, and
-UI all remain open and each requires its own RFC and ADR. Regulatory review is not
-done, and tracked open questions remain open, including Q-06 (platform), which
-gates stack selection. The architecture overview stays deliberately free of
-implementation architecture until those close.
+From the repository root, with Rust installed through rustup, run this command
+with a new local file path:
+
+```sh
+cargo run -p ordina-desktop -- ./ordina-demo.dogfood.json
+```
+
+1. Select **Begin correction**, then **Set semantic-model version to supported**.
+2. Select **Confirm submission**, then **Submit (full re-check)**. The app should
+   show **Well-Formed** and **No issues found**.
+3. Select **Save to local envelope**, close the app, and rerun the same command
+   to resume the saved Strategy.
+
+See the [First Runnable Slice Contract](docs/engineering/first-runnable-slice-contract.md)
+for the checker scope and [RFC-0005](docs/rfc/0005-dogfood-local-persistence.md)
+for the local save and resume scope.
 
 ## Document precedence
 
@@ -75,19 +84,6 @@ We never skip to implementation. Speed is not preferred over architecture.
 
 ## Next milestone
 
-The pre-implementation architecture and engineering-contract chain is complete
-through the accepted First Runnable Slice Contract, which fixes what the first
-runnable slice is: a deterministic Strategy **Well-Formedness** checker that takes
-an already-canonical Strategy and returns Well-Formed, or UNUSABLE with a
-deterministic defect set. It selects no technology.
-
-Remaining before implementation can begin:
-
-- **Git baseline** — the repository is not yet under version control.
-- **Implementation authorization**, including how language selection is reconciled
-  with **Q-06** (platform), which the register records as blocking stack selection.
-  Language, framework, and datastore choices each require an RFC **and** an ADR
-  (`docs/engineering/workflow.md`).
-
-The Tier-2 Normative Product Specifications and the Tier-3 engineering documents
-remain **PROPOSED**; ratification of the Constitution did not auto-promote them.
+The Product Owner will select the next roadmap item after the Dogfood-0 closure
+and the startup regression review. See the [closure record (ARR-0064)](docs/governance/identifier-ledger.md?plain=1#L389)
+and the [open questions](docs/product/open-questions.md).
